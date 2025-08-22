@@ -1,0 +1,61 @@
+# .clang-format configuration file
+# Based on Google style with custom modifications
+
+BasedOnStyle: Google
+
+# Indentation settings
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+ContinuationIndentWidth: 2
+
+# Brace settings - opening braces on same line
+BreakBeforeBraces: Attach
+
+# Pointer and reference alignment - attach to type
+PointerAlignment: Left
+ReferenceAlignment: Left
+DerivePointerAlignment: false
+
+# Class and namespace formatting
+NamespaceIndentation: Inner
+AccessModifierOffset: -2
+IndentAccessModifiers: true
+
+# Function formatting
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+# Spacing settings
+SpaceAfterCStyleCast: false
+SpaceAfterTemplateKeyword: true
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens: ControlStatements
+SpaceInEmptyParentheses: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+
+# Line breaking
+ColumnLimit: 80
+AlwaysBreakAfterReturnType: None
+AlwaysBreakBeforeMultilineStrings: false
+BinPackArguments: true
+BinPackParameters: true
+
+# Other formatting options
+AlignTrailingComments: true
+AllowAllArgumentsOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+SeparateDefinitionBlocks: Always
+
+# C++ specific settings
+FixNamespaceComments: true
+SortIncludes: false
+SortUsingDeclarations: true
+
+# Additional spacing
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceAfterLogicalNot: false

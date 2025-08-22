@@ -1,0 +1,11 @@
+_build/*
+
+*.o
+*.d
+
+*.exe
+*.app
+
+zeus
+zeus.exe
+zeus.app
