@@ -20,5 +20,7 @@ int main(int argc, char** argv) {
     std::make_unique<std::vector<std::string>>(
       argv, argv + argc);  // easier to work with vectors
 
+  std::cout << "This is phid" << std::endl;
+
   return 0;
 }
