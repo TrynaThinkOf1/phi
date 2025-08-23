@@ -17,8 +17,8 @@
 
 int main(int argc, char** argv) {
   std::unique_ptr<std::vector<std::string>> args =
-      std::make_unique<std::vector<std::string>>(
-        argv, argv + argc);  // easier to work with vectors
-        
+    std::make_unique<std::vector<std::string>>(
+      argv, argv + argc);  // easier to work with vectors
+
   return 0;
 }
