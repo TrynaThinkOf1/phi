@@ -94,7 +94,7 @@ def main():
     match (x := input("\n    >> ")):
         case "1":
             header_parent_dir = input("Header Parent Dir (e.g 'data' for path 'include/data/'): ")
-            source_parent_dir = input("Source Parent Dir (e.g 'networking' for path 'src/networking/'): ")
+            source_parent_dir = input("Source Parent Dir ('phi', 'phid', or 'shared'): ")
             filename = input("Filename (do not include .cpp/.hpp): ")
             author_name = input("Your name (defaults to Zevi Berlin): ")
             create_code_files(header_parent_dir, source_parent_dir, filename, author_name)
