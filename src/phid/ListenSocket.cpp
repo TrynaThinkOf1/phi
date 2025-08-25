@@ -16,8 +16,20 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-phi::ListenSocket::recv(std::string& buffer) {
+#include "Exceptions.hpp"
+
+void phi::ListenSocket::recv(std::string& buffer) {
 }
 
-phi::ListenSocket::send(const std::string& buf) {
+void phi::ListenSocket::send(const std::string& buf) {
+	int ec;
+	for (int i = 0; i < 3; i++) {
+		ec = send(sock, buf, buf.length(), 0) 
+		if (ec > 0) {
+			return; // it was successful so early return
+		}
+	}
+
+	// it did not send properly within 3 tries
+	throw phi::SendFailedError(ec);
 }

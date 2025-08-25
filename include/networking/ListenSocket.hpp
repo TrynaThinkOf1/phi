@@ -22,10 +22,10 @@ namespace phi {
 class ListenSocket {
   private:
     int sock;
-    struct sockaddr* conn_addr;
+    const struct sockaddr conn_addr;
 
   public:
-    ListenSocket(int sock_, struct sockaddr* conn_addr_)
+    ListenSocket(int sock_, const struct sockaddr conn_addr_)
         : sock(sock_) conn_addr(conn_addr_) {
     }
 
@@ -40,7 +40,7 @@ class ListenSocket {
       close(sock);
     }
 
-    const struct sockaddr* get_conn_addr() {
+    const struct sockaddr get_conn_addr() {
       return conn_addr;
     }
 };

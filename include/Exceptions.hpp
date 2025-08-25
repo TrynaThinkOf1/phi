@@ -48,6 +48,20 @@ class FailedSocketError : public std::runtime_error {
     }
 }
 
+class SendFailedError : public std::runtime_error {
+	private:
+	    std::string message_;
+	
+	  public:
+	    FailedSocketError(int errno)
+	        : message_("Send failed: " + strerror(errno)) {
+	    }
+	
+	    virtual const std::string what() const noexcept override {
+	      return message_;
+	    }
+}
+
 }  // namespace phi
 
 #endif /* EXCEPTIONS_HPP */

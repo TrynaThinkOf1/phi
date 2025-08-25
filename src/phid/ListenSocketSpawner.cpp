@@ -31,7 +31,7 @@ phi::ListenSocketSpawner::ListenSocketSpawner(int protocol) {
     throw phi::FailedSocketError(sock);
   }
 
-  if (listen(sock, 1) < 0) {
+  if (listen(sock, 3) < 0) { // 3 is backlog
     throw phi::FailedSocketError(sock);
   }
 }
@@ -43,12 +43,22 @@ phi::ListenSocketSpawner::~ListenSocketSpawner() {
 // others
 void phi::ListenSocketSpawner::create_addr(int protocol) {
   addr.sin_family = protocol;    // sin_family
-  addr.sin_port = htons(phi::);  // sin_port - htons() sets port bytes in right
+  addr.sin_port = htons(phi::RECV_PORT);  // sin_port - htons() sets port bytes in right
                                  // order (BE vs. LE) for network
   addr.sin_addr.s_addr = INADDR_ANY;  // listen for any connection
 }
 
 phi::ListenSocket phi::ListenSocketSpawner::accept() {
+	int new_sock;
+	struct sockaddr* new_addr;
+	
+	new_sock = accept(sock, new_addr, NULL);
+	if (new_sock < 0) {
+		throw phi::FailedSocketError(new_sock);
+	}
+	
+	phi::ListenSocket connected_socket(new_sock, *new_addr);
+	return connected_socket;
 }
 
 void phi::ListenSocketSpawner::end() {
