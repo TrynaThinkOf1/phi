@@ -1,5 +1,8 @@
 _build/*
 
+__pycache__
+
+*.out
 *.o
 *.d
 
@@ -9,3 +12,10 @@ _build/*
 zeus
 zeus.exe
 zeus.app
+
+test.c
+test.cpp
+test
+
+.vscode
+.idea
