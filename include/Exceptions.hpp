@@ -19,48 +19,48 @@
 
 namespace phi {
 
-class InvalidIPv4AddressError : public std::exception {
+class FailedSocketError : public std::exception {
   private:
     std::string message_;
 
   public:
-    InvalidAddressException(const struct sockaddr_in& addr)
-        : message_("Invalid IPv4 address `" + addr.sin_addr + ":" +
-                   addr.sin_port) {
+    FailedSocketError(int ec)
+        : message_((std::string) "Failed socket: " +
+                   (std::string)strerror(ec)) {
     }
 
-    virtual const std::string what() const noexcept override {
-      return message_;
+    const char* what() const noexcept {
+      return message_.c_str();
     }
-}
+};
 
-class FailedSocketError : public std::runtime_error {
+class SendFailedError : public std::exception {
   private:
     std::string message_;
 
   public:
-    FailedSocketError(int errno)
-        : message_("Socket failed: " + strerror(errno)) {
+    SendFailedError(int ec)
+        : message_((std::string) "Send failed: " + (std::string)strerror(ec)) {
     }
 
-    virtual const std::string what() const noexcept override {
-      return message_;
+    const char* what() const noexcept {
+      return message_.c_str();
     }
-}
+};
 
-class SendFailedError : public std::runtime_error {
-	private:
-	    std::string message_;
-	
-	  public:
-	    FailedSocketError(int errno)
-	        : message_("Send failed: " + strerror(errno)) {
-	    }
-	
-	    virtual const std::string what() const noexcept override {
-	      return message_;
-	    }
-}
+class RecvFailedError : public std::exception {
+  private:
+    std::string message_;
+
+  public:
+    RecvFailedError(int ec)
+        : message_((std::string) "Recv failed: " + (std::string)strerror(ec)) {
+    }
+
+    const char* what() const noexcept {
+      return message_.c_str();
+    }
+};
 
 }  // namespace phi
 

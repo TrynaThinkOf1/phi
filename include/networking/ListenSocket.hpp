@@ -14,6 +14,7 @@
 #define LISTENSOCKET_HPP
 
 #include <string>
+#include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 
@@ -25,16 +26,16 @@ class ListenSocket {
     const struct sockaddr conn_addr;
 
   public:
-    ListenSocket(int sock_, const struct sockaddr conn_addr_)
-        : sock(sock_) conn_addr(conn_addr_) {
+    ListenSocket(int sock_, struct sockaddr* conn_addr_)
+        : sock(sock_), conn_addr(*conn_addr_) {
     }
 
     ~ListenSocket() {
       close(sock);
     }
 
-    void recv(std::string& buf);
-    void send(const std::string& buf);
+    void recv(std::string& buffer);
+    void send(const std::string& buffer);
 
     void end() {
       close(sock);
