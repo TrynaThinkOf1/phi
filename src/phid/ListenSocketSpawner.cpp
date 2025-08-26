@@ -12,6 +12,7 @@
 
 #include "networking/ListenSocketSpawner.hpp"
 
+#include <memory>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -24,17 +25,17 @@
 phi::ListenSocketSpawner::ListenSocketSpawner(int protocol) {
   sock = socket(protocol, SOCK_STREAM, 0);
   if (sock < 0) {
-    throw phi::FailedSocketError(sock);
+    throw phi::FailedSocketError(errno);
   }
 
   create_addr(protocol);
 
   if (bind(sock, (const struct sockaddr*)&addr, sizeof(addr)) < 0) {
-    throw phi::FailedSocketError(sock);
+    throw phi::FailedSocketError(errno);
   }
 
   if (listen(sock, 3) < 0) {  // 3 is backlog
-    throw phi::FailedSocketError(sock);
+    throw phi::FailedSocketError(errno);
   }
 }
 
@@ -51,15 +52,18 @@ void phi::ListenSocketSpawner::create_addr(int protocol) {
   addr.sin_addr.s_addr = INADDR_ANY;  // listen for any connection
 }
 
-phi::ListenSocket phi::ListenSocketSpawner::accept() {
-  int new_sock;
-  struct sockaddr* new_addr = nullptr;
+std::unique_ptr<phi::ListenSocket> phi::ListenSocketSpawner::accept() {
+  std::shared_ptr<struct sockaddr_storage> new_addr =
+    std::make_shared<struct sockaddr_storage>();
 
-  new_sock = ::accept(sock, new_addr, NULL);
+  socklen_t addrlen = sizeof(new_addr);
+
+  int new_sock = ::accept(sock, (struct sockaddr*)new_addr.get(), &addrlen);
   if (new_sock < 0) {
-    throw phi::FailedSocketError(new_sock);
+    throw phi::FailedSocketError(errno);
   }
 
-  phi::ListenSocket connected_socket(new_sock, new_addr);
+  std::unique_ptr<phi::ListenSocket> connected_socket =
+    std::make_unique<phi::ListenSocket>(new_sock, new_addr);
   return connected_socket;
 }

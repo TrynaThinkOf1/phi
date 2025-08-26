@@ -12,6 +12,7 @@
 
 #include "phid/listen_loop.hpp"
 
+#include <memory>
 #include <iostream>
 #include <string>
 #include <netinet/in.h>
@@ -22,19 +23,27 @@
 
 void phi::listen_loop() {
   phi::ListenSocketSpawner spawner(AF_INET);
+
+  std::unique_ptr<phi::ListenSocket> sock;
   while (1) {
-    phi::ListenSocket* sock = nullptr;
     try {
-      phi::ListenSocket _new_sock = spawner.accept();
-      sock = &_new_sock;
+      sock = spawner.accept();
     } catch (phi::FailedSocketError e) {
       std::cerr << e.what() << std::endl;
+      spawner.end();
       break;
     }
 
     std::string buf;
     buf.reserve(32000);
-    sock->recv(buf);
+    try {
+      sock->recv(buf);
+    } catch (phi::RecvFailedError e) {
+      std::cerr << e.what() << std::endl;
+      sock->end();
+      spawner.end();
+      break;
+    }
     std::cout << buf << std::endl;
     sock->end();
   }

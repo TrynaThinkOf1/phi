@@ -12,6 +12,7 @@
 
 #include "networking/ListenSocket.hpp"
 
+#include <memory>
 #include <string>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -22,7 +23,7 @@
 void phi::ListenSocket::recv(std::string& buffer) {
   buffer.resize(32000);
 
-  ssize_t n = ::recv(sock, buffer.data(), buffer.size(), 0);
+  ssize_t n = ::recv(this->sock, buffer.data(), buffer.size(), 0);
 
   if (n > 0) {
     buffer.resize((size_t)n);  // keep only received bytes
@@ -49,7 +50,7 @@ void phi::ListenSocket::send(const std::string& buffer) {
   size_t remaining = buffer.size();
 
   while (remaining > 0) {
-    ssize_t n = ::send(sock, _buf, remaining, 0);
+    ssize_t n = ::send(this->sock, _buf, remaining, 0);
 
     if (n > 0) {
       remaining -= (size_t)n;

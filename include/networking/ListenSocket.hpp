@@ -13,6 +13,7 @@
 #ifndef LISTENSOCKET_HPP
 #define LISTENSOCKET_HPP
 
+#include <memory>
 #include <string>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -23,11 +24,11 @@ namespace phi {
 class ListenSocket {
   private:
     int sock;
-    const struct sockaddr conn_addr;
+    std::shared_ptr<struct sockaddr_storage> conn_addr;
 
   public:
-    ListenSocket(int sock_, struct sockaddr* conn_addr_)
-        : sock(sock_), conn_addr(*conn_addr_) {
+    ListenSocket(int sock_, std::shared_ptr<struct sockaddr_storage> conn_addr_)
+        : sock(sock_), conn_addr(conn_addr_) {
     }
 
     ~ListenSocket() {
@@ -41,7 +42,7 @@ class ListenSocket {
       close(sock);
     }
 
-    const struct sockaddr get_conn_addr() {
+    std::shared_ptr<struct sockaddr_storage> get_conn_addr() {
       return conn_addr;
     }
 };

@@ -13,6 +13,7 @@
 #ifndef LISTENSOCKETSPAWNER_HPP
 #define LISTENSOCKETSPAWNER_HPP
 
+#include <memory>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -32,7 +33,7 @@ class ListenSocketSpawner {
     ListenSocketSpawner(int protocol);
     ~ListenSocketSpawner();
 
-    phi::ListenSocket accept();
+    std::unique_ptr<phi::ListenSocket> accept();
 
     void end() {
       close(sock);
