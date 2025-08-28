@@ -13,12 +13,14 @@
 #ifndef LISTEN_LOOP_HPP
 #define LISTEN_LOOP_HPP
 
+#include <memory>
 #include <iostream>
 #include <string>
 #include <netinet/in.h>
 
 #include "networking/ListenSocketSpawner.hpp"
 #include "networking/ListenSocket.hpp"
+#include "phid/error_handling.hpp"
 
 namespace phi {
 

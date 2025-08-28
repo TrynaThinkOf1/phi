@@ -17,6 +17,15 @@ namespace phi {
 
 inline constexpr int RECV_PORT = 1689;
 
+enum ConnType {
+  HANDSHAKE = 48,
+  RECV_TEXT,
+  RECV_FILE,
+
+  HANDSHAKE_RECV_TEXT,
+  HANDSHAKE_RECV_FILE
+};
+
 }  // namespace phi
 
 #endif /* PHI_CONFIG_HPP */

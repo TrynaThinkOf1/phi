@@ -19,6 +19,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include "phid/error_handling.hpp"
+
 namespace phi {
 
 class ListenSocket {

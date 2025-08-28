@@ -19,6 +19,8 @@
 #include <netinet/in.h>
 
 #include "networking/ListenSocket.hpp"
+#include "phid/error_handling.hpp"
+#include "config.hpp"
 
 namespace phi {
 

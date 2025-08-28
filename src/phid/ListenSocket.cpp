@@ -18,7 +18,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#include "Exceptions.hpp"
+#include "phid/error_handling.hpp"
 
 void phi::ListenSocket::recv(std::string& buffer) {
   buffer.resize(32000);
@@ -41,7 +41,8 @@ void phi::ListenSocket::recv(std::string& buffer) {
   if (errno == EAGAIN || errno == EWOULDBLOCK) {
     // non-blocking and no data, caller handle retry
   }
-  throw phi::RecvFailedError(errno);
+  phi::handle_error((std::string) "Error receiving information from socket: " +
+                    (std::string)strerror(errno));
 }
 
 void phi::ListenSocket::send(const std::string& buffer) {
@@ -58,7 +59,8 @@ void phi::ListenSocket::send(const std::string& buffer) {
     }
 
     if (n == 0)
-      throw phi::SendFailedError(errno);  // treat it as an error
+      phi::handle_error((std::string) "Error sending information to socket: " +
+                        (std::string)strerror(errno));  // treat it as an error
 
     // n == -1
     if (errno == EINTR)
@@ -66,7 +68,8 @@ void phi::ListenSocket::send(const std::string& buffer) {
     if (errno == EAGAIN || errno == EWOULDBLOCK)
       continue;  // shouldn't happen for this socket, check anyway
 
-    throw phi::SendFailedError(errno);
+    phi::handle_error((std::string) "Error sending information to socket: " +
+                      (std::string)strerror(errno));
   }
   return;
 }
