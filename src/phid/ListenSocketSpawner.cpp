@@ -13,6 +13,7 @@
 #include "networking/ListenSocketSpawner.hpp"
 
 #include <memory>
+#include <fcntl.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -28,6 +29,9 @@ phi::ListenSocketSpawner::ListenSocketSpawner(int protocol) {
     phi::handle_error((std::string) "Error creating socket: " +
                       (std::string)strerror(errno));
   }
+
+  int flags = fcntl(sock, F_GETFL, 0);       // make it non-blocking
+  fcntl(sock, F_SETFL, flags | O_NONBLOCK);  // ^
 
   create_addr(protocol);
 
@@ -63,11 +67,13 @@ std::unique_ptr<phi::ListenSocket> phi::ListenSocketSpawner::accept() {
 
   int new_sock = ::accept(sock, (struct sockaddr*)new_addr.get(), &addrlen);
   if (new_sock < 0) {
+    if (errno == EAGAIN || errno == EWOULDBLOCK) {
+      // No pending connection right now — caller should retry / re-check flag
+      return nullptr;
+    }
     phi::handle_error((std::string) "Error accepting socket: " +
                       (std::string)strerror(errno));
   }
 
-  std::unique_ptr<phi::ListenSocket> connected_socket =
-    std::make_unique<phi::ListenSocket>(new_sock, new_addr);
-  return connected_socket;
+  return std::make_unique<phi::ListenSocket>(new_sock, new_addr);
 }

@@ -9,13 +9,15 @@ __pycache__
 *.exe
 *.app
 
-zeus
-zeus.exe
-zeus.app
+phi
+phi.exe
+phid
+phid.exe
 
 test.c
 test.cpp
 test
+test.py
 
 .vscode
 .idea

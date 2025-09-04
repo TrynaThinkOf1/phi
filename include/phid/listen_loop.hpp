@@ -13,10 +13,10 @@
 #ifndef LISTEN_LOOP_HPP
 #define LISTEN_LOOP_HPP
 
+#include <atomic>
 #include <memory>
 #include <iostream>
 #include <string>
-#include <netinet/in.h>
 
 #include "networking/ListenSocketSpawner.hpp"
 #include "networking/ListenSocket.hpp"
@@ -24,7 +24,7 @@
 
 namespace phi {
 
-void listen_loop();
+void listen_loop(std::atomic<bool>& should_continue);
 
 }  // namespace phi
 

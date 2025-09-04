@@ -25,14 +25,14 @@ APPD_BUILD_DIR:=$(BUILD_DIR)/$(APPD)
 # COMPILATION #
 #    INPUT    #
 
-INC_DIRS=-Iinclude -I/opt/homebrew/include
+INC_DIRS=-Iinclude -I/opt/homebrew/include -I/usr/local/include
 # where UNcompiled headers are located
 
-LIB_DIRS=-Llib -L/opt/homebrew/lib
+LIB_DIRS=-Llib -L/opt/homebrew/lib -L/usr/local/lib
 # where compiled libraries are located
 
-EXT_LIBS=
-# external libraries; -lzlibcomplete=zlibcomplete, -lz=zlib, -lcryptopp=crypto++
+EXT_LIBS=-lzlibcomplete -lz -lcryptopp -lsqlite3 
+# external libraries; -lzlibcomplete=zlibcomplete, -lz=zlib, -lcryptopp=crypto++, -lsqlite3=SQLite
 
 STD=-std=c++17
 

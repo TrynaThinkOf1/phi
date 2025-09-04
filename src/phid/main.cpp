@@ -10,6 +10,9 @@
 
 */
 
+#include <atomic>
+#include <thread>
+#include <chrono>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -22,9 +25,15 @@ int main(int argc, char** argv) {
     std::make_unique<std::vector<std::string>>(
       argv, argv + argc);  // easier to work with vectors
 
-  std::cout << "This is phid" << std::endl;
+  std::atomic<bool> listener_should_continue{true};
 
-  phi::listen_loop();
+  std::thread listen_thread(phi::listen_loop,
+                            std::ref(listener_should_continue));
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+  listener_should_continue = false;
+  listen_thread.join();
 
   return 0;
 }
