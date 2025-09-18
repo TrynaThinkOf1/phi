@@ -38,9 +38,9 @@ STD=-std=c++17
 
 OPT=-O2
 
-FINAL_FLAGS=-Wall -Wextra $(LIB_DIRS) $(EXT_LIBS) $(STD) $(OPT) -g
+FINAL_FLAGS=-Wall -Wextra -Wno-unused-function $(LIB_DIRS) $(EXT_LIBS) $(STD) $(OPT) -g
 # -Wall=all warnings, -Wextra=extra warnings, -g=debugging info; -c=don't link into ELF
-OBJECT_FLAGS=-Wall -Wextra $(INC_DIRS) $(STD) $(OPT) -g -c
+OBJECT_FLAGS=-Wall -Wextra -Wno-unused-function $(INC_DIRS) $(STD) $(OPT) -g -c
 
 #=====# }}
 
