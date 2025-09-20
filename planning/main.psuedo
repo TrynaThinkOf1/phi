@@ -1,6 +1,0 @@
-func main() {
-  Thread listening_daemon(listener, DBManager);
-  listening_daemon.detach();
-
-  return 0;
-}
