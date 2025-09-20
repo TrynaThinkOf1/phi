@@ -9,9 +9,12 @@ __pycache__
 *.exe
 *.app
 
-phi
+/phi
+!/phi/
 phi.exe
-phid
+
+/phid
+!/phid/
 phid.exe
 
 test.c
