@@ -13,6 +13,7 @@
 #include "phid/encryption//EncryptionManager.hpp"
 
 #include <string>
+#include <vector>
 #include <cstdint>
 
 #include <zlc/gzipcomplete.hpp>
@@ -35,7 +36,24 @@ phid::EncryptionManager::~EncryptionManager() {
 
 void phid::EncryptionManager::compress_text(const std::string& text,
                                             std::string& op) {
-  op = this->compressor->compress(text);
+  // 16384 is the size limit for byte stream to GZip
+  if (text.length() < 16384) {
+    op = this->compressor->compress(text);
+  } else {
+    std::vector<std::string> chunks;
+    for (size_t i = 0; i <= text.length() / 16384; i++) {
+      size_t si = i * 16384;
+      size_t ei = (i + 1) * 16384;
+      if (ei > text.length()) {
+        ei = text.length();
+      }
+      chunks.push_back(text.substr(si, ei));
+    }
+
+    for (const std::string& c : chunks) {
+      op += this->compressor->compress(c);
+    }
+  }
 }
 
 void phid::EncryptionManager::decompress_text(const std::string& text,
