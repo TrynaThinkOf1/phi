@@ -11,11 +11,13 @@
 */
 
 #include "phid/STARTUP.hpp"
+#include "phid/database/DBManager.hpp"
 
 int main(int argc, char** argv) {
   if (phid::create_db_file() == -1) {
     return 0;
-  }  // exit
+  }  // exit if not valid permissions
+
 
   return 0;
 }

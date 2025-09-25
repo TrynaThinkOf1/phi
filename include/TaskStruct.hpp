@@ -16,13 +16,12 @@
 #include <string>
 #include <netinet/in.h>
 
+#include "phid/encryption/EncryptedMessage.hpp"
+
 namespace phi {
 
 struct Task {
-    const std::string encrypted_message;
-    const int msg_split = message.length() / 1024;
-
-    const std::string client_key;
+    const EncryptedMessage message;
 
     const struct sockaddr_in client_address;
 };

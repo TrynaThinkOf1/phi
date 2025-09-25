@@ -31,12 +31,12 @@ INC_DIRS=-Iinclude -I/opt/homebrew/include -I/usr/local/include
 LIB_DIRS=-Llib -L/opt/homebrew/lib -L/usr/local/lib
 # where compiled libraries are located
 
-EXT_LIBS=-lzlibcomplete -lz -lcryptopp -lsqlite3 
-# external libraries; -lzlibcomplete=zlibcomplete, -lz=zlib, -lcryptopp=crypto++, -lsqlite3=SQLite
+EXT_LIBS=-lzlibcomplete -lz -lcryptopp -lSQLiteCpp -lsqlite3 -lsodium
+# external libraries: -lzlibcomplete=zlibcomplete -lSQLiteCpp=SQLite wrapper, -lsodium=LibSodium encryption
 
 STD=-std=c++17
 
-OPT=-O2
+OPT=-O1
 
 FINAL_FLAGS=-Wall -Wextra -Wno-unused-function -Wno-unused-parameter $(LIB_DIRS) $(EXT_LIBS) $(STD) $(OPT) -g
 # -Wall=all warnings, -Wextra=extra warnings, -g=debugging info; -c=don't link into ELF

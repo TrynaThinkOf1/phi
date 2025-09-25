@@ -13,7 +13,8 @@
 #ifndef DBMANAGER_HPP
 #define DBMANAGER_HPP
 
-#include <atomic>
+#include <shared_mutex>
+#include <string>
 
 #include <SQLiteCpp/Database.h>
 
@@ -21,16 +22,18 @@ namespace phid {
 
 class DBManager {
   private:
+    mutable std::shared_mutex mutex_;
+
     SQLite::Database db =
-      SQLite::Database("/usr/local/phi/main.db", SQLite::OPEN_READWRITE);
+      SQLite::Database("/var/phi/main.db", SQLite::OPEN_READWRITE);
 
   public:
     DBManager();
     ~DBManager() = default;
-};
 
-// const auto __dbman = std::make_shared<DBManager>();
-// const auto dbmanager = std::atomic<std::shared_ptr<DBManager>>(__dbman);
+    static void close() {
+    }
+};
 
 }  // namespace phid
 
