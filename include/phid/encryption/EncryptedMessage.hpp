@@ -16,19 +16,23 @@
 #include <string>
 #include <cstdint>
 
-namespace phi {
+namespace phid {
 
 struct EncryptedMessage {
-    const uint8_t version;
+    uint8_t version;
 
-    const bool is_file;
+    bool is_file;
 
-    const std::string content;
-    const int msg_split = content.length() / 1024;
+    std::string content;
+    int msg_split = content.length() / 1024;
 
-    const std::string encrypted_aes_key;
-}
+    std::string encrypted_aes_key;
 
-}  // namespace phi
+    std::string blake2_hash_plaintext;
+
+    int nonce;
+};
+
+}  // namespace phid
 
 #endif /* ENCRYPTEDMESSAGE_HPP */
