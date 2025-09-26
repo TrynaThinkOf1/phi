@@ -17,8 +17,12 @@
 #include <cstdint>
 
 #include <zlc/gzipcomplete.hpp>
+#include <cryptopp/cryptlib.h>
+#include <cryptopp/blake2.h>
 
 #include "phid/encryption/EncryptedMessage.hpp"
+
+typedef uint8_t byte;
 
 namespace phid {
 
@@ -41,10 +45,12 @@ class EncryptionManager {
                              std::string& op_text);
 
     void chacha_decrypt_text(const std::string& text,
-                             const std::string& decrypt_key, int& nonce,
+                             const std::string& decrypt_key, const int& nonce,
                              std::string& op_text);
 
     //
+
+    CryptoPP::BLAKE2b* blake2_hasher = new CryptoPP::BLAKE2b();
 
     void blake2_hash_text(const std::string& text, std::string& op);
     bool blake2_verify_hash(const std::string& text, const std::string& hash);
