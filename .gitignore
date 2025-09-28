@@ -9,6 +9,8 @@ __pycache__
 *.exe
 *.app
 
+*.dSYM
+
 /phi
 !/phi/
 phi.exe
