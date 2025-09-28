@@ -24,8 +24,7 @@ class DBManager {
   private:
     mutable std::shared_mutex mutex_;
 
-    SQLite::Database db =
-      SQLite::Database("/var/phi/main.db", SQLite::OPEN_READWRITE);
+    SQLite::Database db = SQLite::Database("/var/phi/main.db", SQLite::OPEN_READWRITE);
 
   public:
     DBManager();

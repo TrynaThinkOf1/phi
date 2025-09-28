@@ -16,21 +16,19 @@
 #include <string>
 #include <cstdint>
 
+#include <sodium.h>
+
 namespace phid {
 
 struct EncryptedMessage {
     uint8_t version;
 
-    bool is_file;
-
     std::string content;
-    int msg_split = content.length() / 1024;
 
-    std::string encrypted_aes_key;
+    unsigned char chacha_key[crypto_aead_chacha20poly1305_KEYBYTES];
+    unsigned char nonce[crypto_aead_chacha20poly1305_NPUBBYTES];
 
-    std::string blake2_hash_plaintext;
-
-    int nonce;
+    std::string blake2_hash;
 };
 
 }  // namespace phid

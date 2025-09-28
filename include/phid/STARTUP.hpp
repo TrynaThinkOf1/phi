@@ -24,9 +24,7 @@ static int create_db_file() noexcept {
     try {
       std::filesystem::create_directory("/var/phi");
     } catch (std::filesystem::filesystem_error e) {
-      std::cout
-        << "Could not access database files. Try giving Phi sudo permissions."
-        << std::endl;
+      std::cout << "Could not access database files. Try giving Phi sudo permissions." << std::endl;
       return -1;
     }
   }
