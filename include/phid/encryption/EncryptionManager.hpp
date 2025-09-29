@@ -19,6 +19,9 @@
 #include <zlc/gzipcomplete.hpp>
 #include <cryptopp/cryptlib.h>
 #include <cryptopp/blake2.h>
+#include <cryptopp/rsa.h>
+#include <cryptopp/osrng.h>
+#include <cryptopp/queue.h>
 #include <sodium.h>
 
 #include "phid/encryption/EncryptedMessage.hpp"
@@ -52,6 +55,8 @@ class EncryptionManager {
 
     //
 
+    CryptoPP::AutoSeededRandomPool rng;
+
     void rsa_encrypt_key(const unsigned char (&key)[crypto_aead_chacha20poly1305_KEYBYTES],
                          const std::string& pub_key, std::string& op);
     void rsa_decrypt_key(const std::string& key, const std::string& priv_key,
@@ -67,6 +72,10 @@ class EncryptionManager {
   public:
     EncryptionManager();
     ~EncryptionManager();
+
+    void gen_rsa_pair(std::string& op_priv, std::string& op_pub);
+
+    //
 
     void encrypt_text(const std::string& text, const std::string& rsa_pub_key,
                       EncryptedMessage& op);

@@ -20,6 +20,8 @@
 #include <zlc/gzipcomplete.hpp>
 #include <cryptopp/cryptlib.h>
 #include <cryptopp/blake2.h>
+#include <cryptopp/rsa.h>
+#include <cryptopp/queue.h>
 #include <sodium.h>
 
 #include "phid/encryption/EncryptedMessage.hpp"
@@ -104,8 +106,7 @@ void phid::EncryptionManager::chacha_encrypt_text(
     reinterpret_cast<const unsigned char*>(text.data()),  // plaintext input
     text.size(),                                          // plaintext length
     nullptr, 0,                                           // "additional data + length" -- idek
-    NULL,   // "nsec is not used by this particular construction and should always be NULL" ~
-            // libsodium docs
+    NULL,   // "nsec is not used by this construction and should always be NULL" ~ libsodium docs
     nonce,  // cryptosign nonce
     this->chacha_key  // encryption/decryption key
   );
@@ -182,6 +183,27 @@ bool phid::EncryptionManager::blake2_verify_hash(const std::string& text, const 
 
 /* public methods */
 
+void phid::EncryptionManager::gen_rsa_pair(std::string& op_priv, std::string& op_pub) {
+  CryptoPP::RSA::PrivateKey priv;
+  CryptoPP::RSA::PublicKey pub;
+
+  priv.GenerateRandomWithKeySize(this->rng, 4096);
+  pub = CryptoPP::RSA::PublicKey(priv);
+
+  CryptoPP::ByteQueue q;
+
+  priv.Save(q);
+  op_priv.resize(q.CurrentSize());
+  q.Get(reinterpret_cast<byte*>(&op_priv[0]), op_priv.size());
+  q.Clear();
+
+  pub.Save(q);
+  op_pub.resize(q.CurrentSize());
+  q.Get(reinterpret_cast<byte*>(&op_pub[0]), op_pub.size());
+}
+
+//
+
 void phid::EncryptionManager::encrypt_text(const std::string& text, const std::string& rsa_pub_key,
                                            EncryptedMessage& op) {
   //
@@ -204,7 +226,7 @@ int phid::EncryptionManager::decrypt_text(const EncryptedMessage& msg,
 
   switch (msg.version) {
     case 1:
-      s = this->chacha_decrypt_text(msg.content, msg.nonce, msg.chacha_key, temp);
+      // s = this->chacha_decrypt_text(msg.content, msg.nonce, msg.chacha_key, temp);
       if (s == -1) {
         return -1;
       }

@@ -25,7 +25,7 @@ struct EncryptedMessage {
 
     std::string content;
 
-    unsigned char chacha_key[crypto_aead_chacha20poly1305_KEYBYTES];
+    unsigned char chacha_key[4096];  // RSA encrypted ChaCha20-Poly1305 key
     unsigned char nonce[crypto_aead_chacha20poly1305_NPUBBYTES];
 
     std::string blake2_hash;
