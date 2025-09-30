@@ -24,7 +24,7 @@ IndentAccessModifiers: true
 
 # Function formatting
 AllowShortFunctionsOnASingleLine: None
-AllowShortIfStatementsOnASingleLine: Never
+AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: false
 
 # Spacing settings
@@ -48,7 +48,7 @@ AlignTrailingComments: true
 AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
 KeepEmptyLinesAtTheStartOfBlocks: false
-MaxEmptyLinesToKeep: 1
+MaxEmptyLinesToKeep: 3
 SeparateDefinitionBlocks: Always
 
 # C++ specific settings
