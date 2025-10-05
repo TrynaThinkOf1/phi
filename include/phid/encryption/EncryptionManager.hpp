@@ -36,14 +36,13 @@ class EncryptionManager {
      LIFETIME OBJECTS
     \*****      *****/
 
-    zlibcomplete::GZipCompressor* compressor = new zlibcomplete::GZipCompressor(3);
+    zlibcomplete::GZipCompressor* compressor;
     // 3 = compression level, 1-9 (least-greatest)
-
-    zlibcomplete::GZipDecompressor* decompressor = new zlibcomplete::GZipDecompressor();
+    zlibcomplete::GZipDecompressor* decompressor;
 
     /***/
 
-    CryptoPP::AutoSeededRandomPool rng;
+    CryptoPP::AutoSeededRandomPool* rng;
 
     /***/
 
@@ -52,7 +51,11 @@ class EncryptionManager {
 
     /***/
 
-    CryptoPP::BLAKE2b* blake2_hasher = new CryptoPP::BLAKE2b();
+    CryptoPP::BLAKE2b* blake2_hasher;
+
+    /***/
+
+    CryptoPP::RSA::PrivateKey __priv;
 
     /*****      *****\
     \*****      *****/
@@ -86,10 +89,11 @@ class EncryptionManager {
     /***/
 
     template <typename T>
-    void rsa_to_str(const T& key, std::string& op);
+    void rsa_to_str(const T& key, std::string& op) const;
     // so that they can handle both (CryptoPP::RSA) PublicKey and PrivateKey
+    // both implemented in include/phid/encryption/EncryptionManager.ipp
     template <typename T>
-    void str_to_rsa(const std::string& key, T& op);
+    void str_to_rsa(const std::string& key, T& op) const;
 
     /***/
 
@@ -97,7 +101,7 @@ class EncryptionManager {
       const unsigned char (&chacha_key)[crypto_aead_chacha20poly1305_KEYBYTES],
       const std::string& rsa_pub_key, std::string& op);
 
-    void rsa_decrypt_chacha_key(const std::string& encrypted_key, const std::string& rsa_priv_key,
+    void rsa_decrypt_chacha_key(const std::string& encrypted_key,
                                 unsigned char (&op)[crypto_aead_chacha20poly1305_KEYBYTES]);
 
     /***/
@@ -111,20 +115,26 @@ class EncryptionManager {
 
 
   public:
-    /* CONSTRUCTOR & DESTRUCTOR */
-    EncryptionManager();
+    std::string rsa_priv_key;
+
+    /** CONSTRUCTOR & DESTRUCTOR **/
+    EncryptionManager(std::string rsa_priv_key = (std::string) "");
     ~EncryptionManager();  // all pointers deleted here
-    /* */
+    /** **/
 
     void gen_rsa_pair(std::string& op_pub, std::string& op_priv);
 
+    void change_rsa_priv_key(std::string& new_rsa_priv_key);
+    // implemented in include/phid/encryption/EncryptionManager.ipp
+
     /***/
 
-    void encrypt_text(const std::string& text, const std::string& rsa_pub_key,
-                      EncryptedMessage& op);
-    int decrypt_text(const EncryptedMessage& msg, const std::string& rsa_priv_key,
-                     std::string& op_text);
+    void encrypt_text(const std::string& text, const std::string& rsa_pub_key, EncryptedMessage& op,
+                      int version = 1);
+    int decrypt_text(const EncryptedMessage& msg, std::string& op_text);
 };
+
+#include "phid/encryption/EncryptionManager.ipp"
 
 }  // namespace phid
 

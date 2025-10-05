@@ -13,6 +13,7 @@
 #include <iostream>
 #include <string>
 
+#include "utils.hpp"
 #include "phid/STARTUP.hpp"
 #include "phid/database/DBManager.hpp"
 #include "phid/encryption/EncryptedMessage.hpp"
