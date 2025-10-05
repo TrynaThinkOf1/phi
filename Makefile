@@ -40,7 +40,7 @@ OPT=-O1
 
 FINAL_FLAGS=-Wall -Wextra -Wno-unused-function -Wno-unused-parameter $(LIB_DIRS) $(EXT_LIBS) $(STD) $(OPT) -g
 # -Wall=all warnings, -Wextra=extra warnings, -g=debugging info; -c=don't link into ELF
-OBJECT_FLAGS=-Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-return-type $(INC_DIRS) $(STD) $(OPT) -g -c
+OBJECT_FLAGS=-Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-return-type -Wno-comment $(INC_DIRS) $(STD) $(OPT) -g -c
 
 #=====# }}
 
