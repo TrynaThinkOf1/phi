@@ -2,6 +2,8 @@ _build/*
 
 __pycache__
 
+*.log
+
 *.out
 *.o
 *.d
@@ -24,5 +26,6 @@ test.cpp
 test
 test.py
 
-.vscode
 .idea
+
+.DS_Store

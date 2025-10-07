@@ -6,6 +6,24 @@
 #include <iomanip>
 #include <cctype>
 #include <stdexcept>
+#include <pwd.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <cstring>
+#include <cerrno>
+
+inline std::string expand(const std::string& path) {
+  if (path[0] == '~') {
+    const char* home = getenv("HOME");
+    if (home || ((home = getpwuid(getuid())->pw_dir))) {
+      return std::string(home) + std::string(path.c_str() + 1);
+    } else {
+      return path;  // return unexpanded if no home found
+    }
+  } else {
+    return path;
+  }
+}
 
 static std::string toHex(const std::string& s) {
   std::ostringstream oss;
