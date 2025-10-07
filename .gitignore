@@ -1,6 +1,7 @@
 _build/*
 
 __pycache__
+.cache
 
 *.log
 
@@ -10,6 +11,8 @@ __pycache__
 
 *.exe
 *.app
+
+compile_commands.json
 
 *.dSYM
 

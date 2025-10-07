@@ -46,5 +46,9 @@
     "algorithm": "cpp",
     "cerrno": "cpp"
   },
-  "C_Cpp.errorSquiggles": "enabled"
+  "C_Cpp.errorSquiggles": "enabled",
+  "editor.formatOnSave": true,
+  "clangd.arguments": [
+    "--compile-commands-dir=${workspaceFolder}"
+  ]
 }

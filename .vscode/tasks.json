@@ -1,0 +1,36 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Make",
+      "type": "shell",
+      "command": "make",
+      "args": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "panel": "shared",
+        "reveal": "always",
+        "clear": false
+      },
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    {
+      "label": "Make (with compile DB)",
+      "type": "shell",
+      "command": "bear -- make",
+      "args": [],
+      "presentation": {
+        "panel": "shared",
+        "reveal": "always"
+      },
+      "problemMatcher": [
+        "$gcc"
+      ]
+    }
+  ]
+}
