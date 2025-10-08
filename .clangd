@@ -1,5 +1,5 @@
 CompileFlags:
-  CompilationDatabase: compile_commands.json
+  CompilationDatabase: _build/compile_commands.json
   
 Diagnostics:
   UnusedIncludes: None    # turn OFF unused-include diagnostics for this project

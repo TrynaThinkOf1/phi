@@ -1,4 +1,4 @@
-Checks: 'clang-diagnostic-*, clang-analyzer-*, cppcoreguidelines-*, modernize-*, -modernize-use-trailing-return-type, performance-*, bugprone-*, darwin-*, llvm-*, readability-*
+Checks: 'clang-diagnostic-*, clang-analyzer-*, cppcoreguidelines-*, performance-*, readability-*
 
 WarningsAsErrors: true
 

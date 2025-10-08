@@ -111,7 +111,7 @@ format:
 	@find include -type f \( -name "*.h" -o -name "*.hpp" \) -exec clang-format -i {} +
 
 tidy:
-	@find src -type f \( -name "*.c" -o -name "*.cpp" \) -exec clang-tidy {} -p _build -fix +
+	@find src -type f \( -name "*.c" -o -name "*.cpp" \) -exec clang-tidy -p _build -fix {} +
 
 clean:
 	rm -rf $(BUILD_DIR)/*

@@ -49,6 +49,6 @@
   "C_Cpp.errorSquiggles": "enabled",
   "editor.formatOnSave": true,
   "clangd.arguments": [
-    "--compile-commands-dir=${workspaceFolder}"
+    "--compile-commands-dir=_build"
   ]
 }
