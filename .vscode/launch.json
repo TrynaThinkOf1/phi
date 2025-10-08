@@ -1,27 +1,28 @@
 {
-  "version": "0.2.0",
   "configurations": [
-    {
-      "name": "Debug phid",
-      "type": "cppdbg", // Use the Microsoft debug adapter
-      "request": "launch",
-      "preLaunchTask": "make && dsymutil phid", // run the make task first
-      "program": "${workspaceFolder}/phid", // path to the built executable
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "stopAtEntry": false,
-      "MIMode": "lldb" // use LLDB on macOS
-    },
-    {
-      "name": "Debug phi",
-      "type": "cppdbg", // Use the Microsoft debug adapter
-      "request": "launch",
-      "preLaunchTask": "make && dsymutil phi", // run the make task first
-      "program": "${workspaceFolder}/phi", // path to the built executable
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "stopAtEntry": false,
-      "MIMode": "lldb" // use LLDB on macOS
-    }
+  {
+    "name": "Debug phi",
+    "type": "cppdbg",
+    "request": "launch",
+    "program": "${workspaceFolder}/phi",
+    "args": [],
+    "stopAtEntry": false,
+    "cwd": "${fileDirname}",
+    "environment": [],
+    "externalConsole": false,
+    "MIMode": "lldb"
+  },
+  {
+    "name": "Debug phid",
+    "type": "cppdbg",
+    "request": "launch",
+    "program": "${workspaceFolder}/phid",
+    "args": [],
+    "stopAtEntry": false,
+    "cwd": "${fileDirname}",
+    "environment": [],
+    "externalConsole": false,
+    "MIMode": "lldb"
+  }
   ]
 }

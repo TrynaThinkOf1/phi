@@ -2,31 +2,39 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Make",
+      "label": "build",
       "type": "shell",
-      "command": "make",
+      "command": "bear -- make",
       "args": [],
       "group": {
         "kind": "build",
         "isDefault": true
-      },
-      "presentation": {
-        "panel": "shared",
-        "reveal": "always",
-        "clear": false
       },
       "problemMatcher": [
         "$gcc"
       ]
     },
     {
-      "label": "Make (with compile DB)",
+      "label": "analyze",
       "type": "shell",
-      "command": "bear -- make",
+      "command": "make tidy",
       "args": [],
-      "presentation": {
-        "panel": "shared",
-        "reveal": "always"
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    {
+      "label": "cleanup",
+      "type": "shell",
+      "command": "make format && make clean && rm -f phi phid && rm -rf phi.dSYM phid.dSYM",
+      "args": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
       },
       "problemMatcher": [
         "$gcc"

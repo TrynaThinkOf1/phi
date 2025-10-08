@@ -12,8 +12,6 @@ __pycache__
 *.exe
 *.app
 
-compile_commands.json
-
 *.dSYM
 
 /phi
