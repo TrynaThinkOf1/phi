@@ -13,25 +13,49 @@
 #ifndef DBMANAGER_HPP
 #define DBMANAGER_HPP
 
-#include <shared_mutex>
+#include <mutex>
 #include <string>
 
+#include <SQLiteCpp/SQLiteCpp.h>
 #include <SQLiteCpp/Database.h>
+#include <SQLiteCpp/VariadicBind.h>
 
 namespace phid {
 
+struct Self {
+    std::string name;
+    std::string emoji;
+    std::string rsa_priv_key;
+    std::string last_known_ip;
+    std::string hardware_profile;
+};
+
 class DBManager {
   private:
-    mutable std::shared_mutex mutex_;
+    /*****      *****\
+     LIFETIME OBJECTS
+    \*****      *****/
+    mutable std::mutex _mtx;
 
-    SQLite::Database db = SQLite::Database("/var/phi/main.db", SQLite::OPEN_READWRITE);
-
+    SQLite::Database* db;
+    /***** *****\
+    \***** *****/
   public:
-    DBManager();
-    ~DBManager() = default;
+    Self self;
 
-    static void close() {
-    }
+    /** CONSTRUCTOR & DESTRUCTOR **/
+    DBManager(int& op_code);
+    ~DBManager();
+    /** **/
+
+    void initialize_self();
+
+    void change_self_name(const std::string& new_name);
+    void change_self_emoji(const std::string& new_emoji);
+    void change_self_rsa_priv_key(const std::string& new_rsa_priv_key);
+    void change_self_hardware_profile(const std::string& new_hardware_profile);
+
+    /***/
 };
 
 }  // namespace phid

@@ -31,8 +31,8 @@ struct EncryptedMessage {
     std::string blake2_hash;
 
     bool is_valid() const {
-      return (this.version != 0 && this.content.length() > 0 && this.chacha_key.length() == 512 &&
-              this.blake2_hash.length() == 64);
+      return (this->version != 0 && this->content.length() > 0 &&
+              this->chacha_key.length() == 512 && this->blake2_hash.length() == 64);
     }
 };
 

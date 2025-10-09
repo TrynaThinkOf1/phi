@@ -12,23 +12,28 @@
 
 #include "phid/encryption//EncryptionManager.hpp"
 
-#include <string>
-#include <vector>
+#include <algorithm>
+#include <cryptopp/blake2.h>
+#include <cryptopp/cryptlib.h>
+#include <cryptopp/queue.h>
+#include <cryptopp/rsa.h>
 #include <cstdint>
 #include <iostream>
-#include <zlc/gzipcomplete.hpp>
-#include <cryptopp/cryptlib.h>
-#include <cryptopp/blake2.h>
-#include <cryptopp/rsa.h>
-#include <cryptopp/queue.h>
 #include <sodium.h>
+#include <string>
+#include <vector>
+#include <zlc/gzipcomplete.hpp>
 
-#include "utils.hpp"
 #include "phid/encryption/EncryptedMessage.hpp"
+#include "utils.hpp"
 
 /** CONSTRUCTOR & DESTRUCTOR **/
 
-phid::EncryptionManager::EncryptionManager(std::string rsa_priv_key) {
+phid::EncryptionManager::EncryptionManager(const std::string& rsa_priv_key)
+    : compressor(new zlibcomplete::GZipCompressor(3)),
+      decompressor(new zlibcomplete::GZipDecompressor()),
+      rng(new CryptoPP::AutoSeededRandomPool()),
+      blake2_hasher(new CryptoPP::BLAKE2b()) {
   /*
   Create the ChaCha20Poly1305 key,
    GZipCompressor/Decompressor, the
@@ -36,25 +41,12 @@ phid::EncryptionManager::EncryptionManager(std::string rsa_priv_key) {
    RSA private key.
   */
 
-  this->chacha_num_uses = 0;
+
   crypto_aead_chacha20poly1305_keygen(this->chacha_key);
 
   /***/
 
-  this->compressor = new zlibcomplete::GZipCompressor(3);
-  this->decompressor = new zlibcomplete::GZipDecompressor();
-
-  /***/
-
-  this->rng = new CryptoPP::AutoSeededRandomPool();
-
-  /***/
-
-  this->blake2_hasher = new CryptoPP::BLAKE2b();
-
-  /***/
-
-  if (rsa_priv_key != "") {
+  if (!rsa_priv_key.empty()) {
     this->rsa_priv_key = rsa_priv_key;
     this->str_to_rsa<CryptoPP::RSA::PrivateKey>(rsa_priv_key, this->__priv);
   }
@@ -109,9 +101,7 @@ void phid::EncryptionManager::compress_text(const std::string& text, std::string
     for (size_t i = 0; i <= text.length() / 16384; i++) {
       size_t si = i * 16384;
       size_t ei = (i + 1) * 16384;
-      if (ei > text.length()) {
-        ei = text.length();
-      }
+      ei = std::min(ei, text.length());
       chunks.push_back(text.substr(si, ei));
     }
 
@@ -139,9 +129,7 @@ void phid::EncryptionManager::decompress_text(const std::string& text, std::stri
     for (size_t i = 0; i <= text.length() / 16384; i++) {
       size_t si = i * 16384;
       size_t ei = (i + 1) * 16384;
-      if (ei > text.length()) {
-        ei = text.length();
-      }
+      ei = std::min(ei, text.length());
       chunks.push_back(text.substr(si, ei));
     }
 
@@ -189,7 +177,7 @@ void phid::EncryptionManager::chacha_encrypt_text(
     text.size(),                                          // plaintext length
     nullptr,                                              // additional data, not needed here
     0,                                                    // AD lengeth
-    NULL,                                                 // "nsec always NULL" ~ libsodium docs
+    nullptr,                                              // "nsec always NULL" ~ libsodium docs
     nonce,                                                // cryptosign nonce
     this->chacha_key                                      // encryption/decryption key
   );
@@ -227,7 +215,7 @@ int phid::EncryptionManager::chacha_decrypt_text(
   int s = crypto_aead_chacha20poly1305_decrypt(
     msg.data(),                                           // message output
     &msglen,                                              // message output length
-    NULL,                                                 // "nsec always NULL" ~ libsodium docs
+    nullptr,                                              // "nsec always NULL" ~ libsodium docs
     reinterpret_cast<const unsigned char*>(text.data()),  // ciphertext input
     text.size(),                                          // ciphertext length
     nullptr,                                              // additional data, not needed here
@@ -293,7 +281,7 @@ void phid::EncryptionManager::rsa_decrypt_chacha_key(
 
   CryptoPP::RSAES_OAEP_SHA_Decryptor decryptor(this->__priv);
 
-  CryptoPP::StringSource(
+  CryptoPP::StringSource give_me_a_name(
     reinterpret_cast<const unsigned char*>(
       encrypted_key.data()),  // the c string version of the encrypted key
     512,                      // explicit length to copy so that it doesnt stop at first \0
@@ -322,7 +310,7 @@ void phid::EncryptionManager::blake2_hash_text(const std::string& text, std::str
 
   op.resize(this->blake2_hasher->DigestSize());  // save resize overhead early
 
-  this->blake2_hasher->Final((byte*)&op[0]);
+  this->blake2_hasher->Final((byte*)op.data());
 
   this->blake2_hasher->Restart();  // refreshes the byte cache for new plaintext
 }
@@ -338,11 +326,7 @@ bool phid::EncryptionManager::blake2_verify_hash(const std::string& text, const 
   std::string hashed_text;
   this->blake2_hash_text(text, hashed_text);
 
-  if (hashed_text == hash) {
-    return true;
-  }
-
-  return false;
+  return hashed_text == hash;
 }
 
 /*****  *****\
@@ -423,7 +407,7 @@ int phid::EncryptionManager::decrypt_text(const EncryptedMessage& msg, std::stri
    Any integer representing an error
   */
 
-  int s;
+  int s = 0;
   std::string temp;
   unsigned char key[crypto_aead_chacha20poly1305_KEYBYTES];
 

@@ -13,7 +13,7 @@
 #include <iostream>
 
 int main(int argc, char** argv) {
-  std::cout << "Hello, phi!" << std::endl;
+  std::cout << "Hello, phi!" << '\n';
 
   return 0;
 }

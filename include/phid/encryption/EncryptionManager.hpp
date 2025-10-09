@@ -46,8 +46,8 @@ class EncryptionManager {
 
     /***/
 
-    unsigned char chacha_key[crypto_aead_chacha20poly1305_KEYBYTES];
-    uint8_t chacha_num_uses;  // same key can be used multiple times, my limit is 3
+    unsigned char chacha_key[crypto_aead_chacha20poly1305_KEYBYTES]{};
+    uint8_t chacha_num_uses = 0;  // same key can be used multiple times, my limit is 3
 
     /***/
 
@@ -68,7 +68,7 @@ class EncryptionManager {
      HELPER FUNCS
     \*****  *****/
 
-    // op = OUTPUT, void bc more space efficient to output via ref
+    /* op = OUTPUT, void bc more space efficient to output via ref */
 
     void compress_text(const std::string& text, std::string& op);
 
@@ -80,7 +80,7 @@ class EncryptionManager {
                              unsigned char (&op_nonce)[crypto_aead_chacha20poly1305_NPUBBYTES],
                              std::string& op_text);
 
-    int chacha_decrypt_text(
+    static int chacha_decrypt_text(
       const std::string& text, const unsigned char (&nonce)[crypto_aead_chacha20poly1305_NPUBBYTES],
       const unsigned char (&chacha_key)[crypto_aead_chacha20poly1305_KEYBYTES],
       std::string& op_text);
@@ -118,7 +118,7 @@ class EncryptionManager {
     std::string rsa_priv_key;
 
     /** CONSTRUCTOR & DESTRUCTOR **/
-    EncryptionManager(std::string rsa_priv_key = (std::string) "");
+    EncryptionManager(const std::string& rsa_priv_key = (std::string) "");
     ~EncryptionManager();  // all pointers deleted here
     /** **/
 

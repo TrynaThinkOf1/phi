@@ -1,4 +1,4 @@
-Checks: 'clang-diagnostic-*, clang-analyzer-*, cppcoreguidelines-*, performance-*, readability-*
+Checks: 'clang-diagnostic-*, clang-analyzer-*, cppcoreguidelines-*, cppcoreguidelines-special-member-functions-, performance-*, readability-*'
 
 WarningsAsErrors: true
 

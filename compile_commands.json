@@ -1,0 +1,26 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/clang++",
+      "-Wall",
+      "-Wextra",
+      "-Wno-unused-function",
+      "-Wno-unused-parameter",
+      "-Wno-return-type",
+      "-Wno-comment",
+      "-Iinclude",
+      "-I/opt/homebrew/include",
+      "-I/usr/local/include",
+      "-std=c++17",
+      "-O1",
+      "-g",
+      "-c",
+      "-o",
+      "_build/phi/main.o",
+      "src/phi/main.cpp"
+    ],
+    "directory": "/Users/zeviberlin/phi",
+    "file": "/Users/zeviberlin/phi/src/phi/main.cpp",
+    "output": "/Users/zeviberlin/phi/_build/phi/main.o"
+  }
+]

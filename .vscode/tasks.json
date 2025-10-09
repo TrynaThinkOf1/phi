@@ -4,7 +4,7 @@
     {
       "label": "build",
       "type": "shell",
-      "command": "bear -- make",
+      "command": "bear --output _build/compile_commands.json -- make",
       "args": [],
       "group": {
         "kind": "build",
