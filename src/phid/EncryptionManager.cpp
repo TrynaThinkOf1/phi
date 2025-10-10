@@ -10,21 +10,25 @@
 
 */
 
-#include "phid/encryption//EncryptionManager.hpp"
+#include "phid/encryption/EncryptionManager.hpp"
+
 
 #include <algorithm>
-#include <cryptopp/blake2.h>
-#include <cryptopp/cryptlib.h>
-#include <cryptopp/queue.h>
-#include <cryptopp/rsa.h>
 #include <cstdint>
 #include <iostream>
-#include <sodium.h>
 #include <string>
 #include <vector>
+
 #include <zlc/gzipcomplete.hpp>
+#include <cryptopp/cryptlib.h>
+#include <cryptopp/blake2.h>
+#include <cryptopp/rsa.h>
+#include <cryptopp/osrng.h>
+#include <cryptopp/queue.h>
+#include <sodium.h>
 
 #include "phid/encryption/EncryptedMessage.hpp"
+#include "phid/encryption/rng.hpp"
 #include "utils.hpp"
 
 /** CONSTRUCTOR & DESTRUCTOR **/
@@ -281,14 +285,67 @@ void phid::EncryptionManager::rsa_decrypt_chacha_key(
 
   CryptoPP::RSAES_OAEP_SHA_Decryptor decryptor(this->__priv);
 
-  CryptoPP::StringSource give_me_a_name(
+  CryptoPP::StringSource strsrc(
     reinterpret_cast<const unsigned char*>(
       encrypted_key.data()),  // the c string version of the encrypted key
-    512,                      // explicit length to copy so that it doesnt stop at first \0
+    encrypted_key.length(),   // explicit length to copy so that it doesnt stop at first \0
     true,                     // pump all
     new CryptoPP::PK_DecryptorFilter(*(this->rng), decryptor, new CryptoPP::StringSink(decoded)));
 
   std::memcpy(op, decoded.data(), crypto_aead_chacha20poly1305_KEYBYTES);
+}
+
+/**/
+
+void phid::EncryptionManager::rsa_encrypt_secret(const char (&secret)[32],
+                                                 const std::string& rsa_pub_key, std::string& op) {
+  /*
+  Encrypt a shared secret using RSA to
+   send it to a contact
+
+  Args:
+   secret - char array that contains the shared secret
+   rsa_pub_key - the RSA public key of the contact
+   op - output string of encrypted shared secret
+  */
+
+  CryptoPP::RSA::PublicKey pub;
+  this->str_to_rsa<CryptoPP::RSA::PublicKey>(rsa_pub_key, pub);
+
+  /**/
+
+  CryptoPP::RSAES_OAEP_SHA_Encryptor encryptor(pub);
+
+  CryptoPP::StringSource(
+    reinterpret_cast<const char*>(secret), true,
+    new CryptoPP::PK_EncryptorFilter(*(this->rng), encryptor, new CryptoPP::StringSink(op)));
+}
+
+void phid::EncryptionManager::rsa_decrypt_secret(const std::string& encrypted_secret,
+                                                 char (&op_secret)[32]) {
+  /*
+  Decrypt an encrypted shared secret
+   from a contact using RSA. No private
+   key argument taken because its a member
+   of this class
+
+  Args:
+   secret - char array that contains the shared secret
+   op - output string of encrypted shared secret
+  */
+
+  std::string decoded;
+
+  CryptoPP::RSAES_OAEP_SHA_Decryptor decryptor(this->__priv);
+
+  CryptoPP::StringSource strsrc(
+    reinterpret_cast<const unsigned char*>(
+      encrypted_secret.data()),  // the c string version of the encrypted secret
+    encrypted_secret.length(),   // explicit length to copy so that it doesnt stop at first \0
+    true,                        // pump all
+    new CryptoPP::PK_DecryptorFilter(*(this->rng), decryptor, new CryptoPP::StringSink(decoded)));
+
+  std::memcpy(op_secret, decoded.data(), 32);
 }
 
 /***/
@@ -430,6 +487,31 @@ int phid::EncryptionManager::decrypt_text(const EncryptedMessage& msg, std::stri
     default:
       return -3;
   }
+}
+
+void phid::EncryptionManager::create_shared_secret(const std::string& pub_key,
+                                                   std::string& op_encrypted,
+                                                   std::string& op_decrypted) {
+  /*
+  Create a shared secret which can be used to verify
+   a contact when their IP address changes.
+
+  Args:
+   pub_key - the public key of the contact
+   op_encrypted - the encrypted shared secret to be sent to the contact
+   op_decrypted - the decrypted shared secret to be stored in the database
+  */
+
+  char shared_secret[32];
+
+  int suc = random_byte_gen(shared_secret, 32);
+  if (suc == -1) {
+    std::cout << "RNG failed" << std::endl;
+    return;
+  }
+
+  this->rsa_encrypt_secret(shared_secret, pub_key, op_encrypted);
+  op_decrypted.assign(reinterpret_cast<const char*>(shared_secret), 32);
 }
 
 /** **/

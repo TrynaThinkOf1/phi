@@ -13,8 +13,11 @@
 #ifndef ENCRYPTIONMANAGER_HPP
 #define ENCRYPTIONMANAGER_HPP
 
-#include <string>
+#include <algorithm>
 #include <cstdint>
+#include <iostream>
+#include <string>
+#include <vector>
 
 #include <zlc/gzipcomplete.hpp>
 #include <cryptopp/cryptlib.h>
@@ -25,6 +28,8 @@
 #include <sodium.h>
 
 #include "phid/encryption/EncryptedMessage.hpp"
+#include "phid/encryption/rng.hpp"
+#include "utils.hpp"
 
 typedef uint8_t byte;
 
@@ -104,6 +109,13 @@ class EncryptionManager {
     void rsa_decrypt_chacha_key(const std::string& encrypted_key,
                                 unsigned char (&op)[crypto_aead_chacha20poly1305_KEYBYTES]);
 
+    /**/
+
+    void rsa_encrypt_secret(const char (&secret)[32], const std::string& rsa_pub_key,
+                            std::string& op);
+
+    void rsa_decrypt_secret(const std::string& encrypted_secret, char (&op_secret)[32]);
+
     /***/
 
     void blake2_hash_text(const std::string& text, std::string& op);
@@ -132,6 +144,11 @@ class EncryptionManager {
     void encrypt_text(const std::string& text, const std::string& rsa_pub_key, EncryptedMessage& op,
                       int version = 1);
     int decrypt_text(const EncryptedMessage& msg, std::string& op_text);
+
+    /***/
+
+    void create_shared_secret(const std::string& pub_key, std::string& op_encrypted,
+                              std::string& op_decrypted);
 };
 
 #include "phid/encryption/EncryptionManager.ipp"

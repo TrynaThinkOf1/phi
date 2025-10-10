@@ -79,6 +79,7 @@ $(APPD): $(APPD_OBJS) | $(APPD_BUILD_DIR)
 #===# {
 #  ACTUAL  #
 # BUILDING #
+
 $(APP_BUILD_DIR)/%.o: $(APP_DIR)/%.cpp $(APP_BUILD_DIR)
 	$(CXX) $(OBJECT_FLAGS) -o $@ $<
 $(APP_BUILD_DIR)/%.o: $(SHARED_DIR)/%.cpp $(APP_BUILD_DIR)
@@ -88,6 +89,7 @@ $(APPD_BUILD_DIR)/%.o: $(APPD_DIR)/%.cpp $(APPD_BUILD_DIR)
 	$(CXX) $(OBJECT_FLAGS) -o $@ $<
 $(APPD_BUILD_DIR)/%.o: $(SHARED_DIR)/%.cpp $(APPD_BUILD_DIR)
 	$(CXX) $(OBJECT_FLAGS) -o $@ $<
+
 #===# }
 
 #===# {
@@ -114,6 +116,7 @@ tidy:
 	@find src -type f \( -name "*.c" -o -name "*.cpp" \) -exec clang-tidy -p _build -fix {} +
 
 clean:
+	@echo $(APPD_OBJS)
 	rm -rf $(BUILD_DIR)/*
 
 #=====# }}
