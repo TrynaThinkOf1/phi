@@ -116,8 +116,9 @@ tidy:
 	@find src -type f \( -name "*.c" -o -name "*.cpp" \) -exec clang-tidy -p _build -fix {} +
 
 clean:
-	@echo $(APPD_OBJS)
-	rm -rf $(BUILD_DIR)/*
+	@mv $(BUILD_DIR)/compile_commands.json ./
+	@rm -rf $(BUILD_DIR)/*
+	@mv ./compile_commands.json $(BUILD_DIR)/
 
 #=====# }}
 

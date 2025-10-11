@@ -27,8 +27,7 @@
 #include <cryptopp/queue.h>
 #include <sodium.h>
 
-#include "phid/encryption/EncryptedMessage.hpp"
-#include "phid/encryption/rng.hpp"
+#include "phid/encryption/MessageTypes.hpp"
 #include "utils.hpp"
 
 typedef uint8_t byte;
@@ -93,28 +92,12 @@ class EncryptionManager {
 
     /***/
 
-    template <typename T>
-    void rsa_to_str(const T& key, std::string& op) const;
-    // so that they can handle both (CryptoPP::RSA) PublicKey and PrivateKey
-    // both implemented in include/phid/encryption/EncryptionManager.ipp
-    template <typename T>
-    void str_to_rsa(const std::string& key, T& op) const;
-
-    /***/
-
     void rsa_encrypt_chacha_key(
       const unsigned char (&chacha_key)[crypto_aead_chacha20poly1305_KEYBYTES],
       const std::string& rsa_pub_key, std::string& op);
 
     void rsa_decrypt_chacha_key(const std::string& encrypted_key,
                                 unsigned char (&op)[crypto_aead_chacha20poly1305_KEYBYTES]);
-
-    /**/
-
-    void rsa_encrypt_secret(const char (&secret)[32], const std::string& rsa_pub_key,
-                            std::string& op);
-
-    void rsa_decrypt_secret(const std::string& encrypted_secret, char (&op_secret)[32]);
 
     /***/
 
@@ -137,21 +120,39 @@ class EncryptionManager {
     void gen_rsa_pair(std::string& op_pub, std::string& op_priv);
 
     void change_rsa_priv_key(std::string& new_rsa_priv_key);
-    // implemented in include/phid/encryption/EncryptionManager.ipp
+
+    /***/
+
+    /** TEMPLATE FUNCTIONS **/
+
+    template <typename T>
+    static void rsa_to_str(const T& key, std::string& op) {
+      CryptoPP::ByteQueue q;
+
+      key.Save(q);
+
+      op.resize(q.CurrentSize());
+      q.Get(reinterpret_cast<byte*>(&op[0]), op.size());
+    }
+
+    template <typename T>
+    static void str_to_rsa(const std::string& key, T& op) {
+      CryptoPP::ByteQueue q;
+
+      q.Put(reinterpret_cast<const byte*>(key.data()), key.size());
+      q.MessageEnd();
+
+      op.Load(q);
+    }
+
+    /** **/
 
     /***/
 
     void encrypt_text(const std::string& text, const std::string& rsa_pub_key, EncryptedMessage& op,
                       int version = 1);
     int decrypt_text(const EncryptedMessage& msg, std::string& op_text);
-
-    /***/
-
-    void create_shared_secret(const std::string& pub_key, std::string& op_encrypted,
-                              std::string& op_decrypted);
 };
-
-#include "phid/encryption/EncryptionManager.ipp"
 
 }  // namespace phid
 
