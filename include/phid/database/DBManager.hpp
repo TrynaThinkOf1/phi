@@ -22,12 +22,18 @@
 
 namespace phid {
 
-struct Self {
+struct self_t {
     std::string name;
     std::string emoji;
     std::string rsa_priv_key;
     std::string last_known_ip;
     std::string hardware_profile;
+
+    std::string to_string() {
+      return "NAME: " + this->name + "\nEMOJI: " + this->emoji +
+             "\nRSA KEY (first 32): " + this->rsa_priv_key.substr(0, 32) +
+             "\nIP: " + this->last_known_ip + "\nHARDWARE PROFILE: " + this->hardware_profile;
+    }
 };
 
 class DBManager {
@@ -41,19 +47,22 @@ class DBManager {
     /***** *****\
     \***** *****/
   public:
-    Self self;
+    self_t self;
 
     /** CONSTRUCTOR & DESTRUCTOR **/
     DBManager(int& op_code);
     ~DBManager();
     /** **/
 
-    void initialize_self();
+    /** TEMPLATE FUNCTIONS **/
 
-    void change_self_name(const std::string& new_name);
-    void change_self_emoji(const std::string& new_emoji);
-    void change_self_rsa_priv_key(const std::string& new_rsa_priv_key);
-    void change_self_hardware_profile(const std::string& new_hardware_profile);
+    /** **/
+
+    bool update_self();
+
+    /***/
+
+    void change_self_attribute(const std::string& field, const std::string& value);
 
     /***/
 };
