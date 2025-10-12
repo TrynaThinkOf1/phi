@@ -30,7 +30,7 @@
     {
       "label": "cleanup",
       "type": "shell",
-      "command": "make format && make clean && rm -f phi phid && rm -rf phi.dSYM phid.dSYM",
+      "command": "make format && make clean && rm -f phi phid && rm -rf phi.dSYM phid.dSYM && rm -rf .cache",
       "args": [],
       "group": {
         "kind": "build",
