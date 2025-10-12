@@ -12,13 +12,12 @@
 [![testing](https://img.shields.io/badge/test_coverage-unknown-yellow)](#)
 
 
-
-<center>
+<div align="center">
 
 <img src="https://raw.githubusercontent.com/TrynaThinkOf1/phi/e8bea8aebf333dbea9d54ebae7892afb50c9369d/assets/phi_logo.svg" alt="logo" width="300">
 
-<h1 style="color:#2e083b">PHI</h1>
+<h1 color="#2e083b">PHI</h1>
 
 <h5 style="color:#fbb040">Secure messaging app that lives in your terminal. Uses hybrid encryption with ChaCha20-Poly1305, as well as compression, hashing, and MAC to ensure message integrity and security.</h5>
 
-</center>
+</div>
