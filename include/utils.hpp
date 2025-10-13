@@ -5,12 +5,16 @@
 #include <sstream>
 #include <iomanip>
 #include <cctype>
+#include <cstring>
+#include <cerrno>
 #include <stdexcept>
+
 #include <pwd.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <cstring>
-#include <cerrno>
+#include <sys/utsname.h>
+
+#include <fmt/format.h>
 
 static std::string expand(const std::string& path) {
   if (path[0] == '~') {
@@ -66,6 +70,40 @@ static std::string fromHex(const std::string& hex) {
 static std::string fromHex(const unsigned char* hex) {
   if (!hex) return std::string{};
   return fromHex(std::string(reinterpret_cast<const char*>(hex)));
+}
+
+/***/
+
+static std::string getHardwareProfile() {
+  std::string profile = "[os: ";
+
+  struct utsname name;
+  if (uname(&name) == -1) {
+#if defined(__APPLE__) || defined(__MACH__)
+    profile += "Unsure-darwin / arch: ";
+#elif defined(__linux__)
+    profile += "Unsure-linux / arch: ";
+#elif defined(_WIN32) || defined(_WIN64)
+    profile += "Unsure-windows / arch: ";
+#else
+    profile += "Unknown / arch: ";
+#endif
+
+#if defined(__x86_64__) || defined(_M_X64)
+    profile += "Unsure-x86_64]";
+#elif defined(__aarch64__) || defined(_M_ARM64)
+    profile += "Unsure-arm64]";
+#else
+    profile += "Unknown]";
+#endif
+  } else {
+    profile += fmt::format("{} (v:{})", name.sysname, name.release);
+    profile += " / arch: ";
+    profile += name.machine;
+    profile += "]";
+  }
+
+  return profile;
 }
 
 #endif /* _UTILS */
