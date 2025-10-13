@@ -21,8 +21,6 @@
 #include <sys/types.h>
 #include <nlohmann/json.hpp>
 
-#include "utils.hpp"
-
 using json = nlohmann::json;
 
 namespace phid {
@@ -59,11 +57,11 @@ struct EncryptedMessage {
       json j;
 
       for (const auto& [field, ptr] : str_field_map) {
-        j[field] = toHex(*ptr);
+        j[field] = *ptr;
       }
 
       j["version"] = (int)this->version;
-      j["nonce"] = toHex(this->nonce);
+      j["nonce"] = this->nonce;
 
       return j.dump();
     }
@@ -81,14 +79,14 @@ struct EncryptedMessage {
           return false;
         }
 
-        *ptr = fromHex(j[field].get<std::string>());
+        *ptr = j[field].get<std::string>();
       }
 
       if (j["version"] == nullptr) return false;
       this->version = static_cast<uint8_t>(j["version"].get<int>());
 
       if (j["nonce"] == nullptr) return false;
-      std::memcpy(this->nonce, fromHex(j["nonce"].get<std::string>()).data(),
+      std::memcpy(this->nonce, j["nonce"].get<std::string>().data(),
                   crypto_aead_chacha20poly1305_NPUBBYTES);
 
       return true;
@@ -113,7 +111,7 @@ struct AuthenticatedUpdate {
 
       j["version"] = static_cast<int>(this->version);
       j["content"] = this->content;
-      j["mac"] = toHex(this->mac);
+      j["mac"] = this->mac;
 
       return j.dump();
     }
@@ -133,7 +131,7 @@ struct AuthenticatedUpdate {
       this->content = j["content"].get<std::string>();
 
       if (j["mac"] == nullptr) return false;
-      this->mac = fromHex(j["mac"].get<std::string>());
+      this->mac = j["mac"].get<std::string>();
 
       return true;
     }
