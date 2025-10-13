@@ -31,8 +31,8 @@ INC_DIRS=-Iinclude -I/opt/homebrew/include -I/usr/local/include
 LIB_DIRS=-Llib -L/opt/homebrew/lib -L/usr/local/lib
 # where compiled libraries are located
 
-EXT_LIBS=-lzlibcomplete -lz -lcryptopp -lSQLiteCpp -lsqlite3 -lsodium
-# external libraries: -lzlibcomplete=zlibcomplete -lSQLiteCpp=SQLite wrapper, -lsodium=LibSodium encryption
+EXT_LIBS=-lzlibcomplete -lz -lcryptopp -lSQLiteCpp -lsqlite3 -lsodium -lfmt
+# external libraries: -lzlibcomplete=zlibcomplete -lSQLiteCpp=SQLite wrapper, -lsodium=LibSodium encryption, -lfmt=formatting library
 
 STD=-std=c++17
 
