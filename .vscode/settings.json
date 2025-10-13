@@ -46,9 +46,35 @@
     "algorithm": "cpp",
     "cerrno": "cpp"
   },
-  "C_Cpp.errorSquiggles": "enabled",
+  /** editor **/
   "editor.formatOnSave": true,
+  "editor.inlineSuggest.enabled": true,
+  "editor.tabCompletion": "on",
+  //
+  "editor.autoClosingBrackets": "languageDefined",
+  "editor.autoClosingDelete": "auto",
+  "editor.autoClosingOvertype": "auto",
+  "editor.autoSurround": "languageDefined",
+  //
+  "editor.acceptSuggestionOnEnter": "smart",
+  "editor.acceptSuggestionOnCommitCharacter": false,
+  "editor.parameterHints.enabled": true,
+  //
+  "editor.suggest.snippetsPreventQuickSuggestions": false,
+  "editor.suggest.insertMode": "replace",
+  "editor.suggest.preview": true,
+  "editor.suggestSelection": "recentlyUsedByPrefix",
+  //
+  /** **/
+  /** clangd/c++ **/
+  "C_Cpp.errorSquiggles": "enabled",
   "clangd.arguments": [
-    "--compile-commands-dir=_build"
+    "--compile-commands-dir=_build",
+    "--function-arg-placeholders=0",
+    "--header-insertion=never",
+    "--completion-style=bundled",
+    "--fallback-style=LLVM",
+    "--enable-config"
   ]
+  /** **/
 }

@@ -35,3 +35,4 @@
 	* Provides performant and secure hybrid encryption, inspiration from PGP
 * BLAKE2b signature to ensure no tampering - [Crypto++](https://www.cryptopp.com/wiki/BLAKE2)
 	* Also uses MAC (with shared secret) signature to ensure sender integrity - [libsodium](https://doc.libsodium.org/secret-key_cryptography/secret-key_authentication)
+		* Diffie-Hellmann key exchange technique for shared secrets - [libsodium](https://doc.libsodium.org/key_exchange)

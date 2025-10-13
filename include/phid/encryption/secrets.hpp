@@ -23,11 +23,21 @@
 
 namespace phid {
 
-void generate_shared_secret(std::vector<unsigned char>& op_secret);
+// key exchange pair
+struct kxp {
+    unsigned char pk[crypto_kx_PUBLICKEYBYTES];
+    unsigned char sk[crypto_kx_SECRETKEYBYTES];
+};
 
 /***/
 
-void add_mac_to_msg(const std::vector<unsigned char>& key, AuthenticatedUpdate& msg);
+void generate_kx_pair(kxp& op);
+
+/***/
+
+bool derive_shared_secret(const bool is_client, const phid::kxp& self,
+                          const unsigned char (&peer_pk)[crypto_kx_PUBLICKEYBYTES],
+                          std::vector<unsigned char>& op_key);
 
 /** TEMPLATE FUNCTIONS **/
 
@@ -86,17 +96,13 @@ bool verify_mac_in_msg(const std::vector<unsigned char>& key, T& msg) {
 
 /** **/
 
-/**/
+inline std::vector<unsigned char> str_to_secret(const std::string& secret) {
+  return std::vector<unsigned char>{secret.data(), secret.data() + secret.size()};
+}
 
-bool verify_mac_msg(const std::vector<unsigned char>& key, const AuthenticatedUpdate& msg);
-
-bool verify_mac_msg(const std::vector<unsigned char>& key, const EncryptedMessage& msg);
-
-/***/
-
-std::vector<unsigned char> str_to_secret(const std::string& secret);
-
-std::string secret_to_str(const std::vector<unsigned char>& secret);
+inline std::string secret_to_str(const std::vector<unsigned char>& secret) {
+  return std::string(secret.begin(), secret.end());
+}
 
 }  // namespace phid
 
