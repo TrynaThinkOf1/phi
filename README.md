@@ -8,16 +8,30 @@
 [![C++](https://img.shields.io/badge/-C++-blue?logo=cplusplus)](#)
 [![SQLite](https://img.shields.io/badge/SQLite-%2307405e.svg?logo=sqlite&logoColor=white)](#)
 
+[![version](https://img.shields.io/badge/version-0.1.0-blue)](#)
 [![passing](https://img.shields.io/badge/build-passing-green)](#)
-[![testing](https://img.shields.io/badge/test_coverage-unknown-yellow)](#)
+[![testing](https://img.shields.io/badge/coverage-N/A-yellow)](#)
+[![secure](https://img.shields.io/badge/secure-very-green)](#)
 
 
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/TrynaThinkOf1/phi/e8bea8aebf333dbea9d54ebae7892afb50c9369d/assets/phi_logo.svg" alt="logo" width="300">
+<img src="https://raw.githubusercontent.com/TrynaThinkOf1/phi/e8bea8aebf333dbea9d54ebae7892afb50c9369d/assets/phi_logo.svg" alt="logo" width="250">
 
 <h1 color="#2e083b">PHI</h1>
 
-<h5 style="color:#fbb040">Secure messaging app that lives in your terminal. Uses hybrid encryption with ChaCha20-Poly1305, as well as compression, hashing, and MAC to ensure message integrity and security.</h5>
+<h5 style="color:#fbb040">Secure messaging app that lives in your terminal.</h5>
 
 </div>
+
+
+<h1>📊 FEATURES</h1>
+
+<h5>🔒 SECURITY</h5>
+
+* GZip (L3) compression for messages - [zlibcomplete](https://rudi-cilibrasi.github.io/zlibcomplete/index.html)
+* ChaCha20-Poly1305 encryption for messages - [libsodium](https://doc.libsodium.org/secret-key_cryptography/aead/chacha20-poly1305)
+* RSA (4096) encryption for CC20 session keys - [Crypto++](https://www.cryptopp.com/wiki/RSA_Cryptography)
+	* Provides performant and secure hybrid encryption, inspiration from PGP
+* BLAKE2b signature to ensure no tampering - [Crypto++](https://www.cryptopp.com/wiki/BLAKE2)
+	* Also uses MAC (with shared secret) signature to ensure sender integrity - [libsodium](https://doc.libsodium.org/secret-key_cryptography/secret-key_authentication)
