@@ -35,7 +35,7 @@ void generate_kx_pair(kxp& op);
 
 /***/
 
-bool derive_shared_secret(const bool is_client, const phid::kxp& self,
+bool derive_shared_secret(const bool is_alice, const phid::kxp& self,
                           const unsigned char (&peer_pk)[crypto_kx_PUBLICKEYBYTES],
                           std::vector<unsigned char>& op_key);
 

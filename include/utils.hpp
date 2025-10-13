@@ -12,7 +12,7 @@
 #include <cstring>
 #include <cerrno>
 
-inline std::string expand(const std::string& path) {
+static std::string expand(const std::string& path) {
   if (path[0] == '~') {
     const char* home = getenv("HOME");
     if (home || ((home = getpwuid(getuid())->pw_dir))) {
@@ -24,6 +24,8 @@ inline std::string expand(const std::string& path) {
     return path;
   }
 }
+
+/***/
 
 static std::string toHex(const std::string& s) {
   std::ostringstream oss;
@@ -47,6 +49,8 @@ static inline unsigned char hexValue(char c) {
   throw std::invalid_argument("Invalid hex character");
 }
 
+/***/
+
 static std::string fromHex(const std::string& hex) {
   if (hex.size() % 2 != 0) throw std::invalid_argument("Hex string must have even length");
   std::string out;
@@ -63,6 +67,5 @@ static std::string fromHex(const unsigned char* hex) {
   if (!hex) return std::string{};
   return fromHex(std::string(reinterpret_cast<const char*>(hex)));
 }
-
 
 #endif /* _UTILS */

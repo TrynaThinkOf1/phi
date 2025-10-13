@@ -34,7 +34,7 @@ void phid::generate_kx_pair(phid::kxp& op) {
 
 /***/
 
-bool phid::derive_shared_secret(const bool is_client, const phid::kxp& self,
+bool phid::derive_shared_secret(const bool is_alice, const phid::kxp& self,
                                 const unsigned char (&peer_pk)[crypto_kx_PUBLICKEYBYTES],
                                 std::vector<unsigned char>& op_key) {
   /*
@@ -51,7 +51,7 @@ bool phid::derive_shared_secret(const bool is_client, const phid::kxp& self,
   op_key.resize(crypto_kx_SESSIONKEYBYTES);
 
   int rc;
-  if (is_client) {
+  if (is_alice) {
     rc = crypto_kx_client_session_keys(nullptr,        // receive key data, not used
                                        op_key.data(),  // transmit key, the shared secret
                                        self.pk,        // my public key
