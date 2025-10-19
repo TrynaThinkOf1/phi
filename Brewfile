@@ -16,8 +16,8 @@ brew "zlib"
 # <== ==> #
 
 # <== VSC EXTENSIONS ==> #
-vscode "ms-vscode.cpptools"
-vscode "llvm-vs-code-extensions.vscode-clangd"
-vscode "vadimcn.vscode-lldb"
-vscode "ms-vscode.makefile-tools"
+#vscode "ms-vscode.cpptools"
+#vscode "llvm-vs-code-extensions.vscode-clangd"
+#vscode "vadimcn.vscode-lldb"
+#vscode "ms-vscode.makefile-tools"
 # <== ==> #

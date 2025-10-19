@@ -4,7 +4,20 @@
     {
       "label": "build",
       "type": "shell",
-      "command": "bear --output _build/compile_commands.json -- make",
+      "command": "cmake -S . -B _build && cmake --build _build -j2 --config Release",
+      "args": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    {
+      "label": "build for debug",
+      "type": "shell",
+      "command": "cmake -S . -B _build && cmake --build _build -j2 --config Debug",
       "args": [],
       "group": {
         "kind": "build",
@@ -17,7 +30,7 @@
     {
       "label": "analyze",
       "type": "shell",
-      "command": "make tidy",
+      "command": "find src -type f \\( -name \"*.c\" -o -name \"*.cpp\" \\) -exec clang-tidy --config-file=./.clang-tidy --format-style=file -p _build {} +",
       "args": [],
       "group": {
         "kind": "build",
@@ -30,7 +43,20 @@
     {
       "label": "cleanup",
       "type": "shell",
-      "command": "make format && make clean && rm -f phi phid && rm -rf phi.dSYM phid.dSYM && rm -rf .cache",
+      "command": "mv _build/compile_commands.json ./;rm -rf _build/ && mkdir _build;mv ./compile_commands.json _build/;rm -f phi phid; rm -rf phi.dSYM phid.dSYM; rm -rf .cache",
+      "args": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    {
+      "label": "format",
+      "type": "shell",
+      "command": "find src -type f \\( -name \"*.c\" -o -name \"*.cpp\" \\) -exec clang-format -i {} +; find include -type f \\( -name \"*.h\" -o -name \"*.hpp\" \\) -exec clang-format -i {} +",
       "args": [],
       "group": {
         "kind": "build",
