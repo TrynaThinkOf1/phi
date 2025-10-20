@@ -37,14 +37,15 @@ phid::DBManager::DBManager(int& op_code) {
    op - output, 0 if success, -1 if self isn't defined
   */
 
-  this->db = new SQLite::Database(expand("~/.phi/main.db"), SQLite::OPEN_READWRITE);
+  this->db = new SQLite::Database(expand("~/.phi/main.db"), SQLite::OPEN_READWRITE); // NOLINT
 
   db->exec(
     R"sql(
       CREATE TABLE IF NOT EXISTS self (
         id INTEGER PRIMARY KEY CHECK (id = 0),
         name TEXT,
-        emoji TEXT,
+        emoji TEXT DEFAULT "🪞",
+        rsa_pub_key TEXT,
         rsa_priv_key TEXT,
         last_known_ip TEXT,
         hardware_profile TEXT
@@ -53,7 +54,7 @@ phid::DBManager::DBManager(int& op_code) {
       CREATE TABLE IF NOT EXISTS contacts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        emoji TEXT,
+        emoji TEXT DEFAULT "👤",
         rsa_pub_key TEXT NOT NULL,
         shared_secret TEXT,
         ipv6_addr TEXT,
@@ -63,10 +64,11 @@ phid::DBManager::DBManager(int& op_code) {
 
       CREATE TABLE IF NOT EXISTS messages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        sender_id INTEGER NOT NULL,
+        contact_id INTEGER NOT NULL,
         content TEXT NOT NULL,
         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
         is_read INTEGER DEFAULT 0,
+        is_delivered INTEGER DEFAULT 0,
         FOREIGN KEY(sender_id) REFERENCES contacts(id)
       );
     )sql");
@@ -81,6 +83,7 @@ phid::DBManager::DBManager(int& op_code) {
 
   this->self.name = query.getColumn("name").getString();
   this->self.emoji = query.getColumn("emoji").getString();
+  this->self.rsa_pub_key = query.getColumn("rsa_pub_key").getString();
   this->self.rsa_priv_key = query.getColumn("rsa_priv_key").getString();
   this->self.last_known_ip = query.getColumn("last_known_ip").getString();
   this->self.hardware_profile = query.getColumn("hardware_profile").getString();
@@ -102,7 +105,7 @@ phid::DBManager::~DBManager() {
 
 /** public methods **/
 
-bool phid::DBManager::update_self() {
+bool phid::DBManager::updateSelf() {
   SQLite::Statement query(*db, "SELECT * FROM self WHERE id = 0");
   if (!query.executeStep()) {
     return false;
@@ -110,6 +113,7 @@ bool phid::DBManager::update_self() {
 
   this->self.name = query.getColumn("name").getString();
   this->self.emoji = query.getColumn("emoji").getString();
+  this->self.rsa_pub_key = query.getColumn("rsa_pub_key").getString();
   this->self.rsa_priv_key = query.getColumn("rsa_priv_key").getString();
   this->self.last_known_ip = query.getColumn("last_known_ip").getString();
   this->self.hardware_profile = query.getColumn("hardware_profile").getString();
@@ -119,7 +123,7 @@ bool phid::DBManager::update_self() {
 
 /***/
 
-void phid::DBManager::change_self_attribute(const std::string& field, const std::string& value) {
+void phid::DBManager::changeSelfAttribute(const std::string& field, const std::string& value) {
   SQLite::Statement exists(*db, "SELECT 1 FROM self");
 
   if (!exists.executeStep()) {
@@ -128,7 +132,7 @@ void phid::DBManager::change_self_attribute(const std::string& field, const std:
     create.bind(":value", value);
     create.exec();
 
-    this->update_self();
+    this->updateSelf();
 
     return;
   }
@@ -138,7 +142,7 @@ void phid::DBManager::change_self_attribute(const std::string& field, const std:
   update.bind(":value", value);
   update.exec();
 
-  this->update_self();
+  this->updateSelf();
 }
 
 /** **/

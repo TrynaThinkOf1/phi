@@ -22,16 +22,20 @@
 
 namespace phid {
 
-struct self_t {
+struct self_t {  // NOLINT -- I want to use self_t as self type
     std::string name;
     std::string emoji;
+    std::string rsa_pub_key;
     std::string rsa_priv_key;
     std::string last_known_ip;
     std::string hardware_profile;
 
-    std::string to_string() {
+    /***/
+
+    std::string toString() const {
       return "NAME: " + this->name + "\nEMOJI: " + this->emoji +
-             "\nRSA KEY (first 32): " + this->rsa_priv_key.substr(0, 32) +
+             "\nRSA PUB KEY (first 32): " + this->rsa_pub_key.substr(0, 32) +
+             "\nRSA PRIV KEY (first 32): " + this->rsa_priv_key.substr(0, 32) +
              "\nIP: " + this->last_known_ip + "\nHARDWARE PROFILE: " + this->hardware_profile;
     }
 };
@@ -58,11 +62,11 @@ class DBManager {
 
     /** **/
 
-    bool update_self();
+    bool updateSelf();
 
     /***/
 
-    void change_self_attribute(const std::string& field, const std::string& value);
+    void changeSelfAttribute(const std::string& field, const std::string& value);
 
     /***/
 };
