@@ -1,8 +1,7 @@
 # CONFIGURATION
 cmake_minimum_required(VERSION 3.24...4.1.2)
 project(PHI
-    VERSION 0.1.0
-    HOMEPAGE "github/TrynaThinkOf1/phi"
+    VERSION 0.1.1
     LANGUAGES CXX
 )
 

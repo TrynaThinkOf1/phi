@@ -4,11 +4,11 @@
 [![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)](#)
 
 [![Homebrew](https://img.shields.io/badge/Homebrew-FBB040?logo=homebrew&logoColor=fff)](#)
-[![GNU Make](https://tinyurl.com/2waaewzv)](#)
+[![CMake](https://img.shields.io/badge/CMake-064F8C?logo=cmake&logoColor=fff)](#)
 [![C++](https://img.shields.io/badge/-C++-blue?logo=cplusplus)](#)
 [![SQLite](https://img.shields.io/badge/SQLite-%2307405e.svg?logo=sqlite&logoColor=white)](#)
 
-[![version](https://img.shields.io/badge/version-0.1.0-blue)](#)
+[![version](https://img.shields.io/badge/version-0.1.1-blue)](#)
 [![passing](https://img.shields.io/badge/build-passing-green)](#)
 [![testing](https://img.shields.io/badge/coverage-N/A-yellow)](#)
 [![secure](https://img.shields.io/badge/secure-very-green)](#)
