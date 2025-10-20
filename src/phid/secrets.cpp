@@ -20,22 +20,22 @@
 
 #include "phid/encryption/MessageTypes.hpp"
 
-void phid::generate_kx_pair(phid::kxp& op) {
+void phid::genKXP(phid::KXP& op) {
   /*
   Generate a private and a public key
    for Diffie-Hellmann key exchange
 
   Args:
-   op_pk - output key pair struct
+   op - output key pair struct
   */
 
-  crypto_kx_keypair(op.pk, op.sk);
+  crypto_kx_keypair(op.pk.data(), op.sk.data());
 }
 
 /***/
 
-bool phid::derive_shared_secret(const bool is_alice, const phid::kxp& self,
-                                const unsigned char (&peer_pk)[crypto_kx_PUBLICKEYBYTES],
+bool phid::derive_shared_secret(const bool& is_alice, const phid::KXP& self,
+                                const std::array<unsigned char, crypto_kx_PUBLICKEYBYTES>& peer_pk,
                                 std::vector<unsigned char>& op_key) {
   /*
   Derive using the Diffie-Hellmann algorithm
@@ -44,29 +44,33 @@ bool phid::derive_shared_secret(const bool is_alice, const phid::kxp& self,
   Args:
    is_client - important self explanatory
    self - my key exchange pair struct
-   peer_pk - my peer's public key
+   peer_pk - peer's public key
    op_key - vector shared secret
   */
 
   op_key.resize(crypto_kx_SESSIONKEYBYTES);
 
-  int rc;
+  int code = 0;
   if (is_alice) {
-    rc = crypto_kx_client_session_keys(nullptr,        // receive key data, not used
-                                       op_key.data(),  // transmit key, the shared secret
-                                       self.pk,        // my public key
-                                       self.sk,        // my private key
-                                       peer_pk         // my peer's public key
+    code = crypto_kx_client_session_keys(
+      nullptr,                                           // receive key data, not used
+      op_key.data(),                                     // transmit key, the shared secret
+      const_cast<const unsigned char*>(self.pk.data()),  // my public key
+      const_cast<const unsigned char*>(self.sk.data()),  // my private key
+      peer_pk.data()                                     // my peer's public key
     );
   } else {
-    rc = crypto_kx_server_session_keys(nullptr,        // receive key data, not used
-                                       op_key.data(),  // transmit key, the shared secret
-                                       self.pk,        // my public key
-                                       self.sk,        // my private key
-                                       peer_pk         // my peer's public key
+    code = crypto_kx_server_session_keys(
+      nullptr,                                           // receive key data, not used
+      op_key.data(),                                     // transmit key, the shared secret
+      const_cast<const unsigned char*>(self.pk.data()),  // my public key
+      const_cast<const unsigned char*>(self.sk.data()),  // my private key
+      peer_pk.data()                                     // my peer's public key
     );
   }
 
-  if (rc != 0) return false;
+  if (code != 0) {
+    return false;
+  }
   return true;
 }

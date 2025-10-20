@@ -14,23 +14,22 @@
 #define ENCRYPTIONMANAGER_HPP
 
 #include <algorithm>
+#include <array>
 #include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>
 
-#include <zlc/gzipcomplete.hpp>
-#include <cryptopp/cryptlib.h>
 #include <cryptopp/blake2.h>
-#include <cryptopp/rsa.h>
+#include <cryptopp/cryptlib.h>
 #include <cryptopp/osrng.h>
 #include <cryptopp/queue.h>
+#include <cryptopp/rsa.h>
 #include <sodium.h>
+#include <zlc/gzipcomplete.hpp>
 
 #include "phid/encryption/MessageTypes.hpp"
 #include "utils.hpp"
-
-typedef uint8_t byte;
 
 namespace phid {
 
@@ -50,7 +49,7 @@ class EncryptionManager {
 
     /***/
 
-    unsigned char chacha_key[crypto_aead_chacha20poly1305_KEYBYTES]{};
+    std::array<unsigned char, crypto_aead_chacha20poly1305_KEYBYTES> chacha_key;
     uint8_t chacha_num_uses = 0;  // same key can be used multiple times, my limit is 3
 
     /***/
@@ -59,7 +58,8 @@ class EncryptionManager {
 
     /***/
 
-    CryptoPP::RSA::PrivateKey __priv;
+    CryptoPP::RSA::PublicKey _public_key;
+    CryptoPP::RSA::PrivateKey _private_key;
 
     /*****      *****\
     \*****      *****/
@@ -74,35 +74,35 @@ class EncryptionManager {
 
     /* op = OUTPUT, void bc more space efficient to output via ref */
 
-    void compress_text(const std::string& text, std::string& op);
+    void compressText(const std::string& text, std::string& op);
 
-    void decompress_text(const std::string& text, std::string& op);
+    void decompressText(const std::string& text, std::string& op);
 
     /***/
 
-    void chacha_encrypt_text(const std::string& text,
-                             unsigned char (&op_nonce)[crypto_aead_chacha20poly1305_NPUBBYTES],
-                             std::string& op_text);
-
-    static int chacha_decrypt_text(
-      const std::string& text, const unsigned char (&nonce)[crypto_aead_chacha20poly1305_NPUBBYTES],
-      const unsigned char (&chacha_key)[crypto_aead_chacha20poly1305_KEYBYTES],
+    void chachaEncryptText(
+      const std::string& text,
+      std::array<unsigned char, crypto_aead_chacha20poly1305_NPUBBYTES>& op_nonce,
       std::string& op_text);
+
     // int bc the decrypt function from libsodium returns -1 if nonce fails
+    int chachaDecryptText(
+      const std::string& text,
+      const std::array<unsigned char, crypto_aead_chacha20poly1305_NPUBBYTES>& nonce,
+      const std::array<unsigned char, crypto_aead_chacha20poly1305_KEYBYTES>& chacha_key,
+      std::string& op_text);
 
     /***/
 
-    void rsa_encrypt_chacha_key(
-      const unsigned char (&chacha_key)[crypto_aead_chacha20poly1305_KEYBYTES],
-      const std::string& rsa_pub_key, std::string& op);
+    void rsaEncryptChachaKey(const std::string& rsa_pub_key, std::string& op);
 
-    void rsa_decrypt_chacha_key(const std::string& encrypted_key,
-                                unsigned char (&op)[crypto_aead_chacha20poly1305_KEYBYTES]);
+    void rsaDecryptChachaKey(const std::string& encrypted_key,
+                             std::array<unsigned char, crypto_aead_chacha20poly1305_KEYBYTES>& op);
 
     /***/
 
-    void blake2_hash_text(const std::string& text, std::string& op);
-    bool blake2_verify_hash(const std::string& text, const std::string& hash);
+    void blake2HashText(const std::string& text, std::string& op);
+    bool blake2VerifyHash(const std::string& text, const std::string& hash);
 
     /*****  *****\
     \*****  *****/
@@ -117,41 +117,41 @@ class EncryptionManager {
     ~EncryptionManager();  // all pointers deleted here
     /** **/
 
-    void gen_rsa_pair(std::string& op_pub, std::string& op_priv);
+    void rsaGenPair(std::string& op_pub, std::string& op_priv);
 
-    void change_rsa_priv_key(std::string& new_rsa_priv_key);
+    void changePrivKey(std::string& new_rsa_priv_key);
 
     /***/
 
     /** TEMPLATE FUNCTIONS **/
 
-    template <typename T>
-    static void rsa_to_str(const T& key, std::string& op) {
-      CryptoPP::ByteQueue q;
+    template <typename KeyType>
+    static void rsaToStr(const KeyType& key, std::string& op) {
+      CryptoPP::ByteQueue bqu;
 
-      key.Save(q);
+      key.Save(bqu);
 
-      op.resize(q.CurrentSize());
-      q.Get(reinterpret_cast<byte*>(&op[0]), op.size());
+      op.resize(bqu.CurrentSize());
+      bqu.Get(reinterpret_cast<unsigned char*>(op.data()), op.size());
     }
 
-    template <typename T>
-    static void str_to_rsa(const std::string& key, T& op) {
-      CryptoPP::ByteQueue q;
+    template <typename KeyType>
+    static void strToRsa(const std::string& key, KeyType& op) {
+      CryptoPP::ByteQueue bqu;
 
-      q.Put(reinterpret_cast<const byte*>(key.data()), key.size());
-      q.MessageEnd();
+      bqu.Put(reinterpret_cast<const unsigned char*>(key.data()), key.size());
+      bqu.MessageEnd();
 
-      op.Load(q);
+      op.Load(bqu);
     }
 
     /** **/
 
     /***/
 
-    void encrypt_text(const std::string& text, const std::string& rsa_pub_key, EncryptedMessage& op,
-                      int version = 1);
-    int decrypt_text(const EncryptedMessage& msg, std::string& op_text);
+    void encryptText(const std::string& text, const std::string& rsa_pub_key, EncryptedMessage& op,
+                     const int& version = 1);
+    int decryptText(const EncryptedMessage& msg, std::string& op_text);
 };
 
 }  // namespace phid

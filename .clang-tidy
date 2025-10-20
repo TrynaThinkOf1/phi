@@ -1,14 +1,15 @@
-Checks: 'clang-diagnostic-*, clang-analyzer-*, cppcoreguidelines-*, cppcoreguidelines-special-member-functions-, performance-*, readability-*'
+Checks: 'bugprone-*, clang-analyzer-*, concurrency-*, cppcoreguidelines-*, performance-*, portability-*, readability-*, -cppcoreguidelines-pro-type-reinterpret-cast'
 
 WarningsAsErrors: true
-
-AnalyzeTemporaryDtors: false
+UseColor: true
 
 CheckOptions:
+  - key:             readability-identifier-length.IgnoredParameterNames
+    value:           "op"
   - key:             readability-identifier-naming.VariableCase
     value:           lower_case
   - key:             readability-identifier-naming.FunctionCase
-    value:           CamelCase
+    value:           camelCase
   - key:             readability-identifier-naming.ClassCase
     value:           CamelCase
   - key:             readability-identifier-naming.ConstantCase

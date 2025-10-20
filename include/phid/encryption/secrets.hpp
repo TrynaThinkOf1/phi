@@ -13,6 +13,7 @@
 #ifndef SECRETS_HPP
 #define SECRETS_HPP
 
+#include <array>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -24,19 +25,19 @@
 namespace phid {
 
 // key exchange pair
-struct kxp {
-    unsigned char pk[crypto_kx_PUBLICKEYBYTES];
-    unsigned char sk[crypto_kx_SECRETKEYBYTES];
+struct KXP {
+    std::array<unsigned char, crypto_kx_PUBLICKEYBYTES> pk;
+    std::array<unsigned char, crypto_kx_SECRETKEYBYTES> sk;
 };
 
 /***/
 
-void generate_kx_pair(kxp& op);
+void genKXP(KXP& op);
 
 /***/
 
-bool derive_shared_secret(const bool is_alice, const phid::kxp& self,
-                          const unsigned char (&peer_pk)[crypto_kx_PUBLICKEYBYTES],
+bool derive_shared_secret(const bool& is_alice, const phid::KXP& self,
+                          const std::array<unsigned char, crypto_kx_PUBLICKEYBYTES>& peer_pk,
                           std::vector<unsigned char>& op_key);
 
 /** TEMPLATE FUNCTIONS **/
@@ -52,13 +53,13 @@ void add_mac_to_msg(const std::vector<unsigned char>& key, T& msg) {
    msg - update/message to add MAC to
   */
 
-  if (key.size() != 32) {
+  if (key.size() != crypto_auth_KEYBYTES) {
     // TODO: Fatal error handling for daemon
-    std::cout << "Secret key is of wrong size: " << key.size() << std::endl;
+    std::cout << "Secret key is of wrong size: " << key.size() << "\n";
     return;
   }
 
-  msg.mac.resize(32);
+  msg.mac.resize(crypto_auth_BYTES);
   crypto_auth(reinterpret_cast<unsigned char*>(msg.mac.data()),
               reinterpret_cast<const unsigned char*>(msg.content.data()), msg.content.size(),
               reinterpret_cast<const unsigned char*>(key.data()));
@@ -80,14 +81,10 @@ bool verify_mac_in_msg(const std::vector<unsigned char>& key, T& msg) {
 
   switch (msg.version) {
     case 1:
-      if (crypto_auth_verify(reinterpret_cast<const unsigned char*>(msg.mac.data()),
-                             reinterpret_cast<const unsigned char*>(msg.content.data()),
-                             msg.content.size(),
-                             reinterpret_cast<const unsigned char*>(key.data())) != 0) {
-        return false;
-      } else {
-        return true;
-      }
+      return crypto_auth_verify(reinterpret_cast<const unsigned char*>(msg.mac.data()),
+                                reinterpret_cast<const unsigned char*>(msg.content.data()),
+                                msg.content.size(),
+                                reinterpret_cast<const unsigned char*>(key.data()));
 
     default:
       return false;
@@ -97,7 +94,7 @@ bool verify_mac_in_msg(const std::vector<unsigned char>& key, T& msg) {
 /** **/
 
 inline std::vector<unsigned char> str_to_secret(const std::string& secret) {
-  return std::vector<unsigned char>{secret.data(), secret.data() + secret.size()};
+  return std::vector<unsigned char>(secret.begin(), secret.end());
 }
 
 inline std::string secret_to_str(const std::vector<unsigned char>& secret) {

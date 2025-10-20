@@ -31,7 +31,7 @@ struct EncryptedMessage {
     std::string content;
 
     std::string chacha_key;  // RSA encrypted ChaCha20-Poly1305 key
-    unsigned char nonce[crypto_aead_chacha20poly1305_NPUBBYTES];
+    std::array<unsigned char, crypto_aead_chacha20poly1305_NPUBBYTES> nonce;
 
     std::string blake2_hash;
 
@@ -86,7 +86,7 @@ struct EncryptedMessage {
       this->version = static_cast<uint8_t>(j["version"].get<int>());
 
       if (j["nonce"] == nullptr) return false;
-      std::memcpy(this->nonce, j["nonce"].get<std::string>().data(),
+      std::memcpy(this->nonce.data(), j["nonce"].get<std::string>().data(),
                   crypto_aead_chacha20poly1305_NPUBBYTES);
 
       return true;

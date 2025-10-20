@@ -14,21 +14,25 @@
 
 
 #include <algorithm>
+#include <array>
 #include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>
 
-#include <zlc/gzipcomplete.hpp>
-#include <cryptopp/cryptlib.h>
 #include <cryptopp/blake2.h>
-#include <cryptopp/rsa.h>
+#include <cryptopp/cryptlib.h>
 #include <cryptopp/osrng.h>
 #include <cryptopp/queue.h>
+#include <cryptopp/rsa.h>
 #include <sodium.h>
+#include <zlc/gzipcomplete.hpp>
 
 #include "phid/encryption/MessageTypes.hpp"
 #include "utils.hpp"
+
+#define BUFFER (const int)16384
+#define RSA_KEY_SIZE (const unsigned int)4096
 
 /** CONSTRUCTOR & DESTRUCTOR **/
 
@@ -45,13 +49,13 @@ phid::EncryptionManager::EncryptionManager(const std::string& rsa_priv_key)
   */
 
 
-  crypto_aead_chacha20poly1305_keygen(this->chacha_key);
+  crypto_aead_chacha20poly1305_keygen(this->chacha_key.data());
 
   /***/
 
   if (!rsa_priv_key.empty()) {
     this->rsa_priv_key = rsa_priv_key;
-    phid::EncryptionManager::str_to_rsa<CryptoPP::RSA::PrivateKey>(rsa_priv_key, this->__priv);
+    phid::EncryptionManager::strToRsa<CryptoPP::RSA::PrivateKey>(rsa_priv_key, this->_private_key);
   }
 }
 
@@ -84,7 +88,7 @@ phid::EncryptionManager::~EncryptionManager() {
  HELPER FUNCS
 \*****  *****/
 
-void phid::EncryptionManager::compress_text(const std::string& text, std::string& op) {
+void phid::EncryptionManager::compressText(const std::string& text, std::string& op) {
   /*
   Uses GZip with compression level 3
    to compress the plaintext message
@@ -96,25 +100,24 @@ void phid::EncryptionManager::compress_text(const std::string& text, std::string
    op - the string where compressed text goes
   */
 
-  // 16384 is the size limit for byte stream to GZip
-  if (text.length() < 16384) {
+  if (text.length() < BUFFER) {
     op = this->compressor->compress(text);
   } else {
     std::vector<std::string> chunks;
-    for (size_t i = 0; i <= text.length() / 16384; i++) {
-      size_t si = i * 16384;
-      size_t ei = (i + 1) * 16384;
-      ei = std::min(ei, text.length());
-      chunks.push_back(text.substr(si, ei));
+    for (size_t i = 0; i <= text.length() / BUFFER; i++) {
+      size_t start_index = i * BUFFER;
+      size_t end_index = (i + 1) * BUFFER;
+      end_index = std::min(end_index, text.length());
+      chunks.push_back(text.substr(start_index, end_index));
     }
 
-    for (const std::string& c : chunks) {
-      op += this->compressor->compress(c);
+    for (const std::string& chunk : chunks) {
+      op += this->compressor->compress(chunk);
     }
   }
 }
 
-void phid::EncryptionManager::decompress_text(const std::string& text, std::string& op) {
+void phid::EncryptionManager::decompressText(const std::string& text, std::string& op) {
   /*
   Uses GZip to decompress a
    message into plaintext.
@@ -124,28 +127,28 @@ void phid::EncryptionManager::decompress_text(const std::string& text, std::stri
    op - the string where decompressed text is stored
   */
 
-  // 16384 is the size limit for byte stream to GZip
-  if (text.length() < 16384) {
+  if (text.length() < BUFFER) {
     op = this->decompressor->decompress(text);
   } else {
     std::vector<std::string> chunks;
-    for (size_t i = 0; i <= text.length() / 16384; i++) {
-      size_t si = i * 16384;
-      size_t ei = (i + 1) * 16384;
-      ei = std::min(ei, text.length());
-      chunks.push_back(text.substr(si, ei));
+    for (size_t i = 0; i <= text.length() / BUFFER; i++) {
+      size_t start_index = i * BUFFER;
+      size_t end_index = (i + 1) * BUFFER;
+      end_index = std::min(end_index, text.length());
+      chunks.push_back(text.substr(start_index, end_index));
     }
 
-    for (const std::string& c : chunks) {
-      op += this->decompressor->decompress(c);
+    for (const std::string& chunk : chunks) {
+      op += this->decompressor->decompress(chunk);
     }
   }
 }
 
 /***/
 
-void phid::EncryptionManager::chacha_encrypt_text(
-  const std::string& text, unsigned char (&op_nonce)[crypto_aead_chacha20poly1305_NPUBBYTES],
+void phid::EncryptionManager::chachaEncryptText(
+  const std::string& text,
+  std::array<unsigned char, crypto_aead_chacha20poly1305_NPUBBYTES>& op_nonce,
   std::string& op_text) {
   /*
   Uses the original ChaCha20-Poly1305 construction
@@ -154,47 +157,49 @@ void phid::EncryptionManager::chacha_encrypt_text(
 
   Args:
    text - string containing the plaintext to encrypt
-   op_nonce - a char* where the generated nonce will be stored in
+   op_nonce - a char array where the generated nonce will be stored in
    op_text - a string where the encrypted text will be stored
   */
 
-  unsigned char nonce[crypto_aead_chacha20poly1305_NPUBBYTES];
+  std::array<unsigned char, crypto_aead_chacha20poly1305_NPUBBYTES> nonce{};
   unsigned long long outlen = text.length() + crypto_aead_chacha20poly1305_ABYTES;
-  std::vector<unsigned char> ct(outlen);  // ciphertext
+  std::vector<unsigned char> cipher(outlen);  // ciphertext
 
   /**/
 
   if (this->chacha_num_uses > 3) {
-    crypto_aead_chacha20poly1305_keygen(this->chacha_key);
+    crypto_aead_chacha20poly1305_keygen(this->chacha_key.data());
     this->chacha_num_uses = 0;
   }
 
   /**/
 
-  randombytes_buf(nonce, sizeof nonce);
+  randombytes_buf(nonce.data(), nonce.size());
 
   crypto_aead_chacha20poly1305_encrypt(
-    ct.data(),                                            // ciphertext output
-    &outlen,                                              // ciphertext output length
-    reinterpret_cast<const unsigned char*>(text.data()),  // plaintext input
-    text.size(),                                          // plaintext length
-    nullptr,                                              // additional data, not needed here
-    0,                                                    // AD lengeth
-    nullptr,                                              // "nsec always NULL" ~ libsodium docs
-    nonce,                                                // cryptosign nonce
-    this->chacha_key                                      // encryption/decryption key
+    cipher.data(),                                         // ciphertext output
+    &outlen,                                               // ciphertext output length
+    reinterpret_cast<const unsigned char*>(text.data()),   // plaintext input
+    text.size(),                                           // plaintext length
+    nullptr,                                               // additional data, not needed here
+    0,                                                     // AD lengeth
+    nullptr,                                               // "nsec always NULL" ~ libsodium docs
+    reinterpret_cast<const unsigned char*>(nonce.data()),  // cryptosign nonce
+    reinterpret_cast<const unsigned char*>(this->chacha_key.data())  // encryption/decryption key
   );
 
   /**/
 
-  std::memcpy(op_nonce, nonce, sizeof op_nonce);  // because nonce is an array
-  op_text.assign(reinterpret_cast<const char*>(ct.data()),
+  op_nonce.swap(nonce);
+  op_text.assign(reinterpret_cast<const char*>(cipher.data()),
                  static_cast<size_t>(outlen));  // fuckass C++ typing
 }
 
-int phid::EncryptionManager::chacha_decrypt_text(
-  const std::string& text, const unsigned char (&nonce)[crypto_aead_chacha20poly1305_NPUBBYTES],
-  const unsigned char (&chacha_key)[crypto_aead_chacha20poly1305_KEYBYTES], std::string& op_text) {
+int phid::EncryptionManager::chachaDecryptText(
+  const std::string& text,
+  const std::array<unsigned char, crypto_aead_chacha20poly1305_NPUBBYTES>& nonce,
+  const std::array<unsigned char, crypto_aead_chacha20poly1305_KEYBYTES>& chacha_key,
+  std::string& op_text) {
   /*
   Uses the original ChaCha20-Poly1305 construction
    provided by libsodium to decrypt text
@@ -202,12 +207,12 @@ int phid::EncryptionManager::chacha_decrypt_text(
 
   Args:
    text - string containing the cipher to decrypt
-   nonce - a char* with the generated nonce in it
-   chacha_key - a char* containing the ChaCha20-Poly1305 decryption key
+   nonce - a char array with the generated nonce in it
+   chacha_key - a char array containing the ChaCha20-Poly1305 decryption key
    op_text - string where the output decrypted text will be stored
 
   Returns:
-   encryption fails ? -1 : 0
+   decryption fails ? -1 : 0
   */
 
   unsigned long long msglen = text.size() - crypto_aead_chacha20poly1305_ABYTES;
@@ -215,19 +220,19 @@ int phid::EncryptionManager::chacha_decrypt_text(
 
   /**/
 
-  int s = crypto_aead_chacha20poly1305_decrypt(
-    msg.data(),                                           // message output
-    &msglen,                                              // message output length
-    nullptr,                                              // "nsec always NULL" ~ libsodium docs
-    reinterpret_cast<const unsigned char*>(text.data()),  // ciphertext input
-    text.size(),                                          // ciphertext length
-    nullptr,                                              // additional data, not needed here
-    0,                                                    // AD length
-    nonce,                                                // cryptosign nonce
-    chacha_key                                            // encryption/decryption key
+  int success = crypto_aead_chacha20poly1305_decrypt(
+    msg.data(),                                            // message output
+    &msglen,                                               // message output length
+    nullptr,                                               // "nsec always NULL" ~ libsodium docs
+    reinterpret_cast<const unsigned char*>(text.data()),   // ciphertext input
+    text.size(),                                           // ciphertext length
+    nullptr,                                               // additional data, not needed here
+    0,                                                     // AD length
+    reinterpret_cast<const unsigned char*>(nonce.data()),  // cryptosign nonce
+    reinterpret_cast<const unsigned char*>(this->chacha_key.data())  // encryption/decryption key
   );
 
-  if (s == -1) {  // checks for tampering of message / wrong key
+  if (success == -1) {  // checks for tampering of message / wrong key
     return -1;
   }
 
@@ -240,9 +245,7 @@ int phid::EncryptionManager::chacha_decrypt_text(
 
 /***/
 
-void phid::EncryptionManager::rsa_encrypt_chacha_key(
-  const unsigned char (&chacha_key)[crypto_aead_chacha20poly1305_KEYBYTES],
-  const std::string& rsa_pub_key, std::string& op) {
+void phid::EncryptionManager::rsaEncryptChachaKey(const std::string& rsa_pub_key, std::string& op) {
   /*
   Uses the Crypto++ implementation
    of RSA to encrypt a ChaCha20-Poly1305
@@ -250,25 +253,26 @@ void phid::EncryptionManager::rsa_encrypt_chacha_key(
    style of PGP.
 
   Args:
-   chacha_key - char* that contains the ChaCha20-Poly1305 key
+   chacha_key - char array that contains the ChaCha20-Poly1305 key
    rsa_pub_key - an RSA public key (which is used for encrypting the chacha key)
    op - string which will store the encrypted chacha key
   */
 
   CryptoPP::RSA::PublicKey pub;
-  phid::EncryptionManager::str_to_rsa<CryptoPP::RSA::PublicKey>(rsa_pub_key, pub);
+  phid::EncryptionManager::strToRsa<CryptoPP::RSA::PublicKey>(rsa_pub_key, pub);
 
   /**/
 
   CryptoPP::RSAES_OAEP_SHA_Encryptor encryptor(pub);
 
   CryptoPP::StringSource(
-    reinterpret_cast<const char*>(chacha_key), true,
+    reinterpret_cast<const char*>(this->chacha_key.data()), true,
     new CryptoPP::PK_EncryptorFilter(*(this->rng), encryptor, new CryptoPP::StringSink(op)));
 }
 
-void phid::EncryptionManager::rsa_decrypt_chacha_key(
-  const std::string& encrypted_key, unsigned char (&op)[crypto_aead_chacha20poly1305_KEYBYTES]) {
+void phid::EncryptionManager::rsaDecryptChachaKey(
+  const std::string& encrypted_key,
+  std::array<unsigned char, crypto_aead_chacha20poly1305_KEYBYTES>& op) {
   /*
   Uses the Crypto++ implementation
    of RSA to decrypt an encrypted
@@ -277,12 +281,12 @@ void phid::EncryptionManager::rsa_decrypt_chacha_key(
   Args:
    encrypted_key - string that contains the encrypted ChaCha20-Poly1305 key
    rsa_priv_key - an RSA private key (which is used for decrypting the chacha key)
-   op - a char* which will be filled with the chacha key
+   op - a char array which will be filled with the chacha key
   */
 
   std::string decoded;
 
-  CryptoPP::RSAES_OAEP_SHA_Decryptor decryptor(this->__priv);
+  CryptoPP::RSAES_OAEP_SHA_Decryptor decryptor(this->_private_key);
 
   CryptoPP::StringSource strsrc(
     reinterpret_cast<const unsigned char*>(
@@ -291,12 +295,12 @@ void phid::EncryptionManager::rsa_decrypt_chacha_key(
     true,                     // pump all
     new CryptoPP::PK_DecryptorFilter(*(this->rng), decryptor, new CryptoPP::StringSink(decoded)));
 
-  std::memcpy(op, decoded.data(), crypto_aead_chacha20poly1305_KEYBYTES);
+  std::memcpy(op.data(), decoded.data(), crypto_aead_chacha20poly1305_KEYBYTES);
 }
 
 /***/
 
-void phid::EncryptionManager::blake2_hash_text(const std::string& text, std::string& op) {
+void phid::EncryptionManager::blake2HashText(const std::string& text, std::string& op) {
   /*
   Uses the Crypto++ implementation of
    the BLAKE2b hashing algorithm. This
@@ -309,16 +313,16 @@ void phid::EncryptionManager::blake2_hash_text(const std::string& text, std::str
    op - where the new hash string will go
   */
 
-  this->blake2_hasher->Update((const byte*)text.data(), text.size());
+  this->blake2_hasher->Update(reinterpret_cast<const unsigned char*>(text.data()), text.size());
 
   op.resize(this->blake2_hasher->DigestSize());  // save resize overhead early
 
-  this->blake2_hasher->Final((byte*)op.data());
+  this->blake2_hasher->Final(reinterpret_cast<unsigned char*>(op.data()));
 
   this->blake2_hasher->Restart();  // refreshes the byte cache for new plaintext
 }
 
-bool phid::EncryptionManager::blake2_verify_hash(const std::string& text, const std::string& hash) {
+bool phid::EncryptionManager::blake2VerifyHash(const std::string& text, const std::string& hash) {
   /*
   Just uses the function above
    (phid::EncryptionManager::blake2_hash_text)
@@ -327,7 +331,7 @@ bool phid::EncryptionManager::blake2_verify_hash(const std::string& text, const 
   */
 
   std::string hashed_text;
-  this->blake2_hash_text(text, hashed_text);
+  this->blake2HashText(text, hashed_text);
 
   return hashed_text == hash;
 }
@@ -339,7 +343,7 @@ bool phid::EncryptionManager::blake2_verify_hash(const std::string& text, const 
 
 /** public methods **/
 
-void phid::EncryptionManager::gen_rsa_pair(std::string& op_pub, std::string& op_priv) {
+void phid::EncryptionManager::rsaGenPair(std::string& op_pub, std::string& op_priv) {
   /*
   Generate a public/private key
    pair using Crypto++ RSA implementation
@@ -352,24 +356,25 @@ void phid::EncryptionManager::gen_rsa_pair(std::string& op_pub, std::string& op_
   CryptoPP::RSA::PrivateKey priv;
   CryptoPP::RSA::PublicKey pub;
 
-  priv.GenerateRandomWithKeySize(*(this->rng), 4096);
+  priv.GenerateRandomWithKeySize(*(this->rng), RSA_KEY_SIZE);
   pub = CryptoPP::RSA::PublicKey(priv);
 
   /**/
 
-  phid::EncryptionManager::rsa_to_str<CryptoPP::RSA::PublicKey>(pub, op_pub);
-  phid::EncryptionManager::rsa_to_str<CryptoPP::RSA::PublicKey>(priv, op_priv);
+  phid::EncryptionManager::rsaToStr<CryptoPP::RSA::PublicKey>(pub, op_pub);
+  phid::EncryptionManager::rsaToStr<CryptoPP::RSA::PublicKey>(priv, op_priv);
 }
 
-void phid::EncryptionManager::change_rsa_priv_key(std::string& new_rsa_priv_key) {
+void phid::EncryptionManager::changePrivKey(std::string& new_rsa_priv_key) {
   this->rsa_priv_key = new_rsa_priv_key;
-  phid::EncryptionManager::str_to_rsa<CryptoPP::RSA::PrivateKey>(new_rsa_priv_key, this->__priv);
+  phid::EncryptionManager::strToRsa<CryptoPP::RSA::PrivateKey>(new_rsa_priv_key,
+                                                               this->_private_key);
 }
 
 /***/
 
-void phid::EncryptionManager::encrypt_text(const std::string& text, const std::string& rsa_pub_key,
-                                           EncryptedMessage& op, int version) {
+void phid::EncryptionManager::encryptText(const std::string& text, const std::string& rsa_pub_key,
+                                          EncryptedMessage& op, const int& version) {
   /*
   Uses a PGP-style standard:
    GZip (level 3) for compression,
@@ -389,14 +394,14 @@ void phid::EncryptionManager::encrypt_text(const std::string& text, const std::s
   std::string temp;
 
   op.version = version;
-  this->compress_text(text, temp);
-  this->chacha_encrypt_text(temp, op.nonce, op.content);
+  this->compressText(text, temp);
+  this->chachaEncryptText(temp, op.nonce, op.content);
 
-  this->rsa_encrypt_chacha_key(this->chacha_key, rsa_pub_key, op.chacha_key);
-  this->blake2_hash_text(text, op.blake2_hash);
+  this->rsaEncryptChachaKey(rsa_pub_key, op.chacha_key);
+  this->blake2HashText(text, op.blake2_hash);
 }
 
-int phid::EncryptionManager::decrypt_text(const EncryptedMessage& msg, std::string& op_text) {
+int phid::EncryptionManager::decryptText(const EncryptedMessage& msg, std::string& op_text) {
   /*
   Reverses the process of encryption
    (see phid::EncryptionManager::encrypt_text).
@@ -410,22 +415,22 @@ int phid::EncryptionManager::decrypt_text(const EncryptedMessage& msg, std::stri
    Any integer representing an error
   */
 
-  int s = 0;
+  int success = 0;
   std::string temp;
-  unsigned char key[crypto_aead_chacha20poly1305_KEYBYTES];
+  std::array<unsigned char, crypto_aead_chacha20poly1305_KEYBYTES> key{};
 
   switch (msg.version) {
     case 1:
-      this->rsa_decrypt_chacha_key(msg.chacha_key, key);
+      this->rsaDecryptChachaKey(msg.chacha_key, key);
 
-      s = this->chacha_decrypt_text(msg.content, msg.nonce, key, temp);
-      if (s == -1) {
+      success = this->chachaDecryptText(msg.content, msg.nonce, key, temp);
+      if (success == -1) {
         return -1;
       }
 
-      this->decompress_text(temp, op_text);
+      this->decompressText(temp, op_text);
 
-      if (!this->blake2_verify_hash(op_text, msg.blake2_hash)) {
+      if (!this->blake2VerifyHash(op_text, msg.blake2_hash)) {
         return -2;
       }
 
