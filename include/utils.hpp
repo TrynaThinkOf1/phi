@@ -1,6 +1,7 @@
 #ifndef _UTILS
 #define _UTILS
 
+#include <iostream>
 #include <string>
 #include <sstream>
 #include <iomanip>
@@ -15,8 +16,9 @@
 #include <sys/utsname.h>
 
 #include <fmt/format.h>
+#include <httplib.h>
 
-static std::string expand(const std::string& path) {
+[[nodiscard]] static std::string expand(const std::string& path) {
   std::string result{path};
 
   if (path[0] == '~') {
@@ -36,7 +38,7 @@ static std::string expand(const std::string& path) {
 
 /***/
 
-static std::string toHex(const std::string& str) {
+[[nodiscard]] static std::string toHex(const std::string& str) {
   std::ostringstream oss;
   oss << std::hex << std::setfill('0');
   for (unsigned char character : str) {
@@ -45,7 +47,7 @@ static std::string toHex(const std::string& str) {
   return oss.str();
 }
 
-static std::string toHex(const unsigned char* str) {
+[[nodiscard]] static std::string toHex(const unsigned char* str) {
   std::string temp{reinterpret_cast<const char*>(str)};
   return toHex(temp);
 }
@@ -70,7 +72,7 @@ static inline unsigned char hexValue(char character) {
 
 /***/
 
-static std::string fromHex(const std::string& hex) {
+[[nodiscard]] static std::string fromHex(const std::string& hex) {
   if (hex.size() % 2 != 0) {
     return std::string{};
   }
@@ -87,7 +89,7 @@ static std::string fromHex(const std::string& hex) {
   return out;
 }
 
-static std::string fromHex(const unsigned char* hex) {
+[[nodiscard]] static std::string fromHex(const unsigned char* hex) {
   std::string temp(reinterpret_cast<const char*>(hex));
   if (temp.empty()) {
     return std::string{};
@@ -97,7 +99,7 @@ static std::string fromHex(const unsigned char* hex) {
 
 /***/
 
-static std::string getHardwareProfile() {
+[[nodiscard]] static std::string getHardwareProfile() {
   std::string profile = "[os: ";
 
   struct utsname name{};
@@ -127,6 +129,19 @@ static std::string getHardwareProfile() {
   }
 
   return profile;
+}
+
+/***/
+
+[[nodiscard]] static std::string getPublicIPv6() {
+  httplib::Client cli("http://api6.ipify.org");
+  cli.set_follow_location(true);  // follow redirects
+
+  auto res = cli.Get("/");
+  if (res && res->status == 200) {  // NOLINT 200 magic number
+    return res->body;
+  }
+  return "";  // no IPv6 available
 }
 
 #endif /* _UTILS */
