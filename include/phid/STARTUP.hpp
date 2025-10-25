@@ -17,45 +17,89 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <sstream>
 
 #include "utils.hpp"
+#include "phid/database/DBManager.hpp"
+#include "phid/encryption/EncryptionManager.hpp"
 
 namespace phid {
 
-static int create_db_file() {
-  const std::string expanded_path = expand("~/.phi/");
+[[nodiscard]] static bool createDBFile() {
+  const std::string PATH = expand("~/.phi/");
 
-  if (!(std::filesystem::exists(expanded_path))) {
+  if (!(std::filesystem::exists(PATH))) {
     try {
-      std::filesystem::create_directory(expanded_path);
+      std::filesystem::create_directory(PATH);
     } catch (std::filesystem::filesystem_error e) {
-      std::cout << "Could not access database files. Try giving Phi sudo permissions." << std::endl;
-      return -1;
+      return false;
     }
   }
 
-  if (!(std::filesystem::exists(expanded_path + "main.db"))) {
+  if (!(std::filesystem::exists(PATH + "main.db"))) {
     // no try-catch here because it already passed above
-    std::ofstream file(expanded_path + "main.db");
+    std::ofstream file(PATH + "main.db");
 
     if (file.is_open()) {
       file.close();
     } else {
-      ;
-      // TODO: Fatal error handling for daemon
+      return false;
     }
   }
 
   std::error_code err;
-  std::filesystem::permissions(expanded_path, std::filesystem::perms::owner_all,
+  std::filesystem::permissions(PATH, std::filesystem::perms::owner_all,
                                std::filesystem::perm_options::replace, err);
 
-  if (err) {
-    std::cout << "Could not access database files. Try giving Phi sudo permissions." << std::endl;
-    return -1;
+  return !static_cast<bool>(err);
+}
+
+/***/
+
+[[nodiscard]] static bool uniqueChecker() {
+  const std::string PATH = expand("~/.phi/unique.var");
+
+  int unique{};
+
+  std::ofstream file(PATH);
+
+  if (file.is_open()) {
+    std::stringstream buf{};
+    buf << file.rdbuf();
+    if (buf.tellp() == 0) {  // checks if it has an available char
+      try {
+        unique = std::stoi(buf.str());
+      } catch (std::invalid_argument e) {
+        unique = 2;  // trigger logic down below
+      }
+    }
+  } else {
+    return false;
   }
 
-  return 0;
+  if (unique == 0) {
+    file << 1;
+    file.close();
+
+    return true;
+  } else if (unique != 1) {  // NOLINT
+    file << 0;
+  }
+
+  // happens if the unique == 1 || unique != 1
+  file.close();
+  return false;
+}
+
+static void exitUnique() {
+  const std::string PATH = expand("~/.phi/unique.var");
+
+  std::ofstream file(PATH);
+
+  if (file.is_open()) {
+    file << 0;
+    file.close();
+  }
 }
 
 }  // namespace phid
