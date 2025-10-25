@@ -110,10 +110,8 @@ class EncryptionManager {
 
 
   public:
-    std::string rsa_priv_key;
-
     /** CONSTRUCTOR & DESTRUCTOR **/
-    EncryptionManager(const std::string& rsa_priv_key = (std::string) "");
+    EncryptionManager(const std::string& rsa_priv_key = std::string(""));
     ~EncryptionManager();  // all pointers deleted here
     /** **/
 
@@ -150,7 +148,7 @@ class EncryptionManager {
     /***/
 
     void encryptText(const std::string& text, const std::string& rsa_pub_key, EncryptedMessage& op,
-                     const int& version = 1);
+                     int version = 1);
     int decryptText(const EncryptedMessage& msg, std::string& op_text);
 };
 

@@ -54,7 +54,6 @@ phid::EncryptionManager::EncryptionManager(const std::string& rsa_priv_key)
   /***/
 
   if (!rsa_priv_key.empty()) {
-    this->rsa_priv_key = rsa_priv_key;
     phid::EncryptionManager::strToRsa<CryptoPP::RSA::PrivateKey>(rsa_priv_key, this->_private_key);
   }
 }
@@ -366,7 +365,6 @@ void phid::EncryptionManager::rsaGenPair(std::string& op_pub, std::string& op_pr
 }
 
 void phid::EncryptionManager::changePrivKey(std::string& new_rsa_priv_key) {
-  this->rsa_priv_key = new_rsa_priv_key;
   phid::EncryptionManager::strToRsa<CryptoPP::RSA::PrivateKey>(new_rsa_priv_key,
                                                                this->_private_key);
 }
@@ -374,7 +372,7 @@ void phid::EncryptionManager::changePrivKey(std::string& new_rsa_priv_key) {
 /***/
 
 void phid::EncryptionManager::encryptText(const std::string& text, const std::string& rsa_pub_key,
-                                          EncryptedMessage& op, const int& version) {
+                                          EncryptedMessage& op, int version) {
   /*
   Uses a PGP-style standard:
    GZip (level 3) for compression,
