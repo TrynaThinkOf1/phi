@@ -26,7 +26,7 @@
 | ipv6_addr | TEXT | NOT NULL |
 | hardware_profile | TEXT | NOT NULL |
 ```sql
-UNIQUE(name), UNIQUE(ipv6_addr)
+UNIQUE(ipv6_addr)
 ```
 
 ---
@@ -38,10 +38,10 @@ UNIQUE(name), UNIQUE(ipv6_addr)
 | contact_id | INTEGER | NOT NULL |
 | content | TEXT | NOT NULL |
 | timestamp | DATETIME | DEFAULT CURRENT_TIMESTAMP |
-| is_read | INTEGER | DEFAULT 0 |
-| is_delivered | INTEGER | DEFAULT 0 |
+| is_read | BOOLEAN | DEFAULT FALSE |
+| is_delivered | BOOLEAN | DEFAULT FALSE |
 ```sql
-FOREIGN KEY(sender_id) REFERENCES contacts(id)
+FOREIGN KEY(contact_id) REFERENCES contacts(id)
 ```
 
 ---
@@ -53,4 +53,4 @@ FOREIGN KEY(sender_id) REFERENCES contacts(id)
 | title | TEXT | NOT NULL |
 | description | TEXT | N/A |
 | timestamp | DATETIME | DEFAULT CURRENT_TIMESTAMP |
-| is_reported | INTEGER | DEFAULT 0 |
+| is_reported | BOOLEAN | DEFAULT FALSE |
