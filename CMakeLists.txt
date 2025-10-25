@@ -8,6 +8,7 @@ project(PHI
 set(EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
 #
 
 # GLOBAL VARIABLES
@@ -76,7 +77,6 @@ target_compile_options(phid PRIVATE
     -Wno-return-type
     -Wno-comment
     $<$<CONFIG:Release>:-O2>
-    $<$<CONFIG:Debug>:-g>
 )
 #
 
