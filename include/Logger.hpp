@@ -20,13 +20,17 @@
 
 #include "utils.hpp"
 
-namespace phid {
+namespace phi {
 
-enum LEVEL : std::uint8_t { INFO, WARNING, ERROR, CRITICAL };
+enum LogLevel : std::uint8_t { INFO, WARNING, ERROR, CRITICAL };
 
 class Logger {
   private:
     std::ofstream* file;
+
+    /** HELPER FUNCS **/
+    void killOldLogs(const time_t& real_time_struct);
+    /** **/
 
   public:
     /** CONSTRUCTOR & DESCRUCTOR **/
@@ -34,9 +38,9 @@ class Logger {
     ~Logger();
     /** **/
 
-    void log(LEVEL level, const std::string& content);
+    void log(LogLevel level, const std::string& content);
 };
 
-}  // namespace phid
+}  // namespace phi
 
 #endif /* LOGGER_HPP */
