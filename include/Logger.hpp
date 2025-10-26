@@ -14,7 +14,9 @@
 #define LOGGER_HPP
 
 #include <fstream>
+#include <filesystem>
 #include <string>
+#include <iterator>
 #include <ctime>
 #include <cstdint>
 
@@ -26,7 +28,8 @@ enum LogLevel : std::uint8_t { INFO, WARNING, ERROR, CRITICAL };
 
 class Logger {
   private:
-    std::ofstream* file;
+    std::ofstream file;
+    std::string path;
 
     /** HELPER FUNCS **/
     void killOldLogs(const time_t& real_time_struct);
