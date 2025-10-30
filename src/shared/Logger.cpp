@@ -172,6 +172,8 @@ void phi::Logger::killOldLogs(const time_t& real_time_struct) {
 
 /** **/
 
+/** PUBLIC METHODS **/
+
 void phi::Logger::log(phi::LogLevel level, const std::string& content) {
   /*
   Add a log line to the log file
@@ -210,6 +212,84 @@ void phi::Logger::log(phi::LogLevel level, const std::string& content) {
       break;
   }
 }
+
+/***/
+
+bool phi::Logger::deleteNumLogs(int num, int& erc) {
+  /*
+  Deletes num + 1 lines from log
+   file to effectively clear some
+   log history
+
+  Args:
+   num - # lines to delete
+  */
+
+  if (num < 0) num = 1;  // NOLINT
+
+  this->file.close();  // close so that I can open an in file
+
+  std::ifstream inf(this->path, std::ios::binary);
+  if (!inf.is_open()) {
+    this->file.open(this->path, std::ios::binary | std::ios::app);  // append mode
+    if (!this->file.is_open()) {
+      erc = 2;
+      return false;
+    }
+
+    erc = 1;
+    return false;  // failed to do it
+  }
+
+  std::string contents((std::istreambuf_iterator<char>(inf)), std::istreambuf_iterator<char>());
+
+  inf.close();
+
+  this->file.open(this->path, std::ios::binary | std::ios::trunc);  // deletes the file contents
+  if (!this->file.is_open()) {
+    this->file.open(this->path, std::ios::binary | std::ios::app);  // try to restore it
+    if (!this->file.is_open()) {
+      erc = 2;
+      return false;
+    }
+
+    erc = 1;
+    return false;  // failed to open output file
+  }
+
+  contents.erase(contents.length() - 1);  // erase the last newline
+
+  size_t idx = contents.rfind('\n');
+  idx = (idx != std::string::npos ? idx - 1 : contents.length());  // it keeps the \n
+  contents.erase(idx);
+
+  this->file << contents;
+  this->file.close();
+
+  this->file.open(this->path, std::ios::binary | std::ios::app);
+  if (!this->file.is_open()) {
+    erc = 2;
+    return false;
+  }
+
+  return true;  // leave the file open
+}
+
+/***/
+
+
+bool phi::Logger::clearLogs() {
+  /*
+  Delete entire log file
+  */
+
+  this->file.close();
+
+  this->file.open(this->path, std::ios::binary | std::ios::trunc);  // clear file contents
+  return this->file.is_open();
+}
+
+/** **/
 
 /** NON CLASS METHODS **/
 size_t findLastDateIndex(const std::string& log_content, const std::string& reference_date_str) {

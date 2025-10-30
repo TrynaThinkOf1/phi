@@ -45,6 +45,10 @@ class Logger {
     /** **/
 
     void log(LogLevel level, const std::string& content);
+
+    bool deleteNumLogs(int num, int& erc);
+
+    bool clearLogs();
 };
 
 }  // namespace phi
