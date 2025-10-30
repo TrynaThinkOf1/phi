@@ -16,6 +16,7 @@
 #include <fstream>
 #include <filesystem>
 #include <string>
+#include <regex>
 #include <iterator>
 #include <ctime>
 #include <cstdint>
@@ -30,6 +31,8 @@ class Logger {
   private:
     std::ofstream file;
     std::string path;
+
+    static constexpr std::size_t DATE_MAXLEN = 64;
 
     /** HELPER FUNCS **/
     void killOldLogs(const time_t& real_time_struct);

@@ -6,6 +6,7 @@
 #include <sstream>
 #include <iomanip>
 #include <cctype>
+#include <ctime>
 #include <cstring>
 #include <cerrno>
 #include <stdexcept>
@@ -34,6 +35,14 @@
   }
 
   return result;
+}
+
+/***/
+
+static bool parseDateTime(const std::string& datetime_str, std::tm& tm_out) {
+  std::istringstream stream(datetime_str);
+  stream >> std::get_time(&tm_out, "%Y-%m-%d+%H:%M");
+  return !stream.fail();
 }
 
 /***/
