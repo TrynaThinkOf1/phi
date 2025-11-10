@@ -19,6 +19,7 @@
 #include <memory>
 #include <exception>
 #include <thread>
+#include <chrono>
 
 #include <termcolor/termcolor.hpp>
 
@@ -87,7 +88,14 @@ int main() {
   }
 
   const std::shared_ptr<phid::Pipeline> PHI = std::make_shared<phid::Pipeline>();
-  std::cout << std::boolalpha << PHI->isConnected() << "\n";
+  std::this_thread::sleep_for(std::chrono::seconds(10));
+  if (PHI->isConnected()) {
+    PHI->send("HELLO, PIPELINE!");
+    std::cout << "message sent\n";
+    std::this_thread::sleep_for(std::chrono::seconds(10));
+    std::cout << "message received: " << PHI->read(1024) << "\n";
+    PHI->disconnect();
+  }
 
   return 0;
 }

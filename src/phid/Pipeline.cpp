@@ -67,7 +67,7 @@ phid::Pipeline::~Pipeline() {
 
 void phid::Pipeline::listenLoop() {
   while (!this->stop_listening) {
-    if (this->sock >= 0) {
+    if (this->sock <= 0) {
       struct pollfd pfd{};
       pfd.fd = this->spawner;
       pfd.events = POLLIN;
