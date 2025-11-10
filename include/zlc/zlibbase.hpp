@@ -7,31 +7,33 @@
 
 namespace zlibcomplete {
 
-  enum flush_parameter { no_flush = 0, auto_flush = 1 };
+enum flush_parameter { no_flush = 0, auto_flush = 1 };
 
-  class ZLibBaseCompressor {
+class ZLibBaseCompressor {
     char in_[ZLIB_COMPLETE_CHUNK];
     char out_[ZLIB_COMPLETE_CHUNK];
     bool autoFlush_;
     bool finished_;
     z_stream strm_;
-protected:
+
+  protected:
     ZLibBaseCompressor(int level, flush_parameter autoFlush, int windowBits);
     ~ZLibBaseCompressor(void);
     std::string baseCompress(const std::string& input);
     std::string baseFinish(void);
-  };
+};
 
-  class ZLibBaseDecompressor {
+class ZLibBaseDecompressor {
     char in_[ZLIB_COMPLETE_CHUNK];
     char out_[ZLIB_COMPLETE_CHUNK];
     z_stream strm_;
-protected:
+
+  protected:
     ZLibBaseDecompressor(int windowBits);
     ~ZLibBaseDecompressor(void);
     std::string baseDecompress(const std::string& input);
-  };
+};
 
-}
+}  // namespace zlibcomplete
 
 #endif

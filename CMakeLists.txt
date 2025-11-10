@@ -24,16 +24,21 @@ file(GLOB_RECURSE SHARED_SRC CONFIGURE_DEPENDS ${SHARED_SRC_DIR}/*.cpp)
 # PHI
 add_executable(phi ${PHI_SRC} ${SHARED_SRC})
 
+if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    target_include_directories(phi PUBLIC /opt/homebrew/include)
+    target_link_directories(phi PUBLIC /opt/homebrew/lib)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_include_directories(phi PUBLIC /home/linuxbrew/.linuxbrew/include)
+    target_link_directories(phi PUBLIC /home/linuxbrew/.linuxbrew/lib)
+endif()
+
 target_include_directories(
     phi PUBLIC
-    /opt/homebrew/include/
     /usr/local/include/
     ${CMAKE_CURRENT_SOURCE_DIR}/include/
 )
-
 target_link_directories(
     phi PUBLIC
-    /opt/homebrew/lib/
     /usr/local/lib/
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/
 )
@@ -54,16 +59,22 @@ target_compile_options(phi PRIVATE
 # PHID
 add_executable(phid ${PHID_SRC} ${SHARED_SRC})
 
+if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    target_include_directories(phid PUBLIC /opt/homebrew/include)
+    target_link_directories(phid PUBLIC /opt/homebrew/lib)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_include_directories(phid PUBLIC /home/linuxbrew/.linuxbrew/include)
+    target_link_directories(phid PUBLIC /home/linuxbrew/.linuxbrew/lib)
+endif()
+
 target_include_directories(
     phid PUBLIC
-    /opt/homebrew/include/
     /usr/local/include/
     ${CMAKE_CURRENT_SOURCE_DIR}/include/
 )
 
 target_link_directories(
     phid PUBLIC
-    /opt/homebrew/lib/
     /usr/local/lib/
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/
 )
