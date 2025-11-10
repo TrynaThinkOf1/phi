@@ -25,8 +25,6 @@
 
 namespace phi {
 
-enum LogLevel : std::uint8_t { INFO, WARNING, ERROR, CRITICAL };
-
 class Logger {
   private:
     std::ofstream file;
@@ -44,7 +42,7 @@ class Logger {
     ~Logger();
     /** **/
 
-    void log(LogLevel level, const std::string& content);
+    void log(const std::string& level, const std::string& content);
 
     bool deleteNumLogs(int num, int& erc);
 

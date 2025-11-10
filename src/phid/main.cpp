@@ -18,6 +18,7 @@
 #include <csignal>
 #include <memory>
 #include <exception>
+#include <thread>
 
 #include <termcolor/termcolor.hpp>
 
@@ -27,6 +28,7 @@
 #include "phid/encryption/MessageTypes.hpp"
 #include "phid/encryption/EncryptionManager.hpp"
 #include "phid/encryption/secrets.hpp"
+#include "phid/Pipeline.hpp"
 #include "utils.hpp"
 
 namespace tmc = termcolor;
@@ -54,6 +56,10 @@ int main() {
 
   /***/
 
+  bool needs_setup = false;
+
+  /***/
+
   bool scs = false;
   const std::shared_ptr<phi::Logger> LOG =
     std::make_shared<phi::Logger>("~/.phi/phid_errors.log", scs);
@@ -66,12 +72,9 @@ int main() {
 
   scs = false;
 
-  if (!phid::createDBFile()) {
+  if (!phid::createDBFile() || !phid::uniqueChecker()) {
     return 1;
-  }  // exit if not valid permissions
-  if (!phid::uniqueChecker()) {
-    return 1;
-  }  // exit if not unique
+  }  // exit if not valid permissions or not unique
 
   /**/
 
@@ -79,7 +82,12 @@ int main() {
 
   const std::shared_ptr<phid::DBManager> DMAN = std::make_shared<phid::DBManager>(scs);
   if (!scs) {
+    LOG->log("ERROR", "Database not found, needs setup");
+    needs_setup = true;
   }
+
+  const std::shared_ptr<phid::Pipeline> PHI = std::make_shared<phid::Pipeline>();
+  std::cout << std::boolalpha << PHI->isConnected() << "\n";
 
   return 0;
 }

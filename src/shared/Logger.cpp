@@ -174,7 +174,7 @@ void phi::Logger::killOldLogs(const time_t& real_time_struct) {
 
 /** PUBLIC METHODS **/
 
-void phi::Logger::log(phi::LogLevel level, const std::string& content) {
+void phi::Logger::log(const std::string& level, const std::string& content) {
   /*
   Add a log line to the log file
    for info or error handling
@@ -197,20 +197,8 @@ void phi::Logger::log(phi::LogLevel level, const std::string& content) {
     std::memcpy(buf.data(), "UNKNOWN DATETIME", 16);  // NOLINT -- magic number
   }
 
-  switch (level) {
-    case phi::LogLevel::INFO:
-      this->file << "[INFO] `" << content << "` @ " << buf.data() << " [END INFO]\n";
-      break;
-    case phi::LogLevel::WARNING:
-      this->file << "[WARNING] `" << content << "` @ " << buf.data() << " [WARNING INFO]\n";
-      break;
-    case phi::LogLevel::ERROR:
-      this->file << "[ERROR] `" << content << "` @ " << buf.data() << " [ERROR INFO]\n";
-      break;
-    case phi::LogLevel::CRITICAL:
-      this->file << "[CRITICAL] `" << content << "` @ " << buf.data() << " [CRITICAL INFO]\n";
-      break;
-  }
+  this->file << "[" << level << "] `" << content << "` @ " << buf.data() << " [END " << level
+             << "]\n";
 }
 
 /***/
