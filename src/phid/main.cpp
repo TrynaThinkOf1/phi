@@ -12,7 +12,6 @@
 
 #include <iostream>
 #include <string>
-#include <cstring>
 #include <vector>
 #include <cstdlib>
 #include <csignal>
@@ -29,7 +28,7 @@
 #include "phid/encryption/MessageTypes.hpp"
 #include "phid/encryption/EncryptionManager.hpp"
 #include "phid/encryption/secrets.hpp"
-#include "phid/Pipeline.hpp"
+#include "phid/PipelineManager.hpp"
 #include "utils.hpp"
 
 namespace tmc = termcolor;
@@ -65,7 +64,9 @@ int main() {
   const std::shared_ptr<phi::Logger> LOG =
     std::make_shared<phi::Logger>("~/.phi/phid_errors.log", scs);
   if (!scs) {
-    std::cout << tmc::bright_red << "ERROR CREATING ERROR LOG FOR PHID!\n" << tmc::reset;
+    std::cout << tmc::bright_red << "Error creating log file for phid.\n";
+    std::cout << "Please refer to online documentation for help on fixing logging issues.\n";
+    std::cout << "Error code 2A\n" << tmc::reset;
     return 1;
   }
 
@@ -83,19 +84,16 @@ int main() {
 
   const std::shared_ptr<phid::DBManager> DMAN = std::make_shared<phid::DBManager>(scs);
   if (!scs) {
-    LOG->log("ERROR", "Database not found, needs setup");
+    LOG->log("error", "Database not found, needs setup");
     needs_setup = true;
   }
 
-  const std::shared_ptr<phid::Pipeline> PHI = std::make_shared<phid::Pipeline>();
-  std::this_thread::sleep_for(std::chrono::seconds(10));
-  if (PHI->isConnected()) {
-    PHI->send("HELLO, PIPELINE!");
-    std::cout << "message sent\n";
-    std::this_thread::sleep_for(std::chrono::seconds(10));
-    std::cout << "message received: " << PHI->read(1024) << "\n";
-    PHI->disconnect();
-  }
+  scs = false;
+  const std::shared_ptr<phid::PipelineManager> PIPE =
+    std::make_shared<phid::PipelineManager>(scs, LOG);
+  if (!scs) {
+    return 1;
+  }  // exit if we failed to create a listening pipeline socket
 
   return 0;
 }
