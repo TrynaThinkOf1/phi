@@ -53,4 +53,3 @@ class Pipeline {
 }  // namespace phi
 
 #endif /* PIPELINE_HPP */
-

@@ -13,6 +13,7 @@
 #ifndef LOGGER_HPP
 #define LOGGER_HPP
 
+#include <algorithm>
 #include <fstream>
 #include <filesystem>
 #include <string>
@@ -42,7 +43,7 @@ class Logger {
     ~Logger();
     /** **/
 
-    void log(const std::string& level, const std::string& content);
+    void log(std::string level, const std::string& content);
 
     bool deleteNumLogs(int num, int& erc);
 

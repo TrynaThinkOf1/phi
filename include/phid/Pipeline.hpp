@@ -39,7 +39,7 @@ class Pipeline {
     void listenLoop();
 
   public:
-    Pipeline();
+    Pipeline(int& erc);
     ~Pipeline();
 
     /***/

@@ -12,6 +12,7 @@
 
 #include "Logger.hpp"
 
+#include <algorithm>
 #include <fstream>
 #include <filesystem>
 #include <string>
@@ -174,7 +175,7 @@ void phi::Logger::killOldLogs(const time_t& real_time_struct) {
 
 /** PUBLIC METHODS **/
 
-void phi::Logger::log(const std::string& level, const std::string& content) {
+void phi::Logger::log(std::string level, const std::string& content) {
   /*
   Add a log line to the log file
    for info or error handling
@@ -191,6 +192,8 @@ void phi::Logger::log(const std::string& level, const std::string& content) {
 #else
   localtime_r(&real_time_struct, &real_time_tm);
 #endif
+
+  std::transform(level.begin(), level.end(), level.begin(), ::toupper);
 
   std::vector<char> buf(DATE_MAXLEN);
   if (std::strftime(buf.data(), buf.size(), "%Y-%m-%d+%H:%M", &real_time_tm) == 0) {

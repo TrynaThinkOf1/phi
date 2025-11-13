@@ -12,6 +12,7 @@
 
 #include "phid/Pipeline.hpp"
 
+#include <iostream>
 #include <atomic>
 #include <thread>
 #include <mutex>
@@ -25,9 +26,10 @@
 #include <fcntl.h>
 #include <poll.h>
 
-phid::Pipeline::Pipeline() : spawner(socket(AF_INET, SOCK_STREAM, 0)) {
+phid::Pipeline::Pipeline(int& erc) : spawner(socket(AF_INET, SOCK_STREAM, 0)) {
   if (this->spawner == -1) {
-    throw std::runtime_error("Failed to create pipeline socket");
+    erc = 0;
+    throw std::exception{};
   }
 
   int flags = fcntl(this->spawner, F_GETFL, 0);
@@ -40,12 +42,14 @@ phid::Pipeline::Pipeline() : spawner(socket(AF_INET, SOCK_STREAM, 0)) {
 
   if (bind(this->spawner, (struct sockaddr*)&addr, sizeof(addr)) == -1) {  // NOLINT
     close(this->spawner);
-    throw std::runtime_error("Failed to bind pipeline socket");
+    erc = 1;
+    throw std::exception{};
   }
 
   if (listen(this->spawner, 1) == -1) {
     close(this->spawner);
-    throw std::runtime_error("Failed to listen on pipeline socket");
+    erc = 2;
+    throw std::exception{};
   }
   this->listen_thread = std::thread(&phid::Pipeline::listenLoop, this);
 }
@@ -58,7 +62,7 @@ phid::Pipeline::~Pipeline() {
   close(this->spawner);
 
   if (this->sock >= 0) {
-    this->send("</EOF>");
+    this->send("</EOT>");
     close(this->sock);
   }
 }
@@ -158,7 +162,7 @@ void phid::Pipeline::disconnect() {
 
   if (this->sock < 0) return;  // NOLINT
 
-  std::string eof_msg = "</EOF>";
+  std::string eof_msg = "</EOT>";
   ::send(this->sock, eof_msg.data(), eof_msg.size(), 0);
 
   close(this->sock);
