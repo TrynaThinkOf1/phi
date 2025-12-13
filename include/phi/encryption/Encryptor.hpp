@@ -4,14 +4,14 @@
  2025/09/24
 
  Phi C++ Project
- include/phid/encryption/EncryptionManager.hpp
+ include/phi/encryption/Encryptor.hpp
 
  Zevi Berlin
 
 */
 
-#ifndef ENCRYPTIONMANAGER_HPP
-#define ENCRYPTIONMANAGER_HPP
+#ifndef ENCRYPTOR_HPP
+#define ENCRYPTOR_HPP
 
 #include <algorithm>
 #include <array>
@@ -28,49 +28,36 @@
 #include <sodium.h>
 #include <zlc/gzipcomplete.hpp>
 
-#include "phid/encryption/MessageTypes.hpp"
+#include "phi/encryption/MessageTypes.hpp"
 #include "utils.hpp"
 
-namespace phid {
+namespace phi::encryption {
 
-class EncryptionManager {
+class Encryptor {
   private:
-    /*****      *****\
-     LIFETIME OBJECTS
-    \*****      *****/
-
     zlibcomplete::GZipCompressor* compressor;
     // 3 = compression level, 1-9 (least-greatest)
     zlibcomplete::GZipDecompressor* decompressor;
 
-    /***/
+    /**/
 
     CryptoPP::AutoSeededRandomPool* rng;
 
-    /***/
+    /**/
 
     std::array<unsigned char, crypto_aead_chacha20poly1305_KEYBYTES> chacha_key;
     uint8_t chacha_num_uses = 0;  // same key can be used multiple times, my limit is 3
 
-    /***/
+    /**/
 
     CryptoPP::BLAKE2b* blake2_hasher;
 
-    /***/
+    /**/
 
     CryptoPP::RSA::PublicKey _public_key;
     CryptoPP::RSA::PrivateKey _private_key;
 
-    /*****      *****\
-    \*****      *****/
-
-
-    //====================\\
-
-
-    /*****  *****\
-     HELPER FUNCS
-    \*****  *****/
+    /**/
 
     /* op = OUTPUT, void bc more space efficient to output via ref */
 
@@ -78,7 +65,7 @@ class EncryptionManager {
 
     void decompressText(const std::string& text, std::string& op);
 
-    /***/
+    /**/
 
     void chachaEncryptText(
       const std::string& text,
@@ -92,28 +79,22 @@ class EncryptionManager {
       const std::array<unsigned char, crypto_aead_chacha20poly1305_KEYBYTES>& chacha_key,
       std::string& op_text);
 
-    /***/
+    /**/
 
     void rsaEncryptChachaKey(const std::string& rsa_pub_key, std::string& op);
 
     void rsaDecryptChachaKey(const std::string& encrypted_key,
                              std::array<unsigned char, crypto_aead_chacha20poly1305_KEYBYTES>& op);
 
-    /***/
+    /**/
 
     void blake2HashText(const std::string& text, std::string& op);
     bool blake2VerifyHash(const std::string& text, const std::string& hash);
 
-    /*****  *****\
-    \*****  *****/
-
-
 
   public:
-    /** CONSTRUCTOR & DESTRUCTOR **/
-    EncryptionManager(const std::string& rsa_priv_key = std::string(""));
-    ~EncryptionManager();  // all pointers deleted here
-    /** **/
+    Encryptor(const std::string& rsa_priv_key = std::string(""));
+    ~Encryptor();  // all pointers deleted here
 
     void rsaGenPair(std::string& op_pub, std::string& op_priv);
 
@@ -147,11 +128,11 @@ class EncryptionManager {
 
     /***/
 
-    void encryptText(const std::string& text, const std::string& rsa_pub_key, EncryptedMessage& op,
-                     int version = 1);
-    int decryptText(const EncryptedMessage& msg, std::string& op_text);
+    void encryptMessage(const std::string& text, const std::string& rsa_pub_key,
+                        EncryptedMessage& op, int version = 1);
+    int decryptMessage(const EncryptedMessage& msg, std::string& op_text);
 };
 
-}  // namespace phid
+}  // namespace phi::encryption
 
-#endif /* ENCRYPTIONMANAGER_HPP */
+#endif /* ENCRYPTOR_HPP */

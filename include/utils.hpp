@@ -1,7 +1,9 @@
-#ifndef _UTILS
-#define _UTILS
+#ifndef _UTILS_HPP
+#define _UTILS_HPP
 
 #include <iostream>
+#include <fstream>
+#include <filesystem>
 #include <string>
 #include <sstream>
 #include <iomanip>
@@ -153,4 +155,43 @@ static inline unsigned char hexValue(char character) {
   return "";  // no IPv6 available
 }
 
-#endif /* _UTILS */
+[[nodiscard]] static bool createDataFiles() {
+  const std::string PATH = expand("~/.phi/");
+
+  if (!(std::filesystem::exists(PATH))) {
+    try {
+      std::filesystem::create_directory(PATH);
+    } catch (std::filesystem::filesystem_error e) {
+      return false;
+    }
+  }
+
+  if (!std::filesystem::exists(PATH + "main.db")) {
+    // no try-catch here because it already passed above
+    std::ofstream file(PATH + "main.db");
+
+    if (file.is_open()) {
+      file.close();
+    } else {
+      return false;
+    }
+  }
+
+  if (!std::filesystem::exists(PATH + "self.json")) {
+    std::ofstream file(PATH + "self.json");
+
+    if (file.is_open()) {
+      file.close();
+    } else {
+      return false;
+    }
+  }
+
+  std::error_code err;
+  std::filesystem::permissions(PATH, std::filesystem::perms::owner_all,
+                               std::filesystem::perm_options::replace, err);
+
+  return !static_cast<bool>(err);
+}
+
+#endif /* _UTILS_HPP */

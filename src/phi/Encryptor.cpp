@@ -4,13 +4,13 @@
  2025/09/24
 
  Phi C++ Project
- src/phid/EncryptionManager.cpp
+ src/phi/Encryptor.cpp
 
  Zevi Berlin
 
 */
 
-#include "phid/encryption/EncryptionManager.hpp"
+#include "phi/encryption/Encryptor.hpp"
 
 
 #include <algorithm>
@@ -28,7 +28,7 @@
 #include <sodium.h>
 #include <zlc/gzipcomplete.hpp>
 
-#include "phid/encryption/MessageTypes.hpp"
+#include "phi/encryption/MessageTypes.hpp"
 #include "utils.hpp"
 
 #define BUFFER (const int)16384
@@ -36,7 +36,7 @@
 
 /** CONSTRUCTOR & DESTRUCTOR **/
 
-phid::EncryptionManager::EncryptionManager(const std::string& rsa_priv_key)
+phi::encryption::Encryptor::Encryptor(const std::string& rsa_priv_key)
     : compressor(new zlibcomplete::GZipCompressor(3)),
       decompressor(new zlibcomplete::GZipDecompressor()),
       rng(new CryptoPP::AutoSeededRandomPool()),
@@ -54,11 +54,12 @@ phid::EncryptionManager::EncryptionManager(const std::string& rsa_priv_key)
   /***/
 
   if (!rsa_priv_key.empty()) {
-    phid::EncryptionManager::strToRsa<CryptoPP::RSA::PrivateKey>(rsa_priv_key, this->_private_key);
+    phi::encryption::Encryptor::strToRsa<CryptoPP::RSA::PrivateKey>(rsa_priv_key,
+                                                                    this->_private_key);
   }
 }
 
-phid::EncryptionManager::~EncryptionManager() {
+phi::encryption::Encryptor::~Encryptor() {
   /*
   Delete the ChaCha20Poly1305 key, and
    GZipCompressor/Decompressor, the
@@ -87,7 +88,7 @@ phid::EncryptionManager::~EncryptionManager() {
  HELPER FUNCS
 \*****  *****/
 
-void phid::EncryptionManager::compressText(const std::string& text, std::string& op) {
+void phi::encryption::Encryptor::compressText(const std::string& text, std::string& op) {
   /*
   Uses GZip with compression level 3
    to compress the plaintext message
@@ -116,7 +117,7 @@ void phid::EncryptionManager::compressText(const std::string& text, std::string&
   }
 }
 
-void phid::EncryptionManager::decompressText(const std::string& text, std::string& op) {
+void phi::encryption::Encryptor::decompressText(const std::string& text, std::string& op) {
   /*
   Uses GZip to decompress a
    message into plaintext.
@@ -145,7 +146,7 @@ void phid::EncryptionManager::decompressText(const std::string& text, std::strin
 
 /***/
 
-void phid::EncryptionManager::chachaEncryptText(
+void phi::encryption::Encryptor::chachaEncryptText(
   const std::string& text,
   std::array<unsigned char, crypto_aead_chacha20poly1305_NPUBBYTES>& op_nonce,
   std::string& op_text) {
@@ -194,7 +195,7 @@ void phid::EncryptionManager::chachaEncryptText(
                  static_cast<size_t>(outlen));  // fuckass C++ typing
 }
 
-int phid::EncryptionManager::chachaDecryptText(
+int phi::encryption::Encryptor::chachaDecryptText(
   const std::string& text,
   const std::array<unsigned char, crypto_aead_chacha20poly1305_NPUBBYTES>& nonce,
   const std::array<unsigned char, crypto_aead_chacha20poly1305_KEYBYTES>& chacha_key,
@@ -244,7 +245,8 @@ int phid::EncryptionManager::chachaDecryptText(
 
 /***/
 
-void phid::EncryptionManager::rsaEncryptChachaKey(const std::string& rsa_pub_key, std::string& op) {
+void phi::encryption::Encryptor::rsaEncryptChachaKey(const std::string& rsa_pub_key,
+                                                     std::string& op) {
   /*
   Uses the Crypto++ implementation
    of RSA to encrypt a ChaCha20-Poly1305
@@ -258,7 +260,7 @@ void phid::EncryptionManager::rsaEncryptChachaKey(const std::string& rsa_pub_key
   */
 
   CryptoPP::RSA::PublicKey pub;
-  phid::EncryptionManager::strToRsa<CryptoPP::RSA::PublicKey>(rsa_pub_key, pub);
+  phi::encryption::Encryptor::strToRsa<CryptoPP::RSA::PublicKey>(rsa_pub_key, pub);
 
   /**/
 
@@ -269,7 +271,7 @@ void phid::EncryptionManager::rsaEncryptChachaKey(const std::string& rsa_pub_key
     new CryptoPP::PK_EncryptorFilter(*(this->rng), encryptor, new CryptoPP::StringSink(op)));
 }
 
-void phid::EncryptionManager::rsaDecryptChachaKey(
+void phi::encryption::Encryptor::rsaDecryptChachaKey(
   const std::string& encrypted_key,
   std::array<unsigned char, crypto_aead_chacha20poly1305_KEYBYTES>& op) {
   /*
@@ -299,7 +301,7 @@ void phid::EncryptionManager::rsaDecryptChachaKey(
 
 /***/
 
-void phid::EncryptionManager::blake2HashText(const std::string& text, std::string& op) {
+void phi::encryption::Encryptor::blake2HashText(const std::string& text, std::string& op) {
   /*
   Uses the Crypto++ implementation of
    the BLAKE2b hashing algorithm. This
@@ -321,10 +323,11 @@ void phid::EncryptionManager::blake2HashText(const std::string& text, std::strin
   this->blake2_hasher->Restart();  // refreshes the byte cache for new plaintext
 }
 
-bool phid::EncryptionManager::blake2VerifyHash(const std::string& text, const std::string& hash) {
+bool phi::encryption::Encryptor::blake2VerifyHash(const std::string& text,
+                                                  const std::string& hash) {
   /*
   Just uses the function above
-   (phid::EncryptionManager::blake2_hash_text)
+   (phid::Encryptor::blake2_hash_text)
    to hash the text and then compares
    it to the provided hash
   */
@@ -342,7 +345,7 @@ bool phid::EncryptionManager::blake2VerifyHash(const std::string& text, const st
 
 /** public methods **/
 
-void phid::EncryptionManager::rsaGenPair(std::string& op_pub, std::string& op_priv) {
+void phi::encryption::Encryptor::rsaGenPair(std::string& op_pub, std::string& op_priv) {
   /*
   Generate a public/private key
    pair using Crypto++ RSA implementation
@@ -360,19 +363,21 @@ void phid::EncryptionManager::rsaGenPair(std::string& op_pub, std::string& op_pr
 
   /**/
 
-  phid::EncryptionManager::rsaToStr<CryptoPP::RSA::PublicKey>(pub, op_pub);
-  phid::EncryptionManager::rsaToStr<CryptoPP::RSA::PublicKey>(priv, op_priv);
+  phi::encryption::Encryptor::rsaToStr<CryptoPP::RSA::PublicKey>(pub, op_pub);
+  phi::encryption::Encryptor::rsaToStr<CryptoPP::RSA::PublicKey>(priv, op_priv);
 }
 
-void phid::EncryptionManager::changePrivKey(std::string& new_rsa_priv_key) {
-  phid::EncryptionManager::strToRsa<CryptoPP::RSA::PrivateKey>(new_rsa_priv_key,
-                                                               this->_private_key);
+void phi::encryption::Encryptor::changePrivKey(std::string& new_rsa_priv_key) {
+  phi::encryption::Encryptor::strToRsa<CryptoPP::RSA::PrivateKey>(new_rsa_priv_key,
+                                                                  this->_private_key);
 }
 
 /***/
 
-void phid::EncryptionManager::encryptText(const std::string& text, const std::string& rsa_pub_key,
-                                          EncryptedMessage& op, int version) {
+void phi::encryption::Encryptor::encryptMessage(const std::string& text,
+                                                const std::string& rsa_pub_key,
+                                                phi::encryption::EncryptedMessage& op,
+                                                int version) {
   /*
   Uses a PGP-style standard:
    GZip (level 3) for compression,
@@ -399,7 +404,8 @@ void phid::EncryptionManager::encryptText(const std::string& text, const std::st
   this->blake2HashText(text, op.blake2_hash);
 }
 
-int phid::EncryptionManager::decryptText(const EncryptedMessage& msg, std::string& op_text) {
+int phi::encryption::Encryptor::decryptMessage(const phi::encryption::EncryptedMessage& msg,
+                                               std::string& op_text) {
   /*
   Reverses the process of encryption
    (see phid::EncryptionManager::encrypt_text).

@@ -4,13 +4,13 @@
  2025/10/10
 
  Phi C++ Project
- src/phid/secrets.cpp
+ src/phi/secrets.cpp
 
  Zevi Berlin
 
 */
 
-#include "phid/encryption/secrets.hpp"
+#include "phi/encryption/secrets.hpp"
 
 #include <iostream>
 #include <string>
@@ -18,9 +18,9 @@
 
 #include <sodium.h>
 
-#include "phid/encryption/MessageTypes.hpp"
+#include "phi/encryption/MessageTypes.hpp"
 
-void phid::genKXP(phid::KXP& op) {
+void phi::encryption::genKXP(phi::encryption::KXP& op) {
   /*
   Generate a private and a public key
    for Diffie-Hellmann key exchange
@@ -34,9 +34,10 @@ void phid::genKXP(phid::KXP& op) {
 
 /***/
 
-bool phid::derive_shared_secret(const bool& is_alice, const phid::KXP& self,
-                                const std::array<unsigned char, crypto_kx_PUBLICKEYBYTES>& peer_pk,
-                                std::vector<unsigned char>& op_key) {
+bool phi::encryption::derive_shared_secret(
+  const bool& is_alice, const phi::encryption::KXP& self,
+  const std::array<unsigned char, crypto_kx_PUBLICKEYBYTES>& peer_pk,
+  std::vector<unsigned char>& op_key) {
   /*
   Derive using the Diffie-Hellmann algorithm
    a shared secret between Alice and Bob

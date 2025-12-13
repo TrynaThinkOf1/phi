@@ -4,26 +4,25 @@
  2025/09/24
 
  Phi C++ Project
- include/phid/encryption/MessageTypes.hpp
+ include/phi/encryption/MessageTypes.hpp
 
  Zevi Berlin
 
 */
 
-#ifndef ENCRYPTEDMESSAGE_HPP
-#define ENCRYPTEDMESSAGE_HPP
+#ifndef MESSAGETYPES_HPP
+#define MESSAGETYPES_HPP
 
 #include <string>
 #include <unordered_map>
 #include <cstdint>
 
 #include <sodium.h>
-#include <sys/types.h>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 
-namespace phid {
+namespace phi::encryption {
 
 struct EncryptedMessage {
     uint8_t version;
@@ -35,15 +34,18 @@ struct EncryptedMessage {
 
     std::string blake2_hash;
 
-    std::string mac = "";
+    std::string mac;
 
     /**/
 
-    const std::unordered_map<std::string, std::string*> str_field_map{
-      {"content", &this->content},
-      {"chacha_key", &this->chacha_key},
-      {"blake2_hash", &this->blake2_hash},
-      {"mac", &this->mac}};
+    std::unordered_map<std::string, std::string*> MAP;
+
+    EncryptedMessage() {
+      this->MAP["content"] = &this->content;
+      this->MAP["chacha_key"] = &this->chacha_key;
+      this->MAP["blake2_hash"] = &this->blake2_hash;
+      this->MAP["mac"] = &this->mac;
+    }
 
     /***/
 
@@ -56,7 +58,7 @@ struct EncryptedMessage {
     std::string to_json_str() const {
       json j;
 
-      for (const auto& [field, ptr] : str_field_map) {
+      for (const auto& [field, ptr] : this->MAP) {
         j[field] = *ptr;
       }
 
@@ -67,14 +69,11 @@ struct EncryptedMessage {
     }
 
     bool from_json_str(const std::string& json_str) {
-      json j;
-      if (json::accept(json_str)) {
-        j = json::parse(json_str);
-      } else {
-        return false;
-      }
+      if (!json::accept(json_str)) return false;
 
-      for (const auto& [field, ptr] : str_field_map) {
+      json j = json::parse(json_str);
+
+      for (const auto& [field, ptr] : this->MAP) {
         if (j[field] == nullptr) {
           return false;
         }
@@ -98,7 +97,7 @@ struct AuthenticatedUpdate {
 
     std::string content;
 
-    std::string mac = "";
+    std::string mac;
 
     /***/
 
@@ -117,12 +116,9 @@ struct AuthenticatedUpdate {
     }
 
     bool from_json_str(const std::string& json_str) {
-      json j;
-      if (json::accept(json_str)) {
-        j = json::parse(json_str);
-      } else {
-        return false;
-      }
+      if (!json::accept(json_str)) return false;
+
+      json j = json::parse(json_str);
 
       if (j["version"] == nullptr) return false;
       this->version = static_cast<uint8_t>(j["version"].get<int>());
@@ -137,6 +133,6 @@ struct AuthenticatedUpdate {
     }
 };
 
-}  // namespace phid
+}  // namespace phi::encryption
 
-#endif /* ENCRYPTEDMESSAGE_HPP */
+#endif /* MESSAGETYPES_HPP */

@@ -4,7 +4,7 @@
  2025/10/10
 
  Phi C++ Project
- include/phid/encryption/secrets.hpp
+ include/phi/encryption/secrets.hpp
 
  Zevi Berlin
 
@@ -20,9 +20,9 @@
 
 #include <sodium.h>
 
-#include "phid/encryption/MessageTypes.hpp"
+#include "phi/encryption/MessageTypes.hpp"
 
-namespace phid {
+namespace phi::encryption {
 
 // key exchange pair
 struct KXP {
@@ -36,14 +36,14 @@ void genKXP(KXP& op);
 
 /***/
 
-bool derive_shared_secret(const bool& is_alice, const phid::KXP& self,
+bool derive_shared_secret(const bool& is_alice, const KXP& self,
                           const std::array<unsigned char, crypto_kx_PUBLICKEYBYTES>& peer_pk,
                           std::vector<unsigned char>& op_key);
 
 /** TEMPLATE FUNCTIONS **/
 
 template <typename T>
-void add_mac_to_msg(const std::vector<unsigned char>& key, T& msg) {
+bool add_mac_to_msg(const std::vector<unsigned char>& key, T& msg) {
   /*
   Add a MAC to an update/message to
    make it authenticated
@@ -54,15 +54,15 @@ void add_mac_to_msg(const std::vector<unsigned char>& key, T& msg) {
   */
 
   if (key.size() != crypto_auth_KEYBYTES) {
-    // TODO: Fatal error handling for daemon
-    std::cout << "Secret key is of wrong size: " << key.size() << "\n";
-    return;
+    return false;
   }
 
   msg.mac.resize(crypto_auth_BYTES);
   crypto_auth(reinterpret_cast<unsigned char*>(msg.mac.data()),
               reinterpret_cast<const unsigned char*>(msg.content.data()), msg.content.size(),
               reinterpret_cast<const unsigned char*>(key.data()));
+
+  return true;
 }
 
 template <typename T>
@@ -101,6 +101,6 @@ inline std::string secret_to_str(const std::vector<unsigned char>& secret) {
   return std::string(secret.begin(), secret.end());
 }
 
-}  // namespace phid
+}  // namespace phi::encryption
 
 #endif /* SECRETS_HPP */
