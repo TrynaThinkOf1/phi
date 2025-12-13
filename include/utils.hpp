@@ -155,13 +155,19 @@ static inline unsigned char hexValue(char character) {
   return "";  // no IPv6 available
 }
 
-[[nodiscard]] static bool createDataFiles() {
+[[nodiscard]] static bool createDataFiles(int& erc) {
+  /*
+    erc: 0 if none, 1 if ~/.phi/ can't be created, 2 if main.db, 3 if self.json
+    permissions
+  */
+
   const std::string PATH = expand("~/.phi/");
 
   if (!(std::filesystem::exists(PATH))) {
     try {
       std::filesystem::create_directory(PATH);
     } catch (std::filesystem::filesystem_error e) {
+      erc = 1;
       return false;
     }
   }
@@ -173,6 +179,7 @@ static inline unsigned char hexValue(char character) {
     if (file.is_open()) {
       file.close();
     } else {
+      erc = 2;
       return false;
     }
   }
@@ -183,15 +190,13 @@ static inline unsigned char hexValue(char character) {
     if (file.is_open()) {
       file.close();
     } else {
+      erc = 3;
       return false;
     }
   }
 
-  std::error_code err;
-  std::filesystem::permissions(PATH, std::filesystem::perms::owner_all,
-                               std::filesystem::perm_options::replace, err);
-
-  return !static_cast<bool>(err);
+  erc = 0;
+  return true;
 }
 
 #endif /* _UTILS_HPP */

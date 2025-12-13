@@ -95,7 +95,7 @@ phi::database::Database::Database(int& erc) {
 
 /** **/
 
-bool phi::database::Database::createSelf(std::string name, std::string emoji,
+bool phi::database::Database::createSelf(const std::string& name, const std::string& emoji,
                                          const std::string& rsa_pub_key,
                                          const std::string& rsa_priv_key,
                                          const std::string& ipv6_addr,
@@ -103,13 +103,6 @@ bool phi::database::Database::createSelf(std::string name, std::string emoji,
   /*
     erc: 0 if none, 1 if self can't be created
   */
-
-  if (name.empty()) {
-    name = "Me";
-  }
-  if (emoji.empty()) {
-    emoji = "🪞";
-  }
 
   this->self.name = name;
   this->self.emoji = emoji;

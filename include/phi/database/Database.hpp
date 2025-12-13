@@ -45,9 +45,9 @@ class Database {
 
     /** **/
 
-    bool createSelf(std::string name, std::string emoji, const std::string& rsa_pub_key,
-                    const std::string& rsa_priv_key, const std::string& ipv6_addr,
-                    const std::string& hardware_profile, int& erc);
+    bool createSelf(const std::string& name, const std::string& emoji,
+                    const std::string& rsa_pub_key, const std::string& rsa_priv_key,
+                    const std::string& ipv6_addr, const std::string& hardware_profile, int& erc);
 
     bool changeSelfAttribute(const std::string& field, const std::string& value, int& erc);
 

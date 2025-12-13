@@ -51,6 +51,10 @@ struct self_t {
       json j;
 
       for (const auto& [field, ptr] : this->MAP) {
+        if (field.substr(0, 3) == "rsa") {
+          j[field] = toHex(*ptr);
+          continue;
+        }
         j[field] = *ptr;
       }
 
@@ -63,6 +67,10 @@ struct self_t {
       json j = json::parse(json_str);
 
       for (const auto& [field, ptr] : this->MAP) {
+        if (field.substr(0, 3) == "rsa") {
+          *ptr = fromHex(j[field].get<std::string>());
+          continue;
+        }
         *ptr = j[field].get<std::string>();
       }
 
@@ -101,6 +109,10 @@ struct contact_t {
       json j;
 
       for (const auto& [field, ptr] : this->MAP) {
+        if (field == "rsa_key") {
+          j[field] = toHex(*ptr);
+          continue;
+        }
         j[field] = *ptr;
       }
 
@@ -115,6 +127,10 @@ struct contact_t {
       json j = json::parse(json_str);
 
       for (const auto& [field, ptr] : this->MAP) {
+        if (field == "rsa_key") {
+          *ptr = fromHex(j[field].get<std::string>());
+          continue;
+        }
         *ptr = j[field].get<std::string>();
       }
 
