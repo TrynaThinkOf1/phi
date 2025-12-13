@@ -1,7 +1,7 @@
 # CONFIGURATION
 cmake_minimum_required(VERSION 3.24...4.1.2)
 project(PHI
-    VERSION 0.1.1
+    VERSION 0.2.1
     LANGUAGES CXX
 )
 
@@ -9,20 +9,21 @@ set(EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O1")
 #
 
 # GLOBAL VARIABLES
 set(PHI_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/phi/)
 set(PHID_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/phid/)
-set(SHARED_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/shared/)
 
 file(GLOB_RECURSE PHI_SRC CONFIGURE_DEPENDS ${PHI_SRC_DIR}/*.cpp)
 file(GLOB_RECURSE PHID_SRC CONFIGURE_DEPENDS ${PHID_SRC_DIR}/*.cpp)
-file(GLOB_RECURSE SHARED_SRC CONFIGURE_DEPENDS ${SHARED_SRC_DIR}/*.cpp)
 #
 
+find_package(Boost REQUIRED COMPONENTS thread log_setup log)
+
 # PHI
-add_executable(phi ${PHI_SRC} ${SHARED_SRC})
+add_executable(phi ${PHI_SRC})
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     target_include_directories(phi PUBLIC /opt/homebrew/include)
@@ -42,7 +43,7 @@ target_link_directories(
     /usr/local/lib/
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/
 )
-target_link_libraries(phi fmt)
+target_link_libraries(phi fmt zlibcomplete z cryptopp sodium SQLiteCPP sqlite3)
 
 target_compile_options(phi PRIVATE
     -Wall
@@ -51,13 +52,11 @@ target_compile_options(phi PRIVATE
     -Wno-unused-parameter
     -Wno-return-type
     -Wno-comment
-    $<$<CONFIG:Release>:-O1>
-    $<$<CONFIG:Debug>:-g>
 )
 #
 
 # PHID
-add_executable(phid ${PHID_SRC} ${SHARED_SRC})
+add_executable(phid ${PHID_SRC})
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     target_include_directories(phid PUBLIC /opt/homebrew/include)
@@ -78,7 +77,7 @@ target_link_directories(
     /usr/local/lib/
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/
 )
-target_link_libraries(phid zlibcomplete z cryptopp sodium SQLiteCPP sqlite3 fmt)
+target_link_libraries(phid Boost::thread Boost::log_setup Boost::log)
 
 target_compile_options(phid PRIVATE
     -Wall
@@ -87,7 +86,6 @@ target_compile_options(phid PRIVATE
     -Wno-unused-parameter
     -Wno-return-type
     -Wno-comment
-    $<$<CONFIG:Release>:-O2>
 )
 #
 

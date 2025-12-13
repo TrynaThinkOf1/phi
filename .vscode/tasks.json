@@ -2,9 +2,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "build",
+      "label": "Build (Release)",
       "type": "shell",
-      "command": "cmake -S . -B _build && cmake --build _build --config Release -j4 && mv _build/phi ./ && mv _build/phid ./",
+      "command": "cmake -S . -B _build -DCMAKE_BUILD_TYPE=Release && cmake --build _build -j4 && mv _build/phi ./ && mv _build/phid ./",
       "args": [],
       "group": {
         "kind": "build",
@@ -15,9 +15,9 @@
       ]
     },
     {
-      "label": "build for debug",
+      "label": "Build (Debug)",
       "type": "shell",
-      "command": "cmake -S . -B _build -DCMAKE_BUILD_TYPE=Debug && cmake --build _build --config Debug -j4 && mv _build/phi ./ && mv _build/phid ./",
+      "command": "cmake -S . -B _build -DCMAKE_BUILD_TYPE=Debug && cmake --build _build -j4 && mv _build/phi ./ && mv _build/phid ./ && dsymutil ./phi && dsymutil ./phid",
       "args": [],
       "group": {
         "kind": "build",
@@ -28,7 +28,7 @@
       ]
     },
     {
-      "label": "analyze",
+      "label": "Analyze",
       "type": "shell",
       "command": "find src -type f \\( -name \"*.c\" -o -name \"*.cpp\" \\) -exec clang-tidy --config-file=./.clang-tidy --format-style=file -p _build {} +",
       "args": [],
@@ -41,7 +41,7 @@
       ]
     },
     {
-      "label": "cleanup",
+      "label": "Cleanup",
       "type": "shell",
       "command": "mv _build/compile_commands.json ./;rm -rf _build/ && mkdir _build;mv ./compile_commands.json _build/;rm -f phi phid; rm -rf phi.dSYM phid.dSYM; rm -rf .cache",
       "args": [],
@@ -54,7 +54,7 @@
       ]
     },
     {
-      "label": "format",
+      "label": "Format",
       "type": "shell",
       "command": "find src -type f \\( -name \"*.c\" -o -name \"*.cpp\" \\) -exec clang-format -i {} +; find include -type f \\( -name \"*.h\" -o -name \"*.hpp\" \\) -exec clang-format -i {} +",
       "args": [],

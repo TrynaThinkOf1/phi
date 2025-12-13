@@ -9,7 +9,7 @@
 """
 
 from datetime import datetime
-from os import path, makedirs
+from os import path, makedirs, system
 
 
 def create_code_files(header_parent_dir: str, source_parent_dir: str, filename: str, author_name: str) -> None:
@@ -81,29 +81,76 @@ def create_code_files(header_parent_dir: str, source_parent_dir: str, filename: 
     with open(source_path, "w") as source:
         source.write(source_content)
 
+#########################
+
+
+
+#########################
 
 def main():
     menu: str = """OPTIONS:
   1) Create Code Files
       Add a source file and corresponding header file. Also boilerplates with include guards and header comment.
 
-  2) Exit
+  2) Build (Release)
+
+  3) Build (Debug)
+
+  4) Cleanup
+
+  5) Format
+
+  6) Analyze
+
+  7) Exit
 """
     print(menu)
-    #x = input("\n    >> ")
-    match (x := input("\n    >> ")):
-        case "1":
+
+    match (x := int(input("\n    >> "))):
+        case 1:
             header_parent_dir = input("Header Parent Dir (e.g 'data' for path 'include/data/'): ")
             source_parent_dir = input("Source Parent Dir ('phi', 'phid', or 'shared'): ")
             filename = input("Filename (do not include .cpp/.hpp): ")
             author_name = input("Your name (defaults to Zevi Berlin): ")
             create_code_files(header_parent_dir, source_parent_dir, filename, author_name)
             print("\nSUCCESSFULLY CREATED AND BOILERPLATED FILES")
-            exit(0)
 
-        case "2":
+        case 2:
+            system("cmake -S . -B _build -DCMAKE_BUILD_TYPE=Release -j4")
+            if input("Continue? ") != "y": exit(1)
+            system("cmake --build _build -j4")
+            
+            system("mv _build/phi ./ && mv _build/phid ./")
+
+        case 3:
+            system("cmake -S . -B _build -DCMAKE_BUILD_TYPE=Debug -j4")
+            if input("Continue? ") != "y": exit(1)
+            system("cmake --build _build -j4")
+            
+            system("mv _build/phi ./ && mv _build/phid ./")
+
+            system("dsymutil ./phi && dsymutil ./phid")
+
+        case 4:
+            system("mv _build/compile_commands.json ./")
+
+            system("rm -rf _build/")
+            system("mkdir _build")
+
+            system("mv ./compile_commands.json _build/")
+
+            system("rm -f phi phid")
+            system("rm -rf phi.dSYM phid.dSYM .cache")
+
+        case 5:
+            system("find src -type f \\( -name \"*.c\" -o -name \"*.cpp\" \\) -exec clang-format -i {} +")
+            system("find include -type f \\( -name \"*.h\" -o -name \"*.hpp\" \\) -exec clang-format -i {} +")
+
+        case 6:
+            system("find src -type f \\( -name \"*.c\" -o -name \"*.cpp\" \\) -exec clang-tidy --config-file=./.clang-tidy --format-style=file -p _build {} +")
+
+        case 7:
             print("\nExiting.")
-            exit(0)
 
         case _:
             print(f"Input '{x}' not recognized.")
