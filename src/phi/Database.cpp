@@ -23,7 +23,7 @@
 
 #include <SQLiteCpp/SQLiteCpp.h>
 #include <sqlite3.h>  // for error codes
-#include <nlohmann/json.hpp>
+#include "nlohmann/json.hpp"
 
 #include "phi/database/structs.hpp"
 #include "utils.hpp"

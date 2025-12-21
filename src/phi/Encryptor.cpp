@@ -26,9 +26,9 @@
 #include <cryptopp/queue.h>
 #include <cryptopp/rsa.h>
 #include <sodium.h>
-#include <zlc/gzipcomplete.hpp>
 
 #include "phi/encryption/MessageTypes.hpp"
+#include "phi/encryption/gzip_basic.hpp"
 #include "utils.hpp"
 
 #define BUFFER (const int)16384
@@ -37,13 +37,9 @@
 /** CONSTRUCTOR & DESTRUCTOR **/
 
 phi::encryption::Encryptor::Encryptor(const std::string& rsa_priv_key)
-    : compressor(new zlibcomplete::GZipCompressor(3)),
-      decompressor(new zlibcomplete::GZipDecompressor()),
-      rng(new CryptoPP::AutoSeededRandomPool()),
-      blake2_hasher(new CryptoPP::BLAKE2b()) {
+    : rng(new CryptoPP::AutoSeededRandomPool()), blake2_hasher(new CryptoPP::BLAKE2b()) {
   /*
-  Create the ChaCha20Poly1305 key,
-   GZipCompressor/Decompressor, the
+  Create the ChaCha20Poly1305 key, the
    BLAKE2b hasher, the ASRP, and the
    RSA private key.
   */
@@ -61,17 +57,9 @@ phi::encryption::Encryptor::Encryptor(const std::string& rsa_priv_key)
 
 phi::encryption::Encryptor::~Encryptor() {
   /*
-  Delete the ChaCha20Poly1305 key, and
-   GZipCompressor/Decompressor, the
+  Delete the ChaCha20Poly1305 key,the
    BLAKE2b hasher, and the ASRP.
   */
-
-  this->compressor->finish();
-
-  delete this->compressor;
-  delete this->decompressor;
-
-  /***/
 
   delete this->rng;
 
@@ -87,64 +75,6 @@ phi::encryption::Encryptor::~Encryptor() {
 /*****  *****\
  HELPER FUNCS
 \*****  *****/
-
-void phi::encryption::Encryptor::compressText(const std::string& text, std::string& op) {
-  /*
-  Uses GZip with compression level 3
-   to compress the plaintext message
-   so that it saves space when being
-   transferred via socket.
-
-  Args:
-   text - the string that needs compressing
-   op - the string where compressed text goes
-  */
-
-  if (text.length() < BUFFER) {
-    op = this->compressor->compress(text);
-  } else {
-    std::vector<std::string> chunks;
-    for (size_t i = 0; i <= text.length() / BUFFER; i++) {
-      size_t start_index = i * BUFFER;
-      size_t end_index = (i + 1) * BUFFER;
-      end_index = std::min(end_index, text.length());
-      chunks.push_back(text.substr(start_index, end_index));
-    }
-
-    for (const std::string& chunk : chunks) {
-      op += this->compressor->compress(chunk);
-    }
-  }
-}
-
-void phi::encryption::Encryptor::decompressText(const std::string& text, std::string& op) {
-  /*
-  Uses GZip to decompress a
-   message into plaintext.
-
-  Args:
-   text - the compressed string
-   op - the string where decompressed text is stored
-  */
-
-  if (text.length() < BUFFER) {
-    op = this->decompressor->decompress(text);
-  } else {
-    std::vector<std::string> chunks;
-    for (size_t i = 0; i <= text.length() / BUFFER; i++) {
-      size_t start_index = i * BUFFER;
-      size_t end_index = (i + 1) * BUFFER;
-      end_index = std::min(end_index, text.length());
-      chunks.push_back(text.substr(start_index, end_index));
-    }
-
-    for (const std::string& chunk : chunks) {
-      op += this->decompressor->decompress(chunk);
-    }
-  }
-}
-
-/***/
 
 void phi::encryption::Encryptor::chachaEncryptText(
   const std::string& text,
@@ -394,11 +324,8 @@ void phi::encryption::Encryptor::encryptMessage(const std::string& text,
    version - *OPTIONAL* for setting a custom version for message
   */
 
-  std::string temp;
-
   op.version = version;
-  this->compressText(text, temp);
-  this->chachaEncryptText(temp, op.nonce, op.content);
+  this->chachaEncryptText(phi::encryption::gzipCompress(text), op.nonce, op.content);
 
   this->rsaEncryptChachaKey(rsa_pub_key, op.chacha_key);
   this->blake2HashText(text, op.blake2_hash);
@@ -432,7 +359,7 @@ int phi::encryption::Encryptor::decryptMessage(const phi::encryption::EncryptedM
         return -1;
       }
 
-      this->decompressText(temp, op_text);
+      temp = phi::encryption::gzipDecompress(temp);
 
       if (!this->blake2VerifyHash(op_text, msg.blake2_hash)) {
         return -2;

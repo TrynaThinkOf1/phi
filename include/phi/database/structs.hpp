@@ -16,7 +16,7 @@
 #include <string>
 #include <unordered_map>
 
-#include <nlohmann/json.hpp>
+#include "nlohmann/json.hpp"
 
 #include "utils.hpp"
 

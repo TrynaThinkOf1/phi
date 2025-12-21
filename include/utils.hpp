@@ -18,8 +18,7 @@
 #include <sys/types.h>
 #include <sys/utsname.h>
 
-#include <fmt/format.h>
-#include <httplib.h>
+#include <curl/curl.h>
 
 [[nodiscard]] static std::string expand(const std::string& path) {
   std::string result{path};
@@ -133,7 +132,7 @@ static inline unsigned char hexValue(char character) {
     profile += "Unknown]";
 #endif
   } else {
-    profile += fmt::format("{} (v:{})", name.sysname, name.release);
+    profile += std::string(name.sysname) + " (v:" + std::string(name.release) + ")";
     profile += " / arch: ";
     profile += name.machine;  // NOLINT -- it's a char* but this is fine and doesn't need changing
     profile += "]";
@@ -144,16 +143,38 @@ static inline unsigned char hexValue(char character) {
 
 /***/
 
-[[nodiscard]] static std::string getPublicIPv6() {
-  httplib::Client cli("http://api6.ipify.org");
-  cli.set_follow_location(true);  // follow redirects
-
-  auto res = cli.Get("/");
-  if (res && res->status == 200) {  // NOLINT 200 magic number
-    return res->body;
-  }
-  return "";  // no IPv6 available
+static size_t curlWriteCb(void* contents, size_t size, size_t nmemb, void* userp) {
+  size_t total = size * nmemb;
+  std::string* out = static_cast<std::string*>(userp);
+  out->append(static_cast<char*>(contents), total);
+  return total;
 }
+
+[[nodiscard]] static std::string getPublicIPv6() {
+  CURL* curl = curl_easy_init();
+  if (!curl) return "";
+
+  std::string response;
+
+  curl_easy_setopt(curl, CURLOPT_URL, "http://api6.ipify.org");
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteCb);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+  CURLcode res = curl_easy_perform(curl);
+
+  long http_code = 0;
+  if (res == CURLE_OK) curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+
+  curl_easy_cleanup(curl);
+
+  if (res != CURLE_OK || http_code != 200) return "";
+
+  return response;
+}
+
+/***/
 
 [[nodiscard]] static bool createDataFiles(int& erc) {
   /*

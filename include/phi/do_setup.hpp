@@ -15,8 +15,9 @@
 
 #include <iostream>
 #include <memory>
+#include <string>
 
-#include <termcolor/termcolor.hpp>
+#include "termcolor/termcolor.hpp"
 
 #include "phi/database/Database.hpp"
 #include "phi/encryption/Encryptor.hpp"

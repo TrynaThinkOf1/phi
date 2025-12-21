@@ -1,16 +1,23 @@
 # CONFIGURATION
 cmake_minimum_required(VERSION 3.24...4.1.2)
 project(PHI
-    VERSION 0.2.1
-    LANGUAGES CXX
+    VERSION 0.2.2
+    LANGUAGES C CXX
 )
+
+set(CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH OFF)
+set(CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH OFF)
 
 set(EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O1")
 #
+
+find_package(Boost REQUIRED COMPONENTS thread log_setup log)
+find_package(ZLIB REQUIRED)
+find_package(CURL REQUIRED)
+
 
 # GLOBAL VARIABLES
 set(PHI_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/phi/)
@@ -20,72 +27,92 @@ file(GLOB_RECURSE PHI_SRC CONFIGURE_DEPENDS ${PHI_SRC_DIR}/*.cpp)
 file(GLOB_RECURSE PHID_SRC CONFIGURE_DEPENDS ${PHID_SRC_DIR}/*.cpp)
 #
 
-find_package(Boost REQUIRED COMPONENTS thread log_setup log)
+include(FetchContent)
+
+
+FetchContent_Declare(ftxui
+    GIT_REPOSITORY https://github.com/ArthurSonzogni/FTXUI
+    GIT_TAG v6.1.9
+)
+
+FetchContent_Declare(cryptopp-cmake
+    GIT_REPOSITORY https://github.com/abdes/cryptopp-cmake.git
+    GIT_TAG        CRYPTOPP_8_9_0
+)
+set(CRYPTOPP_BUILD_TESTING OFF CACHE BOOL "Build tests" FORCE)
+set(CRYPTOPP_INSTALL OFF CACHE BOOL "Install Crypto++" FORCE)
+
+FetchContent_Declare(Sodium
+    GIT_REPOSITORY https://github.com/robinlinden/libsodium-cmake.git
+    GIT_TAG        e5b985ad0dd235d8c4307ea3a385b45e76c74c6a
+)
+set(SODIUM_DISABLE_TESTS ON CACHE BOOL "Disable tests")
+
+FetchContent_Declare(SQLiteCpp
+    GIT_REPOSITORY https://github.com/SRombauts/SQLiteCpp.git
+    GIT_TAG        master  # Or specific tag like v4.1.0
+)
+
+FetchContent_MakeAvailable(ftxui cryptopp-cmake Sodium SQLiteCpp)
+#
 
 # PHI
 add_executable(phi ${PHI_SRC})
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    target_include_directories(phi PUBLIC /opt/homebrew/include)
-    target_link_directories(phi PUBLIC /opt/homebrew/lib)
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_include_directories(phi PUBLIC /home/linuxbrew/.linuxbrew/include)
-    target_link_directories(phi PUBLIC /home/linuxbrew/.linuxbrew/lib)
-endif()
-
-target_include_directories(
-    phi PUBLIC
-    /usr/local/include/
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/
+target_link_libraries(phi
+    PRIVATE
+        ZLIB::ZLIB
+        sodium
+        SQLiteCpp
+        cryptopp
+        ftxui::screen
+        ftxui::dom
+        ftxui::component
+        ${CURL_LIBRARIES}
 )
-target_link_directories(
-    phi PUBLIC
-    /usr/local/lib/
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/
-)
-target_link_libraries(phi fmt zlibcomplete z cryptopp sodium SQLiteCPP sqlite3)
 
-target_compile_options(phi PRIVATE
-    -Wall
-    -Wextra
-    -Wno-unused-function
-    -Wno-unused-parameter
-    -Wno-return-type
-    -Wno-comment
+target_include_directories(phi
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CURL_INCLUDE_DIRS}
+)
+
+target_compile_options(phi
+    PRIVATE
+        -Wall
+        -Wextra
+        -Wno-unused-function
+        -Wno-unused-parameter
+        -Wno-return-type
+        -Wno-comment
+        $<$<CONFIG:Release>:-O1>
 )
 #
 
 # PHID
 add_executable(phid ${PHID_SRC})
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    target_include_directories(phid PUBLIC /opt/homebrew/include)
-    target_link_directories(phid PUBLIC /opt/homebrew/lib)
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_include_directories(phid PUBLIC /home/linuxbrew/.linuxbrew/include)
-    target_link_directories(phid PUBLIC /home/linuxbrew/.linuxbrew/lib)
-endif()
-
-target_include_directories(
-    phid PUBLIC
-    /usr/local/include/
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/
+target_link_libraries(phid 
+    PRIVATE
+        Boost::thread
+        Boost::log_setup
+        Boost::log
 )
 
-target_link_directories(
-    phid PUBLIC
-    /usr/local/lib/
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/
+target_include_directories(phid 
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/
 )
-target_link_libraries(phid Boost::thread Boost::log_setup Boost::log)
 
-target_compile_options(phid PRIVATE
-    -Wall
-    -Wextra
-    -Wno-unused-function
-    -Wno-unused-parameter
-    -Wno-return-type
-    -Wno-comment
+target_compile_options(phid
+    PRIVATE
+        -Wall
+        -Wextra
+        -Wno-unused-function
+        -Wno-unused-parameter
+        -Wno-return-type
+        -Wno-comment
+        $<$<CONFIG:Release>:-O1>
 )
 #
 

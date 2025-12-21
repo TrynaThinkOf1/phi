@@ -26,21 +26,15 @@
 #include <cryptopp/queue.h>
 #include <cryptopp/rsa.h>
 #include <sodium.h>
-#include <zlc/gzipcomplete.hpp>
 
 #include "phi/encryption/MessageTypes.hpp"
+#include "phi/encryption/gzip_basic.hpp"
 #include "utils.hpp"
 
 namespace phi::encryption {
 
 class Encryptor {
   private:
-    zlibcomplete::GZipCompressor* compressor;
-    // 3 = compression level, 1-9 (least-greatest)
-    zlibcomplete::GZipDecompressor* decompressor;
-
-    /**/
-
     CryptoPP::AutoSeededRandomPool* rng;
 
     /**/
@@ -60,12 +54,6 @@ class Encryptor {
     /**/
 
     /* op = OUTPUT, void bc more space efficient to output via ref */
-
-    void compressText(const std::string& text, std::string& op);
-
-    void decompressText(const std::string& text, std::string& op);
-
-    /**/
 
     void chachaEncryptText(
       const std::string& text,

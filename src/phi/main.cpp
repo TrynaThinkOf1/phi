@@ -17,7 +17,7 @@
 #include <exception>
 #include <thread>
 
-#include <termcolor/termcolor.hpp>
+#include "termcolor/termcolor.hpp"
 
 #include "phi/database/Database.hpp"
 #include "phi/encryption/MessageTypes.hpp"
@@ -81,6 +81,10 @@ int main() {
       return 1;
     }
   }
+
+  /**/
+
+
 
   return 0;
 }
