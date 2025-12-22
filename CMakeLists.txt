@@ -5,8 +5,16 @@ project(PHI
     LANGUAGES C CXX
 )
 
-set(CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH OFF)
-set(CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH OFF)
+if(APPLE)
+    execute_process(
+        COMMAND xcrun --sdk macosx --show-sdk-path
+        OUTPUT_VARIABLE MACOS_SDK_PATH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    set(CMAKE_OSX_SYSROOT "${MACOS_SDK_PATH}")
+    message(STATUS "macOS SDK Path: ${CMAKE_OSX_SYSROOT}")
+endif()
+
 
 set(EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
@@ -15,8 +23,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
 #
 
 find_package(Boost REQUIRED COMPONENTS thread log_setup log)
-find_package(ZLIB REQUIRED)
 find_package(CURL REQUIRED)
+find_package(ZLIB REQUIRED)
 
 
 # GLOBAL VARIABLES
@@ -54,10 +62,25 @@ FetchContent_Declare(SQLiteCpp
 )
 
 FetchContent_MakeAvailable(ftxui cryptopp-cmake Sodium SQLiteCpp)
+
+if(TARGET cryptopp)
+    get_target_property(CRYPTOPP_INCLUDE_DIRS cryptopp INTERFACE_INCLUDE_DIRECTORIES)
+    list(FILTER CRYPTOPP_INCLUDE_DIRS EXCLUDE REGEX "cryptopp-cmake-build/cryptopp")
+    set_target_properties(cryptopp PROPERTIES 
+        INTERFACE_INCLUDE_DIRECTORIES "${CRYPTOPP_INCLUDE_DIRS}"
+    )
+endif()
 #
 
 # PHI
 add_executable(phi ${PHI_SRC})
+
+target_include_directories(phi
+    BEFORE PRIVATE
+        ${ZLIB_INCLUDE_DIRS}
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CURL_INCLUDE_DIRS}
+)
 
 target_link_libraries(phi
     PRIVATE
@@ -69,12 +92,6 @@ target_link_libraries(phi
         ftxui::dom
         ftxui::component
         ${CURL_LIBRARIES}
-)
-
-target_include_directories(phi
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${CURL_INCLUDE_DIRS}
 )
 
 target_compile_options(phi
@@ -92,16 +109,16 @@ target_compile_options(phi
 # PHID
 add_executable(phid ${PHID_SRC})
 
+target_include_directories(phid 
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/
+)
+
 target_link_libraries(phid 
     PRIVATE
         Boost::thread
         Boost::log_setup
         Boost::log
-)
-
-target_include_directories(phid 
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/
 )
 
 target_compile_options(phid
