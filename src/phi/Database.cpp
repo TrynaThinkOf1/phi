@@ -20,12 +20,14 @@
 #include <fstream>
 #include <vector>
 #include <tuple>
+#include <ctime>
 
 #include <SQLiteCpp/SQLiteCpp.h>
 #include <sqlite3.h>  // for error codes
 #include "nlohmann/json.hpp"
 
 #include "phi/database/structs.hpp"
+#include "datetime.hpp"
 #include "utils.hpp"
 
 using json = nlohmann::json;
@@ -57,7 +59,7 @@ phi::database::Database::Database(int& erc) {
         contact_id INTEGER NOT NULL,
         sender BOOLEAN NOT NULL,
         content TEXT NOT NULL,
-        timestamp TEXT NOT NULL,
+        timestamp UNSIGNED BIG INT NOT NULL,
         delivered BOOLEAN DEFAULT FALSE,
         FOREIGN KEY (contact_id) REFERENCES contacts(id)
       );
@@ -66,7 +68,7 @@ phi::database::Database::Database(int& erc) {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         description TEXT,
-        timestamp TEXT NOT NULL
+        timestamp UNSIGNED BIG INT NOT NULL
       );
     )sql");
 
@@ -82,12 +84,13 @@ phi::database::Database::Database(int& erc) {
   buf << file.rdbuf();
   file.close();
 
+  // checks whether the file is empty or an invalid JSON
   if (buf.tellp() == std::streampos(0) || !json::accept(buf)) {
     erc = 2;
     return;
   }
 
-  // no need to store value because validity is checked above
+  // no need to store value (a boolean about validity) because validity is checked above
   this->self.from_json_str(buf.str());
 
   erc = 0;
@@ -129,6 +132,10 @@ bool phi::database::Database::changeSelfAttribute(const std::string& field,
   /*
     erc: 0 if none, 1 if self can't be accessed
   */
+
+  // dereference the self structure's map entry of the
+  // field, which holds a pointer to the string. Set that
+  // string to the value
   *this->self.MAP[field] = value;
 
   std::fstream file(this->self_path, std::fstream::out);
@@ -198,7 +205,13 @@ bool phi::database::Database::createContact(const std::string& name, const std::
 
 std::unique_ptr<std::vector<std::tuple<int, std::string, std::string>>>
 phi::database::Database::getAllContacts() {
-  int rows = this->db->execAndGet("SELECT COUNT(id) FROM contacts").getInt();  // should not fail
+  /*
+    returns a vector of tuples, the tuples being:
+    {id, name, emoji}
+  */
+
+  int rows = this->db->execAndGet("SELECT COUNT(id) FROM contacts").getInt();
+  if (rows == 0) return nullptr;
 
   auto contacts = std::make_unique<std::vector<std::tuple<int, std::string, std::string>>>(rows);
 
@@ -206,8 +219,8 @@ phi::database::Database::getAllContacts() {
   int idx = 0;
   while (get_contacts.tryExecuteStep() == SQLITE_OK) {
     (*contacts)[idx] = std::make_tuple<int, std::string, std::string>(
-      get_contacts.getColumn(0).getInt(), get_contacts.getColumn(1).getString(),
-      get_contacts.getColumn(2).getString());
+      get_contacts.getColumn("id").getInt(), get_contacts.getColumn("name").getString(),
+      get_contacts.getColumn("emoji").getString());
   }
 
   return contacts;
@@ -268,3 +281,105 @@ void phi::database::Database::deleteContact(int contact_id) {
 }
 
 /** **/
+
+bool phi::database::Database::createMessage(int contact_id, bool sender, const std::string& content,
+                                            int& erc) {
+  /*
+    erc: 0 if none, 1 if contact doesn't exist
+  */
+
+  if (this->db->execAndGet("SELECT 1 FROM contacts WHERE id = " + std::to_string(contact_id))
+        .getInt() == 0) {
+    erc = 1;
+    return false;
+  }
+
+  time_t timestamp = phi::time::getCurrentTime();
+
+  SQLite::Statement add(*(this->db), R"sql(
+  INSERT INTO messages (contact_id, sender, content, timestamp, delivered)
+  VALUES (:id, :sender, :content, :time))sql");
+  add.bind(":id", contact_id);
+  // this is stu, the database column type is literally BOOLEAN
+  add.bind(":sender", static_cast<int>(sender));
+  add.bind(":content", content);
+  add.bind(":time", static_cast<long long>(timestamp));
+
+  add.exec();
+
+  erc = 0;
+  return true;
+}
+
+std::unique_ptr<std::vector<int>> phi::database::Database::getAllMessagesWithContact(int contact_id,
+                                                                                     int& erc) {
+  /*
+    erc: 0 if none, 1 if contact doesn't exist, 2 if no messages exist
+  */
+
+  if (this->db->execAndGet("SELECT 1 FROM contacts WHERE id = " + std::to_string(contact_id))
+        .getInt() == 0) {
+    erc = 1;
+    return nullptr;
+  }
+
+  // clang-format off
+  int rows = this->db->execAndGet("SELECT COUNT(id) FROM messages WHERE contact_id = " + std::to_string(contact_id)).getInt(); // clang
+  if (rows == 0) {
+    erc = 2;
+    return nullptr;
+  }
+  // clang-format on
+
+  auto messages = std::make_unique<std::vector<int>>(rows);
+
+  SQLite::Statement get_messages(*(this->db), "SELECT id FROM messages WHERE contact_id = :id");
+  get_messages.bind(":id", contact_id);
+  int idx = 0;
+  while (get_messages.tryExecuteStep() == SQLITE_OK) {
+    (*messages)[idx] = get_messages.getColumn("id").getInt();
+  }
+
+  erc = 0;
+  return messages;
+}
+
+phi::database::message_t phi::database::Database::getMessage(int message_id, int& erc) {
+  /*
+    erc: 0 if none, 1 if message doesn't exist
+  */
+
+  phi::database::message_t message{};
+
+  SQLite::Statement get_message(*(this->db), "SELECT * FROM messages WHERE id = :id");
+  get_message.bind(":id", message_id);
+
+  if (get_message.tryExecuteStep() != SQLITE_OK) {
+    erc = 1;
+    return message;  // return it empty
+  }
+
+  message.id = get_message.getColumn("id").getInt();
+  message.contact_id = get_message.getColumn("contact_id").getInt();
+  message.sender = static_cast<bool>(get_message.getColumn("sender").getInt());
+  message.content = get_message.getColumn("content").getString();
+  message.timestamp = phi::time::timeToStr(get_message.getColumn("timestamp").getInt64());
+  message.delivered = static_cast<bool>(get_message.getColumn("delivered").getInt());
+
+  return message;
+}
+
+/** **/
+
+bool phi::database::Database::createError(const std::string& title, const std::string& description,
+                                          int& erc) {
+}
+
+bool phi::database::Database::getAllErrors(std::vector<int>& op, int& erc) {
+}
+
+bool phi::database::Database::getError(int error_id, error_t& op, int& erc) {
+}
+
+bool phi::database::Database::deleteError(int error_id, int& erc) {
+}

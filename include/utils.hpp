@@ -40,14 +40,6 @@
 
 /***/
 
-static bool parseDateTime(const std::string& datetime_str, std::tm& tm_out) {
-  std::istringstream stream(datetime_str);
-  stream >> std::get_time(&tm_out, "%Y-%m-%d+%H:%M");
-  return !stream.fail();
-}
-
-/***/
-
 [[nodiscard]] static std::string toHex(const std::string& str) {
   std::ostringstream oss;
   oss << std::hex << std::setfill('0');

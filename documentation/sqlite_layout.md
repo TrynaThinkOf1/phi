@@ -25,7 +25,7 @@ UNIQUE(addr)
 | contact_id | INTEGER | NOT NULL |
 | sender | BOOLEAN | NOT NULL |
 | content | TEXT | NOT NULL |
-| timestamp | TEXT | NOT NULL |
+| timestamp | UNSIGNED BIG INT | NOT NULL |
 | delivered | BOOLEAN | DEFAULT FALSE |
 ```sql
 FOREIGN KEY (contact_id) REFERENCES contacts(id)
@@ -39,4 +39,4 @@ FOREIGN KEY (contact_id) REFERENCES contacts(id)
 | id | PRIMARY KEY | AUTOINCREMENT |
 | title | TEXT | NOT NULL |
 | description | TEXT | N/A |
-| timestamp | TEXT | NOT NULL |
+| timestamp | UNSIGNED BIG INT | NOT NULL |

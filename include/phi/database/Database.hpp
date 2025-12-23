@@ -20,12 +20,14 @@
 #include <fstream>
 #include <vector>
 #include <tuple>
+#include <ctime>
 
 #include <SQLiteCpp/SQLiteCpp.h>
 #include <sqlite3.h>  // for error codes
 #include "nlohmann/json.hpp"
 
 #include "phi/database/structs.hpp"
+#include "datetime.hpp"
 #include "utils.hpp"
 
 namespace phi::database {
@@ -68,11 +70,11 @@ class Database {
 
     /** **/
 
-    bool createMessage(int contact_id, bool sender, const std::string& content);
+    bool createMessage(int contact_id, bool sender, const std::string& content, int& erc);
 
-    bool getAllMessagesWithContact(std::vector<int>& op, int& erc);
+    std::unique_ptr<std::vector<int>> getAllMessagesWithContact(int contact_id, int& erc);
 
-    bool getMessage(int message_id, message_t& op, int& erc);
+    message_t getMessage(int message_id, int& erc);
 
     /** **/
 
