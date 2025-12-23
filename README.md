@@ -3,12 +3,11 @@
 [![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=F0F0F0)](#)
 [![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)](#)
 
-[![Homebrew](https://img.shields.io/badge/Homebrew-FBB040?logo=homebrew&logoColor=fff)](#)
 [![CMake](https://img.shields.io/badge/CMake-064F8C?logo=cmake&logoColor=fff)](#)
 [![C++](https://img.shields.io/badge/-C++-blue?logo=cplusplus)](#)
 [![SQLite](https://img.shields.io/badge/SQLite-%2307405e.svg?logo=sqlite&logoColor=white)](#)
 
-[![version](https://img.shields.io/badge/version-0.1.1-blue)](#)
+[![version](https://img.shields.io/badge/version-0.2.2-blue)](#)
 [![passing](https://img.shields.io/badge/build-passing-green)](#)
 [![testing](https://img.shields.io/badge/coverage-N/A-yellow)](#)
 [![secure](https://img.shields.io/badge/secure-very-green)](#)
@@ -27,9 +26,15 @@
 
 <h1>📊 FEATURES</h1>
 
+<h5>👤 USER EXPERIENCE</h5>
+
+* SQLite3 database to hold user data - [SQLiteC++](https://github.com/SRombauts/SQLiteCpp)
+	* Password protected
+* Advanced and intuitive Terminal User Interface - [FTXUI](https://arthursonzogni.github.io/FTXUI/)
+
 <h5>🔒 SECURITY</h5>
 
-* GZip (L3) compression for messages - [zlibcomplete](https://rudi-cilibrasi.github.io/zlibcomplete/index.html)
+* GZip (L3) compression for messages - [zlib](https://zlib.net)
 * ChaCha20-Poly1305 encryption for messages - [libsodium](https://doc.libsodium.org/secret-key_cryptography/aead/chacha20-poly1305)
 * RSA (4096) encryption for CC20 session keys - [Crypto++](https://www.cryptopp.com/wiki/RSA_Cryptography)
 	* Provides performant and secure hybrid encryption, inspiration from PGP
