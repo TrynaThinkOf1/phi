@@ -16,6 +16,7 @@
 #include <memory>
 #include <exception>
 #include <thread>
+#include <map>
 
 #include "termcolor/termcolor.hpp"
 
@@ -47,7 +48,7 @@ int main() {
         break;
     }
     std::cout << tmc::reset;
-    return 1;
+    return erc;
   }  // exit if not valid permissions
 
   /**/
@@ -63,7 +64,7 @@ int main() {
     std::cout << tmc::bright_red
               << "⛔️ Failed to create self file (~/.phi/self.json) due to invalid permissions ⛔️\n"
               << tmc::reset;
-    return 1;
+    return erc;
   } else if (erc == 2) {
     std::cout << tmc::yellow << "⚠️ Profile not found, needs setup ⚠️\n" << tmc::reset;
 
@@ -74,17 +75,49 @@ int main() {
     if (conf == 'y') {
       if (!do_setup(DATABASE, ENCRYPTOR)) {
         std::cout << tmc::bright_red << "Setup failed." << tmc::reset << "\n";
-        return 1;
+        return erc;
       }
     } else {
       std::cout << tmc::red << "\nExiting without creating profile.\n" << tmc::reset;
-      return 1;
+      return 0;
     }
   }
 
   /**/
 
+  /* TESTING PORTION */
 
+  /* Self -- working
+  std::string pub, priv;
+  ENCRYPTOR->rsaGenPair(pub, priv);
+
+  std::map<std::string, std::string> self_tests{
+    {"name", "Zevi Berlin"}, {"emoji", "🫩"}, {"rsa_pub_key", pub}, {"rsa_priv_key", priv}};
+
+  std::cout << "CURRENT SELF: " << DATABASE->self.toString() << "\n";
+
+  for (const auto& [key, value] : self_tests) {
+    if (!DATABASE->changeSelfAttribute(key, value, erc)) {
+      if (erc == 1) {
+        std::cout << tmc::bright_red << "Couldn't access self!\n" << tmc::reset;
+        return erc;
+      }
+    }
+
+    std::cout << "NEW SELF: " << DATABASE->self.toString() << "\n";
+  }
+  */
+
+  /* Contacts -- testing
+  */
+
+  /* Messages -- testing
+  */
+
+  /* Errors -- testing
+  */
+
+  /* */
 
   return 0;
 }
