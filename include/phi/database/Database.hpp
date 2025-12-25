@@ -21,9 +21,9 @@
 #include <vector>
 #include <tuple>
 #include <ctime>
+#include <algorithm>
 
 #include <SQLiteCpp/SQLiteCpp.h>
-#include <sqlite3.h>  // for error codes
 #include "nlohmann/json.hpp"
 
 #include "phi/database/structs.hpp"
@@ -31,6 +31,8 @@
 #include "utils.hpp"
 
 namespace phi::database {
+
+const std::vector<std::string> CONTACT_FIELDS{"name", "emoji", "addr", "shared_secret", "rsa_key"};
 
 class Database {
   private:
@@ -75,6 +77,8 @@ class Database {
     std::unique_ptr<std::vector<int>> getAllMessagesWithContact(int contact_id, int& erc);
 
     message_t getMessage(int message_id, int& erc);
+
+    void deliverMessage(int message_id);
 
     /** **/
 

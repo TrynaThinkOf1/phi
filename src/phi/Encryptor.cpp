@@ -31,8 +31,8 @@
 #include "phi/encryption/gzip_basic.hpp"
 #include "utils.hpp"
 
-#define BUFFER (const int)16384
-#define RSA_KEY_SIZE (const unsigned int)4096
+#define BUFFER 16384
+#define RSA_KEY_SIZE 4096
 
 /** CONSTRUCTOR & DESTRUCTOR **/
 

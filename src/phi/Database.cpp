@@ -21,9 +21,9 @@
 #include <vector>
 #include <tuple>
 #include <ctime>
+#include <algorithm>
 
 #include <SQLiteCpp/SQLiteCpp.h>
-#include <sqlite3.h>  // for error codes
 #include "nlohmann/json.hpp"
 
 #include "phi/database/structs.hpp"
@@ -85,7 +85,7 @@ phi::database::Database::Database(int& erc) {
   file.close();
 
   // checks whether the file is empty or an invalid JSON
-  if (buf.tellp() == std::streampos(0) || !json::accept(buf)) {
+  if (buf.str().empty() || !json::accept(buf.str())) {
     erc = 2;
     return;
   }
@@ -163,22 +163,16 @@ bool phi::database::Database::createContact(const std::string& name, const std::
 
   op_id = -1;
 
-  SQLite::Statement check(*(this->db), "SELECT 1 FROM contacts WHERE :field = :value");
-  check.bind(":field", "name");
-  check.bind(":value", name);
-
-  int result = check.tryExecuteStep();
-  if (result == SQLITE_OK) {  // returns true if there is a row of data to select from
+  SQLite::Statement check(*(this->db), "SELECT 1 FROM contacts WHERE name = :name");
+  check.bind(":name", name);
+  if (check.executeStep()) {
     erc = 1;
     return false;
   }
 
-  check.reset();
-  check.bind(":field", "addr");
-  check.bind(":value", addr);
-
-  result = check.tryExecuteStep();
-  if (result == SQLITE_OK) {  // returns true if there is a row of data to select from
+  SQLite::Statement check2(*(this->db), "SELECT 1 FROM contacts WHERE addr = :addr");
+  check2.bind(":addr", addr);
+  if (check2.executeStep()) {
     erc = 2;
     return false;
   }
@@ -193,8 +187,7 @@ bool phi::database::Database::createContact(const std::string& name, const std::
   create.bind(":ss", shared_Secret);
   create.bind(":key", rsa_key);
 
-  result = create.tryExecuteStep();
-  if (result != SQLITE_OK) {
+  if (!create.executeStep()) {
     erc = 3;
     return false;
   }
@@ -217,10 +210,11 @@ phi::database::Database::getAllContacts() {
 
   SQLite::Statement get_contacts(*(this->db), "SELECT id, name, emoji FROM contacts");
   int idx = 0;
-  while (get_contacts.tryExecuteStep() == SQLITE_OK) {
+  while (get_contacts.executeStep() && idx < rows) {
     (*contacts)[idx] = std::make_tuple<int, std::string, std::string>(
       get_contacts.getColumn("id").getInt(), get_contacts.getColumn("name").getString(),
       get_contacts.getColumn("emoji").getString());
+    idx++;
   }
 
   return contacts;
@@ -233,8 +227,7 @@ bool phi::database::Database::getContact(int contact_id, phi::database::contact_
 
   SQLite::Statement query(*(this->db), "SELECT * FROM contacts WHERE id = :id");
   query.bind(":id", contact_id);
-
-  if (query.tryExecuteStep() != SQLITE_OK) {
+  if (!query.executeStep()) {
     erc = 1;
     return false;
   }
@@ -256,21 +249,24 @@ bool phi::database::Database::changeContactAttribute(int contact_id, const std::
     erc: 0 if none, 1 if contact doesn't exist, 2 if field doesn't exist
   */
 
-  if (this->db->execAndGet("SELECT 1 FROM contacts WHERE id = " + std::to_string(contact_id))
-        .getInt() == 0) {
+  if (std::find(phi::database::CONTACT_FIELDS.begin(), phi::database::CONTACT_FIELDS.end(),
+                field) == phi::database::CONTACT_FIELDS.end()) {
+    erc = 2;
+    return false;
+  }
+
+  SQLite::Statement check(*(this->db), "SELECT 1 FROM contacts WHERE id = :id");
+  check.bind(":id", contact_id);
+  if (!check.executeStep()) {
     erc = 1;
     return false;
   }
 
-  SQLite::Statement change(*(this->db), "UPDATE contacts SET field = :value WHERE id = :id");
-  change.bind(":field", field);
+  SQLite::Statement change(*(this->db),
+                           "UPDATE contacts SET " + field + " = :value WHERE id = :id");
   change.bind(":value", value);
   change.bind(":id", contact_id);
-
-  if (change.tryExecuteStep() != SQLITE_OK) {
-    erc = 2;
-    return false;
-  }
+  change.exec();
 
   erc = 0;
   return true;
@@ -288,8 +284,9 @@ bool phi::database::Database::createMessage(int contact_id, bool sender, const s
     erc: 0 if none, 1 if contact doesn't exist
   */
 
-  if (this->db->execAndGet("SELECT 1 FROM contacts WHERE id = " + std::to_string(contact_id))
-        .getInt() == 0) {
+  SQLite::Statement check(*(this->db), "SELECT 1 FROM contacts WHERE id = :id");
+  check.bind(":id", contact_id);
+  if (!check.executeStep()) {
     erc = 1;
     return false;
   }
@@ -298,11 +295,9 @@ bool phi::database::Database::createMessage(int contact_id, bool sender, const s
   INSERT INTO messages (contact_id, sender, content, timestamp, delivered)
   VALUES (:id, :sender, :content, :time))sql");
   add.bind(":id", contact_id);
-  // this is stu, the database column type is literally BOOLEAN
-  add.bind(":sender", static_cast<int>(sender));
+  add.bind(":sender", static_cast<int>(sender));  // ts stu, database column type is lit BOOLEAN
   add.bind(":content", content);
   add.bind(":time", static_cast<long long>(phi::time::getCurrentTime()));
-
   add.exec();
 
   erc = 0;
@@ -315,14 +310,15 @@ std::unique_ptr<std::vector<int>> phi::database::Database::getAllMessagesWithCon
     erc: 0 if none, 1 if contact doesn't exist, 2 if no messages exist
   */
 
-  if (this->db->execAndGet("SELECT 1 FROM contacts WHERE id = " + std::to_string(contact_id))
-        .getInt() == 0) {
+  SQLite::Statement check(*(this->db), "SELECT 1 FROM contacts WHERE id = :id");
+  check.bind(":id", contact_id);
+  if (!check.executeStep()) {
     erc = 1;
     return nullptr;
   }
 
   // clang-format off
-  int rows = this->db->execAndGet("SELECT COUNT(id) FROM messages WHERE contact_id = " + std::to_string(contact_id)).getInt(); // clang
+  int rows = this->db->execAndGet("SELECT COUNT(id) FROM messages WHERE contact_id = " + std::to_string(contact_id)).getInt();
   if (rows == 0) {
     erc = 2;
     return nullptr;
@@ -334,8 +330,9 @@ std::unique_ptr<std::vector<int>> phi::database::Database::getAllMessagesWithCon
   SQLite::Statement get_messages(*(this->db), "SELECT id FROM messages WHERE contact_id = :id");
   get_messages.bind(":id", contact_id);
   int idx = 0;
-  while (get_messages.tryExecuteStep() == SQLITE_OK) {
+  while (get_messages.executeStep() && idx < rows) {
     (*messages)[idx] = get_messages.getColumn("id").getInt();
+    idx++;
   }
 
   erc = 0;
@@ -352,7 +349,7 @@ phi::database::message_t phi::database::Database::getMessage(int message_id, int
   SQLite::Statement get_message(*(this->db), "SELECT * FROM messages WHERE id = :id");
   get_message.bind(":id", message_id);
 
-  if (get_message.tryExecuteStep() != SQLITE_OK) {
+  if (!get_message.executeStep()) {
     erc = 1;
     return message;  // return it empty
   }
@@ -368,6 +365,10 @@ phi::database::message_t phi::database::Database::getMessage(int message_id, int
   return message;
 }
 
+void phi::database::Database::deliverMessage(int message_id) {
+  this->db->exec("UPDATE messages SET delivered = 1 WHERE id = " + std::to_string(message_id));
+}
+
 /** **/
 
 void phi::database::Database::createError(const std::string& title,
@@ -378,6 +379,7 @@ void phi::database::Database::createError(const std::string& title,
   add_error.bind(":title", title);
   add_error.bind(":description", description);
   add_error.bind(":time", static_cast<long long>(phi::time::getCurrentTime()));
+  add_error.exec();
 }
 
 std::unique_ptr<std::vector<int>> phi::database::Database::getAllErrors() {
@@ -388,8 +390,9 @@ std::unique_ptr<std::vector<int>> phi::database::Database::getAllErrors() {
 
   SQLite::Statement get_errors(*(this->db), "SELECT id FROM errors");
   int idx = 0;
-  while (get_errors.tryExecuteStep() == SQLITE_OK) {
-    (*errors)[idx] = get_errors.getColumn("id");
+  while (get_errors.executeStep() && idx < rows) {
+    (*errors)[idx] = get_errors.getColumn("id").getInt();
+    idx++;
   }
 
   return errors;
@@ -405,7 +408,7 @@ phi::database::error_t phi::database::Database::getError(int error_id, int& erc)
   SQLite::Statement get_error(*(this->db), "SELECT * FROM errors WHERE id = :id");
   get_error.bind(":id", error_id);
 
-  if (get_error.tryExecuteStep() != SQLITE_OK) {
+  if (!get_error.executeStep()) {
     erc = 1;
     return error;  // return it empty
   }
