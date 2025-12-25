@@ -78,13 +78,13 @@ class Database {
 
     /** **/
 
-    bool createError(const std::string& title, const std::string& description, int& erc);
+    void createError(const std::string& title, const std::string& description);
 
-    bool getAllErrors(std::vector<int>& op, int& erc);
+    std::unique_ptr<std::vector<int>> getAllErrors();
 
-    bool getError(int error_id, error_t& op, int& erc);
+    error_t getError(int error_id, int& erc);
 
-    bool deleteError(int error_id, int& erc);
+    void deleteError(int error_id);
 };
 
 }  // namespace phi::database

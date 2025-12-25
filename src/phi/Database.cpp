@@ -294,8 +294,6 @@ bool phi::database::Database::createMessage(int contact_id, bool sender, const s
     return false;
   }
 
-  time_t timestamp = phi::time::getCurrentTime();
-
   SQLite::Statement add(*(this->db), R"sql(
   INSERT INTO messages (contact_id, sender, content, timestamp, delivered)
   VALUES (:id, :sender, :content, :time))sql");
@@ -303,7 +301,7 @@ bool phi::database::Database::createMessage(int contact_id, bool sender, const s
   // this is stu, the database column type is literally BOOLEAN
   add.bind(":sender", static_cast<int>(sender));
   add.bind(":content", content);
-  add.bind(":time", static_cast<long long>(timestamp));
+  add.bind(":time", static_cast<long long>(phi::time::getCurrentTime()));
 
   add.exec();
 
@@ -366,20 +364,61 @@ phi::database::message_t phi::database::Database::getMessage(int message_id, int
   message.timestamp = phi::time::timeToStr(get_message.getColumn("timestamp").getInt64());
   message.delivered = static_cast<bool>(get_message.getColumn("delivered").getInt());
 
+  erc = 0;
   return message;
 }
 
 /** **/
 
-bool phi::database::Database::createError(const std::string& title, const std::string& description,
-                                          int& erc) {
+void phi::database::Database::createError(const std::string& title,
+                                          const std::string& description) {
+  SQLite::Statement add_error(*(this->db), R"sql(
+  INSERT INTO errors (title, description, timestamp)
+  VALUES (:title, :description, :time))sql");
+  add_error.bind(":title", title);
+  add_error.bind(":description", description);
+  add_error.bind(":time", static_cast<long long>(phi::time::getCurrentTime()));
 }
 
-bool phi::database::Database::getAllErrors(std::vector<int>& op, int& erc) {
+std::unique_ptr<std::vector<int>> phi::database::Database::getAllErrors() {
+  int rows = this->db->execAndGet("SELECT COUNT(id) FROM errors").getInt();
+  if (rows == 0) return nullptr;
+
+  auto errors = std::make_unique<std::vector<int>>(rows);
+
+  SQLite::Statement get_errors(*(this->db), "SELECT id FROM errors");
+  int idx = 0;
+  while (get_errors.tryExecuteStep() == SQLITE_OK) {
+    (*errors)[idx] = get_errors.getColumn("id");
+  }
+
+  return errors;
 }
 
-bool phi::database::Database::getError(int error_id, error_t& op, int& erc) {
+phi::database::error_t phi::database::Database::getError(int error_id, int& erc) {
+  /*
+    erc: 0 if none, 1 if error doesn't exist
+  */
+
+  phi::database::error_t error{};
+
+  SQLite::Statement get_error(*(this->db), "SELECT * FROM errors WHERE id = :id");
+  get_error.bind(":id", error_id);
+
+  if (get_error.tryExecuteStep() != SQLITE_OK) {
+    erc = 1;
+    return error;  // return it empty
+  }
+
+  error.id = get_error.getColumn("id").getInt();
+  error.title = get_error.getColumn("title").getString();
+  error.description = get_error.getColumn("description").getString();
+  error.timestamp = phi::time::timeToStr(get_error.getColumn("timestamp").getInt64());
+
+  erc = 0;
+  return error;
 }
 
-bool phi::database::Database::deleteError(int error_id, int& erc) {
+void phi::database::Database::deleteError(int error_id) {
+  this->db->exec("DELETE FROM errors WHERE id = " + std::to_string(error_id));
 }
