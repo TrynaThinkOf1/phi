@@ -20,7 +20,7 @@
 
 #include "utils.hpp"
 
-#define LINE_LIM (const int)32
+#define LINE_LIM 532
 
 using json = nlohmann::json;
 
@@ -79,8 +79,8 @@ struct self_t {
 
     std::string toString() const {
       return "NAME: " + this->name + "\nEMOJI: " + this->emoji +
-             "\nRSA PUB KEY (first 32): " + toHex(this->rsa_pub_key.substr(0, LINE_LIM)) +
-             "\nRSA PRIV KEY (first 32): " + toHex(this->rsa_priv_key.substr(0, LINE_LIM)) +
+             "\nRSA PUB KEY (mid 32): " + toHex(this->rsa_pub_key.substr(500, LINE_LIM)) +
+             "\nRSA PRIV KEY (mid 32): " + toHex(this->rsa_priv_key.substr(500, LINE_LIM)) +
              "\nIP: " + this->last_known_ip + "\nHARDWARE PROFILE: " + this->hardware_profile;
     }
 };
@@ -143,7 +143,7 @@ struct contact_t {
       return "ID: " + std::to_string(this->id) + "\nNAME: " + this->name +
              "\nEMOJI: " + this->emoji + "\nSHARED SECRET: " + toHex(this->shared_secret) +
              "\nIP: " + this->addr +
-             "\nRSA KEY (first 32): " + toHex(this->rsa_key.substr(0, LINE_LIM));
+             "\nRSA KEY (mid 32): " + toHex(this->rsa_key.substr(500, LINE_LIM));
     }
 };
 
