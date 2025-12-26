@@ -293,7 +293,7 @@ bool phi::database::Database::createMessage(int contact_id, bool sender, const s
 
   SQLite::Statement add(*(this->db), R"sql(
   INSERT INTO messages (contact_id, sender, content, timestamp, delivered)
-  VALUES (:id, :sender, :content, :time))sql");
+  VALUES (:id, :sender, :content, :time, 0))sql");
   add.bind(":id", contact_id);
   add.bind(":sender", static_cast<int>(sender));  // ts stu, database column type is lit BOOLEAN
   add.bind(":content", content);
@@ -367,6 +367,10 @@ phi::database::message_t phi::database::Database::getMessage(int message_id, int
 
 void phi::database::Database::deliverMessage(int message_id) {
   this->db->exec("UPDATE messages SET delivered = 1 WHERE id = " + std::to_string(message_id));
+}
+
+void phi::database::Database::eraseMessage(int message_id) {
+  this->db->exec("DELETE FROM messages WHERE id = " + std::to_string(message_id));
 }
 
 /** **/

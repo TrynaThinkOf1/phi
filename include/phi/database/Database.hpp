@@ -80,6 +80,8 @@ class Database {
 
     void deliverMessage(int message_id);
 
+    void eraseMessage(int message_id);
+
     /** **/
 
     void createError(const std::string& title, const std::string& description);
