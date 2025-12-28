@@ -186,7 +186,8 @@ struct message_t {
     }
 
     std::string toString() const {
-      return "ID: " + std::to_string(this->id) + "\nCONTACT ID: " + std::to_string(this->contact_id) +
+      return "ID: " + std::to_string(this->id) +
+             "\nCONTACT ID: " + std::to_string(this->contact_id) +
              "\nSENDER: " + (sender ? "true" : "false") + "\nCONTENT: " + this->content +
              "\nTIMESTAMP: " + this->timestamp + "\nDELIVERED: " + (delivered ? "true" : "false");
     }
