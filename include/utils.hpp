@@ -10,6 +10,7 @@
 #include <cctype>
 #include <ctime>
 #include <cstring>
+#include <cstdio>
 #include <cerrno>
 #include <stdexcept>
 
@@ -168,9 +169,17 @@ static size_t curlWriteCb(void* contents, size_t size, size_t nmemb, void* userp
 
 /***/
 
+[[nodiscard]] static bool renameFile(const std::string& path, const std::string& new_path) {
+#ifdef _WIN32
+  return (_wrename(utf8_to_utf16(path).c_str(), utf8_to_utf16(new_path).c_str()) == 0);
+#else
+  return (std::rename(path.c_str(), new_path.c_str()) == 0);
+#endif
+}
+
 [[nodiscard]] static bool createDataFiles(int& erc) {
   /*
-    erc: 0 if none, 1 if ~/.phi/ can't be created, 2 if main.db, 3 if self.json
+    erc: 0 if none, 1 if ~/.phi/ can't be created, 2 if main.db, 3 if self.json, 4 if bus.phi
     permissions
   */
 
@@ -204,6 +213,17 @@ static size_t curlWriteCb(void* contents, size_t size, size_t nmemb, void* userp
       file.close();
     } else {
       erc = 3;
+      return false;
+    }
+  }
+
+  if (!std::filesystem::exists(PATH + "bus.phi")) {
+    std::ofstream file(PATH + "bus.phi");
+
+    if (file.is_open()) {
+      file.close();
+    } else {
+      erc = 4;
       return false;
     }
   }
