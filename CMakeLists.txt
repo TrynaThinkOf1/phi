@@ -72,7 +72,7 @@ endif()
 #
 
 # PHI
-add_executable(phi ${PHI_SRC})
+add_executable(phi ${PHI_SRC} ${CMAKE_CURRENT_SOURCE_DIR}/src/Bus.cpp)
 
 target_include_directories(phi
     BEFORE PRIVATE
@@ -106,7 +106,7 @@ target_compile_options(phi
 #
 
 # PHID
-add_executable(phid ${PHID_SRC})
+add_executable(phid ${PHID_SRC} ${CMAKE_CURRENT_SOURCE_DIR}/src/Bus.cpp)
 
 target_include_directories(phid 
     PRIVATE

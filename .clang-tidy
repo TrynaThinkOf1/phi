@@ -7,7 +7,7 @@ CheckOptions:
   - key:             readability-identifier-length.IgnoredParameterNames
     value:           "op"
   - key:             readability-identifier-length.IgnoredVariableNames
-    value:           "j"          
+    value:           "(j|in)"
   - key:             readability-identifier-naming.VariableCase
     value:           lower_case
   - key:             readability-identifier-naming.FunctionCase
