@@ -35,10 +35,6 @@ using json = nlohmann::json;
 /** **/
 
 phi::database::Database::Database(int& erc) {
-  /*
-    erc: 0 if no error, 1 if self can't be created, 2 if self is invalid
-  */
-
   this->db =
     std::make_unique<SQLite::Database>(expand("~/.phi/main.db"), SQLite::OPEN_READWRITE);  // NOLINT
 
@@ -103,10 +99,6 @@ bool phi::database::Database::createSelf(const std::string& name, const std::str
                                          const std::string& rsa_priv_key,
                                          const std::string& ipv6_addr,
                                          const std::string& hardware_profile, int& erc) {
-  /*
-    erc: 0 if none, 1 if self can't be created
-  */
-
   this->self.name = name;
   this->self.emoji = emoji;
   this->self.rsa_pub_key = rsa_pub_key;
@@ -129,10 +121,6 @@ bool phi::database::Database::createSelf(const std::string& name, const std::str
 
 bool phi::database::Database::changeSelfAttribute(const std::string& field,
                                                   const std::string& value, int& erc) {
-  /*
-    erc: 0 if none, 1 if self can't be accessed
-  */
-
   // dereference the self structure's map entry of the
   // field, which holds a pointer to the string. Set that
   // string to the value
@@ -157,10 +145,6 @@ bool phi::database::Database::createContact(const std::string& name, const std::
                                             const std::string& addr,
                                             const std::string& shared_Secret,
                                             const std::string& rsa_key, int& erc, int& op_id) {
-  /*
-    erc: 0 if none, 1 if name exists, 2 if IPv6 addr already exists, 3 if unknown error
-  */
-
   op_id = -1;
 
   SQLite::Statement check(*(this->db), "SELECT 1 FROM contacts WHERE name = :name");
@@ -198,11 +182,6 @@ bool phi::database::Database::createContact(const std::string& name, const std::
 
 std::unique_ptr<std::vector<std::tuple<int, std::string, std::string>>>
 phi::database::Database::getAllContacts() {
-  /*
-    returns a vector of tuples, the tuples being:
-    {id, name, emoji}
-  */
-
   int rows = this->db->execAndGet("SELECT COUNT(id) FROM contacts").getInt();
   if (rows == 0) return nullptr;
 
@@ -245,16 +224,6 @@ bool phi::database::Database::getContact(int contact_id, phi::database::contact_
 
 bool phi::database::Database::changeContactAttribute(int contact_id, const std::string& field,
                                                      const std::string& value, int& erc) {
-  /*
-    erc: 0 if none, 1 if contact doesn't exist, 2 if field doesn't exist
-  */
-
-  if (std::find(phi::database::CONTACT_FIELDS.begin(), phi::database::CONTACT_FIELDS.end(),
-                field) == phi::database::CONTACT_FIELDS.end()) {
-    erc = 2;
-    return false;
-  }
-
   SQLite::Statement check(*(this->db), "SELECT 1 FROM contacts WHERE id = :id");
   check.bind(":id", contact_id);
   if (!check.executeStep()) {
@@ -280,10 +249,6 @@ void phi::database::Database::deleteContact(int contact_id) {
 
 bool phi::database::Database::createMessage(int contact_id, bool sender, const std::string& content,
                                             int& erc) {
-  /*
-    erc: 0 if none, 1 if contact doesn't exist
-  */
-
   SQLite::Statement check(*(this->db), "SELECT 1 FROM contacts WHERE id = :id");
   check.bind(":id", contact_id);
   if (!check.executeStep()) {
@@ -306,10 +271,6 @@ bool phi::database::Database::createMessage(int contact_id, bool sender, const s
 
 std::unique_ptr<std::vector<int>> phi::database::Database::getAllMessagesWithContact(int contact_id,
                                                                                      int& erc) {
-  /*
-    erc: 0 if none, 1 if contact doesn't exist, 2 if no messages exist
-  */
-
   SQLite::Statement check(*(this->db), "SELECT 1 FROM contacts WHERE id = :id");
   check.bind(":id", contact_id);
   if (!check.executeStep()) {
@@ -340,10 +301,6 @@ std::unique_ptr<std::vector<int>> phi::database::Database::getAllMessagesWithCon
 }
 
 phi::database::message_t phi::database::Database::getMessage(int message_id, int& erc) {
-  /*
-    erc: 0 if none, 1 if message doesn't exist
-  */
-
   phi::database::message_t message{};
 
   SQLite::Statement get_message(*(this->db), "SELECT * FROM messages WHERE id = :id");
@@ -403,10 +360,6 @@ std::unique_ptr<std::vector<int>> phi::database::Database::getAllErrors() {
 }
 
 phi::database::error_t phi::database::Database::getError(int error_id, int& erc) {
-  /*
-    erc: 0 if none, 1 if error doesn't exist
-  */
-
   phi::database::error_t error{};
 
   SQLite::Statement get_error(*(this->db), "SELECT * FROM errors WHERE id = :id");
