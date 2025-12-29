@@ -25,7 +25,7 @@
 #include "phi/database/Database.hpp"
 #include "phi/encryption/MessageTypes.hpp"
 #include "phi/encryption/Encryptor.hpp"
-#include "tasks/Tasks.hpp"
+#include "tasks/TaskMaster.hpp"
 #include "tasks/task_struct.hpp"
 #include "phi/encryption/secrets.hpp"
 #include "phi/do_setup.hpp"
@@ -94,7 +94,7 @@ int main() {
 
   /**/
 
-  std::shared_ptr<phi::tasks::Tasks> TASKS = std::make_shared<phi::tasks::Tasks>(true);
+  // std::shared_ptr<phi::tasks::TaskMaster> TASKMASTER = std::make_shared<phi::tasks::TaskMaster>(true);
 
   /**/
 

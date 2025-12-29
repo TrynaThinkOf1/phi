@@ -12,7 +12,6 @@
 
 #include "phi/database/Database.hpp"
 
-#include <iostream>
 #include <mutex>
 #include <string>
 #include <sstream>
@@ -21,25 +20,25 @@
 #include <vector>
 #include <tuple>
 #include <ctime>
-#include <algorithm>
 
 #include <SQLiteCpp/SQLiteCpp.h>
-#include "nlohmann/json.hpp"
 
 #include "phi/database/structs.hpp"
 #include "datetime.hpp"
 #include "utils.hpp"
-
-using json = nlohmann::json;
 
 /** **/
 
 phi::database::Database::Database(int& erc) {
   this->db =
     std::make_unique<SQLite::Database>(expand("~/.phi/main.db"), SQLite::OPEN_READWRITE);  // NOLINT
+  // this and the WAL thing below are for when we can figure out how to add sqlcipher
+  // this->db->exec("PRAGMA key = 'password';");
 
-  db->exec(
+  this->db->exec(
     R"sql(
+      --PRAGMA journal_mode=WAL; ^ about sqlcipher
+
       CREATE TABLE IF NOT EXISTS contacts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT DEFAULT "Contact",
@@ -81,13 +80,10 @@ phi::database::Database::Database(int& erc) {
   file.close();
 
   // checks whether the file is empty or an invalid JSON
-  if (buf.str().empty() || !json::accept(buf.str())) {
+  if (buf.str().empty() || !this->self.from_json_str(buf.str())) {
     erc = 2;
     return;
   }
-
-  // no need to store value (a boolean about validity) because validity is checked above
-  this->self.from_json_str(buf.str());
 
   erc = 0;
 }

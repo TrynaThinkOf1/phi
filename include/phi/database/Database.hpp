@@ -21,10 +21,8 @@
 #include <vector>
 #include <tuple>
 #include <ctime>
-#include <algorithm>
 
 #include <SQLiteCpp/SQLiteCpp.h>
-#include "nlohmann/json.hpp"
 
 #include "phi/database/structs.hpp"
 #include "datetime.hpp"

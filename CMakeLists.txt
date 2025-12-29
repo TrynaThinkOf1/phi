@@ -57,7 +57,7 @@ set(SODIUM_DISABLE_TESTS ON CACHE BOOL "Disable tests")
 
 FetchContent_Declare(SQLiteCpp
     GIT_REPOSITORY https://github.com/SRombauts/SQLiteCpp.git
-    GIT_TAG        master  # Or specific tag like v4.1.0
+    GIT_TAG        master
 )
 
 FetchContent_MakeAvailable(ftxui cryptopp-cmake Sodium SQLiteCpp)
@@ -72,7 +72,7 @@ endif()
 #
 
 # PHI
-add_executable(phi ${PHI_SRC} ${CMAKE_CURRENT_SOURCE_DIR}/src/Bus.cpp)
+add_executable(phi ${PHI_SRC} ${CMAKE_CURRENT_SOURCE_DIR}/src/Tasks.cpp)
 
 target_include_directories(phi
     BEFORE PRIVATE
@@ -106,7 +106,7 @@ target_compile_options(phi
 #
 
 # PHID
-add_executable(phid ${PHID_SRC} ${CMAKE_CURRENT_SOURCE_DIR}/src/Bus.cpp)
+add_executable(phid ${PHID_SRC} ${CMAKE_CURRENT_SOURCE_DIR}/src/Tasks.cpp)
 
 target_include_directories(phid 
     PRIVATE
