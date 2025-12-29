@@ -34,6 +34,13 @@
 
 <h5>🔒 SECURITY</h5>
 
+> [!IMPORTANT]
+> As soon as core functionality and security measures listed below are user-ready, quantum-safe security
+> will be implemented by replacing RSA with CRYSTALS-Kyber (ML-KEM). Everything else will stay largely the same.
+
+> [!IMPORTANT]
+> We are finding a way to password-protect the SQLite3 database, rather than leaving the file readable.
+
 * GZip (L3) compression for messages - [zlib](https://zlib.net)
 * ChaCha20-Poly1305 encryption for messages - [libsodium](https://doc.libsodium.org/secret-key_cryptography/aead/chacha20-poly1305)
 * RSA (4096) encryption for CC20 session keys - [Crypto++](https://www.cryptopp.com/wiki/RSA_Cryptography)
