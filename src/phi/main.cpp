@@ -25,8 +25,8 @@
 #include "phi/database/Database.hpp"
 #include "phi/encryption/MessageTypes.hpp"
 #include "phi/encryption/Encryptor.hpp"
-#include "bus/Bus.hpp"
-#include "bus/tasks.hpp"
+#include "tasks/Tasks.hpp"
+#include "tasks/task_struct.hpp"
 #include "phi/encryption/secrets.hpp"
 #include "phi/do_setup.hpp"
 #include "utils.hpp"
@@ -49,7 +49,7 @@ int main() {
         std::cout << "⛔️ Failed to create profile holder (~/.phi/self.json) ⛔️\n";
         break;
       case 4:
-        std::cout << "⛔️ Failed to create bus to phid (~/.phi/bus.phi) ⛔️\n";
+        std::cout << "⛔️ Failed to create tasks file (~/.phi/tasks.db) ⛔️\n";
         break;
       default:
         break;
@@ -94,23 +94,7 @@ int main() {
 
   /**/
 
-  std::shared_ptr<phi::bus::Bus> BUS = std::make_shared<phi::bus::Bus>(true, erc);
-  if (erc > 0) {
-    std::cout << tmc::bright_red;
-    switch (erc) {
-      case 1:
-        std::cout << "⛔️ Failed to open bus to phid (~/.phi/bus.phi) ⛔️\n";
-        break;
-      case 2:
-        std::cout
-          << "⛔️ Failed to lock/unlock bus to phid (~/.phi/bus.phi <--> ~/.phi/bus.phi.lock) ⛔️\n";
-        break;
-      default:
-        break;
-    }
-    std::cout << tmc::reset;
-    return erc;
-  }
+  std::shared_ptr<phi::tasks::Tasks> TASKS = std::make_shared<phi::tasks::Tasks>(true);
 
   /**/
 

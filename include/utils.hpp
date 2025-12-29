@@ -217,8 +217,8 @@ static size_t curlWriteCb(void* contents, size_t size, size_t nmemb, void* userp
     }
   }
 
-  if (!std::filesystem::exists(PATH + "bus.phi")) {
-    std::ofstream file(PATH + "bus.phi");
+  if (!std::filesystem::exists(PATH + "tasks.db")) {
+    std::ofstream file(PATH + "tasks.db");
 
     if (file.is_open()) {
       file.close();

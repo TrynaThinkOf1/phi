@@ -4,14 +4,14 @@
  2025/12/26
 
  Phi C++ Project
- include/phi/bus/tasks.hpp
+ include/phi/tasks/task_struct.hpp
 
  Zevi Berlin
 
 */
 
-#ifndef TASKS_HPP
-#define TASKS_HPP
+#ifndef TASK_STRUCT_HPP
+#define TASK_STRUCT_HPP
 
 #include <string>
 
@@ -19,7 +19,7 @@
 
 using json = nlohmann::json;
 
-namespace phi::bus {
+namespace phi::tasks {
 
 struct task_t {
     int code;
@@ -49,10 +49,10 @@ struct task_t {
     }
 
     std::string toString() const {
-      return "CODE: " + std::to_string(this->code) + "\nDATA: " + this->data.dump();
+      return "CODE: " + std::to_string(this->code) + "\nDATA: " + this->data.dump() + "\n";
     }
 };
 
-}  // namespace phi::bus
+}  // namespace phi::tasks
 
-#endif /* TASKS_HPP */
+#endif /* TASK_STRUCT_HPP */
