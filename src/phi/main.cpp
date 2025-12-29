@@ -11,6 +11,7 @@
 */
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <memory>
@@ -24,6 +25,8 @@
 #include "phi/database/Database.hpp"
 #include "phi/encryption/MessageTypes.hpp"
 #include "phi/encryption/Encryptor.hpp"
+#include "bus/Bus.hpp"
+#include "bus/tasks.hpp"
 #include "phi/encryption/secrets.hpp"
 #include "phi/do_setup.hpp"
 #include "utils.hpp"
@@ -44,6 +47,9 @@ int main() {
         break;
       case 3:
         std::cout << "⛔️ Failed to create profile holder (~/.phi/self.json) ⛔️\n";
+        break;
+      case 4:
+        std::cout << "⛔️ Failed to create bus to phid (~/.phi/bus.phi) ⛔️\n";
         break;
       default:
         break;
@@ -84,9 +90,29 @@ int main() {
     }
   }
 
+  ENCRYPTOR->changePrivKey(DATABASE->self.rsa_priv_key);
+
   /**/
 
-  ENCRYPTOR->changePrivKey(DATABASE->self.rsa_priv_key);
+  std::shared_ptr<phi::bus::Bus> BUS = std::make_shared<phi::bus::Bus>(true, erc);
+  if (erc > 0) {
+    std::cout << tmc::bright_red;
+    switch (erc) {
+      case 1:
+        std::cout << "⛔️ Failed to open bus to phid (~/.phi/bus.phi) ⛔️\n";
+        break;
+      case 2:
+        std::cout
+          << "⛔️ Failed to lock/unlock bus to phid (~/.phi/bus.phi <--> ~/.phi/bus.phi.lock) ⛔️\n";
+        break;
+      default:
+        break;
+    }
+    std::cout << tmc::reset;
+    return erc;
+  }
+
+  /**/
 
   return 0;
 }
