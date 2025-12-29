@@ -17,9 +17,9 @@
 
 <img src="https://raw.githubusercontent.com/TrynaThinkOf1/phi/e8bea8aebf333dbea9d54ebae7892afb50c9369d/assets/phi_logo.svg" alt="logo" width="250">
 
-<h1 color="#2e083b">PHI</h1>
+# PHI
 
-<h5 style="color:#fbb040">Secure messaging app that lives in your terminal.</h5>
+<h5 style="color:#fbb040">Secure messaging app that lives in your terminal.<br>Named after Pheidippides <i>(Φειδιππίδης)</i> who ran 25 miles from Marathon to Athens in order to deliver a message.</h5>
 
 </div>
 
@@ -48,3 +48,46 @@
 * BLAKE2b signature to ensure no tampering - [Crypto++](https://www.cryptopp.com/wiki/BLAKE2)
 	* Also uses MAC (with shared secret) signature to ensure sender integrity - [libsodium](https://doc.libsodium.org/secret-key_cryptography/secret-key_authentication)
 		* Diffie-Hellmann key exchange technique for shared secrets - [libsodium](https://doc.libsodium.org/key_exchange)
+
+<h1>⤵️ INSTALLATION</h1>
+
+<h5>LINUX (Debian/Ubuntu)</h5>
+
+Build yourself:
+```bash
+sudo apt install zlib1g-dev  # install zlib
+
+git clone https://www.github.com/TrynaThinkOf1/phi.git
+cd phi/
+
+python3 sysutils.py  # select option 2
+
+sudo mv phi /usr/bin/phi
+sudo mv phid /usr/bin/phid
+
+sudo systemctl enable phid
+
+phi  # then proceed with setup
+
+sudo systemctl start phid
+```
+
+<h5>MACOS</h5>
+
+Build yourself:
+```bash
+git clone https://www.github.com/TrynaThinkOf1/phi.git
+cd phi/
+
+python3 sysutils.py  # select option 2
+
+sudo mv phi /usr/local/bin/phi
+
+echo 'PATH="/usr/local/bin:$PATH"' >> ~/.zshrc
+
+# something about daemon setup
+```
+
+<h5>WINDOWS</h5>
+
+`Unfortunately, Phi is not available for windows yet. Coming soon.`
