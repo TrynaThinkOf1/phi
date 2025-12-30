@@ -22,16 +22,8 @@
 #include "utils.hpp"
 
 phi::tasks::TaskMaster::TaskMaster(bool is_phi) {
-  if (is_phi) {
-    this->recv_task_table = "phi_tasks";
-    this->send_task_table = "phid_tasks";
-  } else {
-    this->recv_task_table = "phid_tasks";
-    this->send_task_table = "phi_tasks";
-  }
-
-  this->db =
-    std::make_unique<SQLite::Database>(expand("~/.phi/tasks.db"), SQLite::OPEN_READWRITE);  // NOLINT
+  this->db = std::make_unique<SQLite::Database>(expand("~/.phi/tasks.db"),
+                                                SQLite::OPEN_READWRITE);  // NOLINT
 
   this->db->exec(
     R"sql(
@@ -50,10 +42,43 @@ phi::tasks::TaskMaster::TaskMaster(bool is_phi) {
 
   /**/
 
-  SQLite::Statement get_first(*(this->db), "SELECT id FROM " + this->recv_task_table);
-  if (!get_first.executeStep()) {
+  this->get_first_query = std::make_unique<SQLite::Statement>(
+    *(this->db), "SELECT id FROM phi" + std::string(is_phi ? "" : "d") + "_tasks");
+
+  this->get_next_task_query = std::make_unique<SQLite::Statement>(
+    *(this->db), "SELECT * FROM phi" + std::string(is_phi ? "" : "d") + "_tasks WHERE id = :id");
+
+  this->delete_task_query = std::make_unique<SQLite::Statement>(
+    *(this->db), "DELETE FROM phi" + std::string(is_phi ? "" : "d") + "_tasks WHERE id = :id");
+
+  this->add_task_query = std::make_unique<SQLite::Statement>(
+    *(this->db), "INSERT INTO phi" + std::string(is_phi ? "d" : "") +
+                   "_tasks (code, data) VALUES (:code, :data)");
+
+  if (!this->get_first_query->executeStep()) {
     this->next_id = 0;
   } else {
-    this->next_id = get_first.getColumn("id").getInt();
+    this->next_id = this->get_first_query->getColumn("id").getInt();
   }
+  this->get_first_query->reset();
 }
+
+/***/
+
+void phi::tasks::TaskMaster::resetQueue() {
+  std::lock_guard<std::mutex> lock(this->mtx);
+
+  if (!this->get_first_query->executeStep()) {
+    this->next_id = 0;
+  } else {
+    this->next_id = this->get_first_query->getColumn("id").getInt();
+  }
+
+  this->get_first_query->reset();
+}
+
+bool phi::tasks::TaskMaster::loadNextTask(bool prev_scs, int& erc) {
+  std::unique_lock<std::mutex> lock(this->mtx);
+}
+
+/**/

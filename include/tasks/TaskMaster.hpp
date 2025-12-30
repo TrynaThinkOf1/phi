@@ -24,14 +24,22 @@
 
 namespace phi::tasks {
 
+/*
+  Going with the model that has reusable SQLite::Statements
+    because the queries themselves are trivial and have few
+    parameters, whereas phi::database::Database has many functions
+    each with unique queries.
+*/
 class TaskMaster {
   private:
     mutable std::mutex mtx;
 
     std::unique_ptr<SQLite::Database> db;
 
-    std::string recv_task_table;
-    std::string send_task_table;
+    std::unique_ptr<SQLite::Statement> get_first_query;
+    std::unique_ptr<SQLite::Statement> get_next_task_query;
+    std::unique_ptr<SQLite::Statement> delete_task_query;
+    std::unique_ptr<SQLite::Statement> add_task_query;
 
     int next_id;
 
@@ -39,6 +47,20 @@ class TaskMaster {
     task_t current_task{};
 
     TaskMaster(bool is_phi);
+
+    void resetQueue();
+
+    /*
+      erc: 0 if none, 1 if no more tasks
+    */
+    bool loadNextTask(bool prev_scs, int& erc);
+
+    /**/
+
+    /*
+      erc: 0 if none, 1 if unknown error
+    */
+    bool addTask(const task_t& task, int& erc);
 };
 
 }  // namespace phi::tasks
