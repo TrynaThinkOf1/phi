@@ -33,6 +33,8 @@ class TaskMaster {
     std::string recv_task_table;
     std::string send_task_table;
 
+    int next_id;
+
   public:
     task_t current_task{};
 

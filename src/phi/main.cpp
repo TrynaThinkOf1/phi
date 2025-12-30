@@ -94,7 +94,7 @@ int main() {
 
   /**/
 
-  // std::shared_ptr<phi::tasks::TaskMaster> TASKMASTER = std::make_shared<phi::tasks::TaskMaster>(true);
+  std::shared_ptr<phi::tasks::TaskMaster> TASKMASTER = std::make_shared<phi::tasks::TaskMaster>(true);
 
   /**/
 
