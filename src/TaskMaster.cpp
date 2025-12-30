@@ -65,6 +65,21 @@ phi::tasks::TaskMaster::TaskMaster(bool is_phi) {
 
 /***/
 
+std::unique_lock<std::mutex> phi::tasks::TaskMaster::resetQueue(
+  std::unique_lock<std::mutex>&& lock) {
+  if (!this->get_first_query->executeStep()) {
+    this->next_id = 0;
+  } else {
+    this->next_id = this->get_first_query->getColumn("id").getInt();
+  }
+
+  this->get_first_query->reset();
+
+  return std::move(lock);
+}
+
+/***/
+
 void phi::tasks::TaskMaster::resetQueue() {
   std::lock_guard<std::mutex> lock(this->mtx);
 
@@ -79,6 +94,18 @@ void phi::tasks::TaskMaster::resetQueue() {
 
 bool phi::tasks::TaskMaster::loadNextTask(bool prev_scs, int& erc) {
   std::unique_lock<std::mutex> lock(this->mtx);
+
+  lock = this->resetQueue(std::move(lock));
+
+  erc = 0;
+  return true;
 }
 
 /**/
+
+bool phi::tasks::TaskMaster::addTask(const phi::tasks::task_t& task, int& erc) {
+  std::lock_guard<std::mutex> lock(this->mtx);
+
+  erc = 0;
+  return true;
+}

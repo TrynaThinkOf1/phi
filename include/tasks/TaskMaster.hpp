@@ -43,6 +43,9 @@ class TaskMaster {
 
     int next_id;
 
+    // private overload for loadNextTask()
+    std::unique_lock<std::mutex> resetQueue(std::unique_lock<std::mutex>&& lock);
+
   public:
     task_t current_task{};
 
