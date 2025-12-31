@@ -19,7 +19,7 @@
 #include <SQLiteCpp/SQLiteCpp.h>
 
 #include "tasks/task_struct.hpp"
-#include "utils.hpp"
+#include "utils/file_utils.hpp"
 
 phi::tasks::TaskMaster::TaskMaster(bool is_phi, int& erc) {
   this->db = std::make_unique<SQLite::Database>(expand("~/.phi/tasks.db"),

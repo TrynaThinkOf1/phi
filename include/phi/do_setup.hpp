@@ -21,6 +21,8 @@
 
 #include "phi/database/Database.hpp"
 #include "phi/encryption/Encryptor.hpp"
+#include "utils/str_utils.hpp"
+#include "utils/misc_utils.hpp"
 
 bool do_setup(const std::shared_ptr<phi::database::Database>& DATABASE,
               const std::shared_ptr<phi::encryption::Encryptor>& ENCRYPTOR);

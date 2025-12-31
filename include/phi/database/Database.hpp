@@ -26,7 +26,7 @@
 
 #include "phi/database/structs.hpp"
 #include "datetime.hpp"
-#include "utils.hpp"
+#include "utils/file_utils.hpp"
 
 namespace phi::database {
 
@@ -41,7 +41,8 @@ class Database {
     std::string password;
 
     std::unique_ptr<SQLite::Statement> contact_check_query;
-    std::unique_lock<std::mutex> checkContact(std::unique_lock<std::mutex>&& lock, int contact_id, bool& exists);
+    std::unique_lock<std::mutex> checkContact(std::unique_lock<std::mutex>&& lock, int contact_id,
+                                              bool& exists);
 
   public:
     self_t self;
@@ -63,10 +64,9 @@ class Database {
     /*
       erc: 0 if none, 1 if self can't be created
     */
-    bool createSelf(const std::string& name, const std::string& emoji,
-                    const std::string& hint, const std::string& rsa_pub_key,
-                    const std::string& rsa_priv_key, const std::string& ipv6_addr,
-                    const std::string& hardware_profile, int& erc);
+    bool createSelf(const std::string& name, const std::string& emoji, const std::string& hint,
+                    const std::string& rsa_pub_key, const std::string& rsa_priv_key,
+                    const std::string& ipv6_addr, const std::string& hardware_profile, int& erc);
 
     /*
       erc: 0 if none, 1 if self can't be opened

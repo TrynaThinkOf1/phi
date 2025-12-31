@@ -18,7 +18,7 @@
 
 #include "nlohmann/json.hpp"
 
-#include "utils.hpp"
+#include "utils/str_utils.hpp"
 
 #define LINE_LIM 532
 
