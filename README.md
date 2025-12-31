@@ -38,7 +38,7 @@ diddy diddy blud gavin
 > will be implemented by replacing RSA with CRYSTALS-Kyber (ML-KEM). Everything else will stay largely the same.
 
 > [!IMPORTANT]
-> We are finding a way to password-protect the SQLite3 database, rather than leaving the file readable.
+> Database API is primed for password protection, the only roadblock is SQLiteC++ and CMake
 
 * GZip (L3) compression for messages - [zlib](https://zlib.net)
 * ChaCha20-Poly1305 encryption for messages - [libsodium](https://doc.libsodium.org/secret-key_cryptography/aead/chacha20-poly1305)
