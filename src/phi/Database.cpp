@@ -35,10 +35,55 @@ phi::database::Database::Database(int& erc) {
   // this and the WAL thing below are for when we can figure out how to add sqlcipher
   // this->db->exec("PRAGMA key = 'password';");
 
+  /**/
+
+  std::fstream file(this->self_path, std::fstream::in);
+  if (!file.is_open()) {
+    erc = 1;
+    return;
+  }
+
+  std::stringstream buf;
+  buf << file.rdbuf();
+  file.close();
+
+  // checks whether the file is empty or an invalid JSON
+  if (buf.str().empty() || !this->self.from_json_str(buf.str())) {
+    erc = 1;
+    return;
+  }
+
+  erc = 0;
+}
+
+bool phi::database::Database::login(const std::string& password) {
+  this->db->exec("PRAGMA journal_mode=WAL;");
+  this->db->exec("PRAGMA key = '" + password + "';");
+  try {
+    this->db->execAndGet("SELECT 1 FROM contacts");
+    this->password = password;
+    return true;
+  } catch (SQLite::Exception& exc) {
+    return false;
+  }
+}
+
+bool phi::database::Database::changePassword(const std::string& oldpass, const std::string& newpass,
+                                             const std::string& newhint) {
+  if (password != this->password) return false;
+
+  int erc = 0;
+  if (!this->changeSelfAttribute("password_hint", newhint, erc)) {
+    return false;
+  }
+
+  this->db->exec("PRAGMA rekey '" + newpass + "';");
+  return true;
+}
+
+void phi::database::Database::createTables() {
   this->db->exec(
     R"sql(
-      --PRAGMA journal_mode=WAL; ^ about sqlcipher
-
       CREATE TABLE IF NOT EXISTS contacts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT DEFAULT "Contact",
@@ -66,37 +111,18 @@ phi::database::Database::Database(int& erc) {
         timestamp UNSIGNED BIG INT NOT NULL
       );
     )sql");
-
-  /**/
-
-  std::fstream file(this->self_path, std::fstream::in);
-  if (!file.is_open()) {
-    erc = 1;
-    return;
-  }
-
-  std::stringstream buf;
-  buf << file.rdbuf();
-  file.close();
-
-  // checks whether the file is empty or an invalid JSON
-  if (buf.str().empty() || !this->self.from_json_str(buf.str())) {
-    erc = 1;
-    return;
-  }
-
-  erc = 0;
 }
 
 /** **/
 
 bool phi::database::Database::createSelf(const std::string& name, const std::string& emoji,
-                                         const std::string& rsa_pub_key,
+                                         const std::string& hint, const std::string& rsa_pub_key,
                                          const std::string& rsa_priv_key,
                                          const std::string& ipv6_addr,
                                          const std::string& hardware_profile, int& erc) {
   this->self.name = name;
   this->self.emoji = emoji;
+  this->self.password_hint = hint;
   this->self.rsa_pub_key = rsa_pub_key;
   this->self.rsa_priv_key = rsa_priv_key;
   this->self.last_known_ip = ipv6_addr;

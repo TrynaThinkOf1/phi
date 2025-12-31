@@ -38,6 +38,8 @@ class Database {
 
     const std::string self_path = expand("~/.phi/self.json");
 
+    std::string password;
+
   public:
     self_t self;
 
@@ -46,14 +48,22 @@ class Database {
     */
     Database(int& erc);
 
+    bool login(const std::string& password);
+
+    void createTables();
+
+    bool changePassword(const std::string& oldpass, const std::string& newpass,
+                        const std::string& newhint);
+
     /** **/
 
     /*
       erc: 0 if none, 1 if self can't be created
     */
     bool createSelf(const std::string& name, const std::string& emoji,
-                    const std::string& rsa_pub_key, const std::string& rsa_priv_key,
-                    const std::string& ipv6_addr, const std::string& hardware_profile, int& erc);
+                    const std::string& hint, const std::string& rsa_pub_key,
+                    const std::string& rsa_priv_key, const std::string& ipv6_addr,
+                    const std::string& hardware_profile, int& erc);
 
     /*
       erc: 0 if none, 1 if self can't be opened

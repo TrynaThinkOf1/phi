@@ -29,6 +29,7 @@ namespace phi::database {
 struct self_t {
     std::string name;
     std::string emoji;
+    std::string password_hint;
     std::string rsa_pub_key;
     std::string rsa_priv_key;
     std::string last_known_ip;
@@ -39,6 +40,7 @@ struct self_t {
     self_t() {
       this->MAP["name"] = &this->name;
       this->MAP["emoji"] = &this->emoji;
+      this->MAP["password_hint"] = &this->password_hint;
       this->MAP["rsa_pub_key"] = &this->rsa_pub_key;
       this->MAP["rsa_priv_key"] = &this->rsa_priv_key;
       this->MAP["last_known_ip"] = &this->last_known_ip;
@@ -81,7 +83,8 @@ struct self_t {
       return "NAME: " + this->name + "\nEMOJI: " + this->emoji +
              "\nRSA PUB KEY (mid 32): " + toHex(this->rsa_pub_key.substr(500, LINE_LIM)) +
              "\nRSA PRIV KEY (mid 32): " + toHex(this->rsa_priv_key.substr(500, LINE_LIM)) +
-             "\nIP: " + this->last_known_ip + "\nHARDWARE PROFILE: " + this->hardware_profile;
+             "\nIP: " + this->last_known_ip + "\nHARDWARE PROFILE: " + this->hardware_profile +
+             "\nPASSWORD HINT: " + this->password_hint + "\n";
     }
 };
 

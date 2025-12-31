@@ -14,12 +14,42 @@
 #include <cerrno>
 #include <stdexcept>
 
+#include <termios.h>
 #include <pwd.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
 
 #include <curl/curl.h>
+#include "termcolor/termcolor.hpp"
+
+namespace tmc = termcolor;
+
+namespace phi {
+template <typename T>
+inline void sysmsg(T add) {
+  std::cout << tmc::italic << tmc::bold << tmc::dark << tmc::magenta << add << tmc::reset;
+}
+}  // namespace phi
+
+[[nodiscard]] static std::string getHiddenInput() {
+  // CODE BELOW IS VIA STACK OVERFLOW {
+  termios oldt{};
+  tcgetattr(STDIN_FILENO, &oldt);
+  termios newt = oldt;
+  newt.c_lflag &= ~ECHO;
+  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+  // }
+  std::string input;
+  std::getline(std::cin, input);
+  // CLEANUP {
+  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+  // }
+
+  return input;
+}
+
+/**/
 
 [[nodiscard]] static std::string expand(const std::string& path) {
   std::string result{path};

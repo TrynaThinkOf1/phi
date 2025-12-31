@@ -13,14 +13,12 @@
 #include <iostream>
 #include <string>
 #include <memory>
-#include <map>
 
 #include "termcolor/termcolor.hpp"
 
 #include "phi/database/Database.hpp"
 #include "phi/encryption/Encryptor.hpp"
 #include "tasks/TaskMaster.hpp"
-#include "tasks/task_struct.hpp"
 #include "phi/do_setup.hpp"
 #include "utils.hpp"
 
@@ -96,11 +94,24 @@ int main() {
 
   /**** ****/
 
-  // TODO: LOGIN FOR DATABASE (entails moving the table creation out of constructor)
+  // TODO: make this with FTXUI instead
+  /*
+  phi::sysmsg("PLEASE LOG IN\n  password: ");
+  std::string password = getHiddenInput();
+  if (!DATABASE->login(password)) {
+    std::cout << tmc::bright_red
+              << "\n"
+                 "⛔️ Login failed, incorrect password ⛔️\n"  // "" necessary separator for emoji
+              << tmc::reset;
+    return erc;
+  }
+  std::cout << tmc::bold << tmc::bright_green << "\nLogin success!\n" << tmc::reset;
+  */
+  DATABASE->createTables();
 
   // phi::event_loop(DATABASE, ENCRYPTOR, TASKMASTER);
 
-  std::cout << tmc::italic << tmc::bold << tmc::dark << tmc::magenta << "Goodbye!\n" << tmc::reset;
+  phi::sysmsg("Goodbye!\n");
 
   return 0;
 }
