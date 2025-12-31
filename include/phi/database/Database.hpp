@@ -40,6 +40,9 @@ class Database {
 
     std::string password;
 
+    std::unique_ptr<SQLite::Statement> contact_check_query;
+    std::unique_lock<std::mutex> checkContact(std::unique_lock<std::mutex>&& lock, int contact_id, bool& exists);
+
   public:
     self_t self;
 

@@ -53,10 +53,15 @@ phi::database::Database::Database(int& erc) {
     return;
   }
 
+  this->contact_check_query =
+    std::make_unique<SQLite::Statement>(*(this->db), "SELECT 1 FROM contacts WHERE id = :id");
+
   erc = 0;
 }
 
 bool phi::database::Database::login(const std::string& password) {
+  std::lock_guard<std::mutex> lock(this->mtx);
+
   this->db->exec("PRAGMA journal_mode=WAL;");
   this->db->exec("PRAGMA key = '" + password + "';");
   try {
@@ -70,6 +75,8 @@ bool phi::database::Database::login(const std::string& password) {
 
 bool phi::database::Database::changePassword(const std::string& oldpass, const std::string& newpass,
                                              const std::string& newhint) {
+  std::lock_guard<std::mutex> lock(this->mtx);
+
   if (password != this->password) return false;
 
   int erc = 0;
@@ -115,6 +122,17 @@ void phi::database::Database::createTables() {
 
 /** **/
 
+std::unique_lock<std::mutex> phi::database::Database::checkContact(
+  std::unique_lock<std::mutex>&& lock, int contact_id, bool& exists) {
+  this->contact_check_query->bind(":id", contact_id);
+  exists = !this->contact_check_query->executeStep();
+  this->contact_check_query->reset();
+
+  return std::move(lock);
+}
+
+/***/
+
 bool phi::database::Database::createSelf(const std::string& name, const std::string& emoji,
                                          const std::string& hint, const std::string& rsa_pub_key,
                                          const std::string& rsa_priv_key,
@@ -143,6 +161,8 @@ bool phi::database::Database::createSelf(const std::string& name, const std::str
 
 bool phi::database::Database::changeSelfAttribute(const std::string& field,
                                                   const std::string& value, int& erc) {
+  std::lock_guard<std::mutex> lock(this->mtx);
+
   // dereference the self structure's map entry of the
   // field, which holds a pointer to the string. Set that
   // string to the value
@@ -167,6 +187,7 @@ bool phi::database::Database::createContact(const std::string& name, const std::
                                             const std::string& addr,
                                             const std::string& shared_Secret,
                                             const std::string& rsa_key, int& erc, int& op_id) {
+  std::lock_guard<std::mutex> lock(this->mtx);
   op_id = -1;
 
   SQLite::Statement check(*(this->db), "SELECT 1 FROM contacts WHERE name = :name");
@@ -204,6 +225,8 @@ bool phi::database::Database::createContact(const std::string& name, const std::
 
 std::unique_ptr<std::vector<std::tuple<int, std::string, std::string>>>
 phi::database::Database::getAllContacts() {
+  std::lock_guard<std::mutex> lock(this->mtx);
+
   int rows = this->db->execAndGet("SELECT COUNT(id) FROM contacts").getInt();
   if (rows == 0) return nullptr;
 
@@ -222,9 +245,7 @@ phi::database::Database::getAllContacts() {
 }
 
 bool phi::database::Database::getContact(int contact_id, phi::database::contact_t& op, int& erc) {
-  /*
-    erc: 0 if none, 1 if contact doesn't exist
-  */
+  std::lock_guard<std::mutex> lock(this->mtx);
 
   SQLite::Statement query(*(this->db), "SELECT * FROM contacts WHERE id = :id");
   query.bind(":id", contact_id);
@@ -246,9 +267,11 @@ bool phi::database::Database::getContact(int contact_id, phi::database::contact_
 
 bool phi::database::Database::changeContactAttribute(int contact_id, const std::string& field,
                                                      const std::string& value, int& erc) {
-  SQLite::Statement check(*(this->db), "SELECT 1 FROM contacts WHERE id = :id");
-  check.bind(":id", contact_id);
-  if (!check.executeStep()) {
+  std::unique_lock<std::mutex> lock(this->mtx);
+
+  bool exists = false;
+  lock = this->checkContact(std::move(lock), contact_id, exists);
+  if (!exists) {
     erc = 1;
     return false;
   }
@@ -264,6 +287,8 @@ bool phi::database::Database::changeContactAttribute(int contact_id, const std::
 }
 
 void phi::database::Database::deleteContact(int contact_id) {
+  std::lock_guard<std::mutex> lock(this->mtx);
+
   this->db->exec("DELETE FROM contacts WHERE id = " + std::to_string(contact_id));
 }
 
@@ -271,9 +296,11 @@ void phi::database::Database::deleteContact(int contact_id) {
 
 bool phi::database::Database::createMessage(int contact_id, bool sender, const std::string& content,
                                             int& erc) {
-  SQLite::Statement check(*(this->db), "SELECT 1 FROM contacts WHERE id = :id");
-  check.bind(":id", contact_id);
-  if (!check.executeStep()) {
+  std::unique_lock<std::mutex> lock(this->mtx);
+
+  bool exists = false;
+  lock = this->checkContact(std::move(lock), contact_id, exists);
+  if (!exists) {
     erc = 1;
     return false;
   }
@@ -293,9 +320,11 @@ bool phi::database::Database::createMessage(int contact_id, bool sender, const s
 
 std::unique_ptr<std::vector<int>> phi::database::Database::getAllMessagesWithContact(int contact_id,
                                                                                      int& erc) {
-  SQLite::Statement check(*(this->db), "SELECT 1 FROM contacts WHERE id = :id");
-  check.bind(":id", contact_id);
-  if (!check.executeStep()) {
+  std::unique_lock<std::mutex> lock(this->mtx);
+
+  bool exists = false;
+  lock = this->checkContact(std::move(lock), contact_id, exists);
+  if (!exists) {
     erc = 1;
     return nullptr;
   }
@@ -323,6 +352,8 @@ std::unique_ptr<std::vector<int>> phi::database::Database::getAllMessagesWithCon
 }
 
 phi::database::message_t phi::database::Database::getMessage(int message_id, int& erc) {
+  std::lock_guard<std::mutex> lock(this->mtx);
+
   phi::database::message_t message{};
 
   SQLite::Statement get_message(*(this->db), "SELECT * FROM messages WHERE id = :id");
@@ -345,10 +376,14 @@ phi::database::message_t phi::database::Database::getMessage(int message_id, int
 }
 
 void phi::database::Database::deliverMessage(int message_id) {
+  std::lock_guard<std::mutex> lock(this->mtx);
+
   this->db->exec("UPDATE messages SET delivered = 1 WHERE id = " + std::to_string(message_id));
 }
 
 void phi::database::Database::eraseMessage(int message_id) {
+  std::lock_guard<std::mutex> lock(this->mtx);
+
   this->db->exec("DELETE FROM messages WHERE id = " + std::to_string(message_id));
 }
 
@@ -356,6 +391,8 @@ void phi::database::Database::eraseMessage(int message_id) {
 
 void phi::database::Database::createError(const std::string& title,
                                           const std::string& description) {
+  std::lock_guard<std::mutex> lock(this->mtx);
+
   SQLite::Statement add_error(*(this->db), R"sql(
   INSERT INTO errors (title, description, timestamp)
   VALUES (:title, :description, :time))sql");
@@ -366,6 +403,8 @@ void phi::database::Database::createError(const std::string& title,
 }
 
 std::unique_ptr<std::vector<int>> phi::database::Database::getAllErrors() {
+  std::lock_guard<std::mutex> lock(this->mtx);
+
   int rows = this->db->execAndGet("SELECT COUNT(id) FROM errors").getInt();
   if (rows == 0) return nullptr;
 
@@ -382,6 +421,8 @@ std::unique_ptr<std::vector<int>> phi::database::Database::getAllErrors() {
 }
 
 phi::database::error_t phi::database::Database::getError(int error_id, int& erc) {
+  std::lock_guard<std::mutex> lock(this->mtx);
+
   phi::database::error_t error{};
 
   SQLite::Statement get_error(*(this->db), "SELECT * FROM errors WHERE id = :id");
@@ -402,5 +443,7 @@ phi::database::error_t phi::database::Database::getError(int error_id, int& erc)
 }
 
 void phi::database::Database::deleteError(int error_id) {
+  std::lock_guard<std::mutex> lock(this->mtx);
+
   this->db->exec("DELETE FROM errors WHERE id = " + std::to_string(error_id));
 }
