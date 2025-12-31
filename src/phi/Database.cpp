@@ -25,7 +25,7 @@
 
 #include "phi/database/structs.hpp"
 #include "datetime.hpp"
-#include "utils.hpp"
+#include "utils/file_utils.hpp"
 
 /** **/
 
@@ -38,7 +38,7 @@ phi::database::Database::Database(int& erc) {
   /**/
 
   std::fstream file(this->self_path, std::fstream::in);
-  if (!file.is_open()) {
+  if (!file) {
     erc = 1;
     return;
   }

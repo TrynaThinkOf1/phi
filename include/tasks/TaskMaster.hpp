@@ -20,7 +20,7 @@
 #include <SQLiteCpp/SQLiteCpp.h>
 
 #include "tasks/task_struct.hpp"
-#include "utils.hpp"
+#include "utils/file_utils.hpp"
 
 namespace phi::tasks {
 

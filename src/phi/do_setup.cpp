@@ -20,7 +20,8 @@
 
 #include "phi/database/Database.hpp"
 #include "phi/encryption/Encryptor.hpp"
-#include "utils.hpp"
+#include "utils/str_utils.hpp"
+#include "utils/misc_utils.hpp"
 
 namespace tmc = termcolor;
 

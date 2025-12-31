@@ -29,7 +29,6 @@
 
 #include "phi/encryption/MessageTypes.hpp"
 #include "phi/encryption/gzip_basic.hpp"
-#include "utils.hpp"
 
 #define BUFFER 16384
 #define RSA_KEY_SIZE 4096
