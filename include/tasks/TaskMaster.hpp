@@ -36,6 +36,7 @@ class TaskMaster {
 
     std::unique_ptr<SQLite::Database> db;
 
+    std::string number_tasks_query;
     std::unique_ptr<SQLite::Statement> get_first_query;
     std::unique_ptr<SQLite::Statement> get_next_task_query;
     std::unique_ptr<SQLite::Statement> delete_task_query;
@@ -49,21 +50,26 @@ class TaskMaster {
   public:
     task_t current_task{};
 
-    TaskMaster(bool is_phi);
+    /*
+      erc: 0 if none, 1 if invalid JSON encountered for first task
+    */
+    TaskMaster(bool is_phi, int& erc);
 
     void resetQueue();
 
     /*
-      erc: 0 if none, 1 if no more tasks
+      erc: 0 if none, 1 if no more tasks, 2 if invalid JSON encountered
     */
     bool loadNextTask(bool prev_scs, int& erc);
 
     /**/
 
     /*
-      erc: 0 if none, 1 if unknown error
+      gives no indication of success or failure
     */
-    bool addTask(const task_t& task, int& erc);
+    void addTask(const task_t& task);
+
+    std::unique_lock<std::mutex> deleteTask(std::unique_lock<std::mutex>&& lock);
 };
 
 }  // namespace phi::tasks

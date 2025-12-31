@@ -11,29 +11,24 @@
 */
 
 #include <iostream>
-#include <fstream>
 #include <string>
-#include <vector>
 #include <memory>
-#include <exception>
-#include <thread>
 #include <map>
-#include <tuple>
 
 #include "termcolor/termcolor.hpp"
 
 #include "phi/database/Database.hpp"
-#include "phi/encryption/MessageTypes.hpp"
 #include "phi/encryption/Encryptor.hpp"
 #include "tasks/TaskMaster.hpp"
 #include "tasks/task_struct.hpp"
-#include "phi/encryption/secrets.hpp"
 #include "phi/do_setup.hpp"
 #include "utils.hpp"
 
 namespace tmc = termcolor;
 
 int main() {
+  /**** GLOBAL CONFIG ****/
+
   int erc = 0;
 
   if (!createDataFiles(erc)) {
@@ -68,11 +63,6 @@ int main() {
   const std::shared_ptr<phi::database::Database> DATABASE =
     std::make_shared<phi::database::Database>(erc);
   if (erc == 1) {
-    std::cout << tmc::bright_red
-              << "⛔️ Failed to create self file (~/.phi/self.json) due to invalid permissions ⛔️\n"
-              << tmc::reset;
-    return erc;
-  } else if (erc == 2) {
     std::cout << tmc::yellow << "⚠️ Profile not found, needs setup ⚠️\n" << tmc::reset;
 
     std::cout << "Would you like to set up your profile right now (y/n)? ";
@@ -94,9 +84,23 @@ int main() {
 
   /**/
 
-  std::shared_ptr<phi::tasks::TaskMaster> TASKMASTER = std::make_shared<phi::tasks::TaskMaster>(true);
+  std::shared_ptr<phi::tasks::TaskMaster> TASKMASTER =
+    std::make_shared<phi::tasks::TaskMaster>(true, erc);
+  if (erc == 1) {
+    std::cout
+      << tmc::bright_red
+      << "⛔️ Failed to load first task from database (~/.phi/tasks.db) due to invalid JSON ⛔️\n"
+      << tmc::reset;
+    return erc;
+  }
 
-  /**/
+  /**** ****/
+
+  // TODO: LOGIN FOR DATABASE (entails moving the table creation out of constructor)
+
+  // phi::event_loop(DATABASE, ENCRYPTOR, TASKMASTER);
+
+  std::cout << tmc::italic << tmc::bold << tmc::dark << tmc::magenta << "Goodbye!\n" << tmc::reset;
 
   return 0;
 }

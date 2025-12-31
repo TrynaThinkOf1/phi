@@ -48,6 +48,17 @@ struct task_t {
       return true;
     }
 
+    bool data_from_json_str(const std::string& data_str) {
+      if (!json::accept(data_str)) return false;
+      this->data = json::parse(data_str);
+
+      return true;
+    }
+
+    std::string data_to_json_str() const {
+      return this->data.dump();
+    }
+
     std::string toString() const {
       return "CODE: " + std::to_string(this->code) + "\nDATA: " + this->data.dump() + "\n";
     }

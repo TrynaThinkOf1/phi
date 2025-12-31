@@ -42,7 +42,7 @@ class Database {
     self_t self;
 
     /*
-      erc: 0 if no error, 1 if self can't be created, 2 if self is invalid
+      erc: 0 if no error, 1 if self is invalid
     */
     Database(int& erc);
 

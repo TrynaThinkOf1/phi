@@ -81,7 +81,7 @@ phi::database::Database::Database(int& erc) {
 
   // checks whether the file is empty or an invalid JSON
   if (buf.str().empty() || !this->self.from_json_str(buf.str())) {
-    erc = 2;
+    erc = 1;
     return;
   }
 
