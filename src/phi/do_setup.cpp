@@ -51,7 +51,7 @@ bool do_setup(const std::shared_ptr<phi::database::Database>& DATABASE,
   // std::getline(std::cin, hint);
 
   const std::string hardware_profile = getHardwareProfile();
-  const std::string ipv6_addr = "";  // getPublicIPv6();
+  const std::string ipv6_addr;  // = getPublicIPv6();
 
   std::cout << tmc::blink << tmc::magenta << "Generating RSA keys (4096 bytes)...";
 
