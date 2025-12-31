@@ -2,12 +2,14 @@
 #define STR_UTILS_HPP
 
 
+#include <iostream>
 #include <string>
 #include <cstdio>
 #include <sstream>
 #include <iomanip>
 
 #include <termios.h>
+#include <unistd.h>
 
 [[nodiscard]] static std::string getHiddenInput() {
   // CODE BELOW IS VIA STACK OVERFLOW {

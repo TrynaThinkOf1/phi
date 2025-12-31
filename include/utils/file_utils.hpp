@@ -10,6 +10,7 @@
 #include <map>
 
 #include <pwd.h>
+#include <unistd.h>
 
 [[nodiscard]] static std::string expand(const std::string& path) {
   std::string result{path};
