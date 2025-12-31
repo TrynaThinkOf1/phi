@@ -59,6 +59,8 @@ FetchContent_Declare(SQLiteCpp
     GIT_REPOSITORY https://github.com/SRombauts/SQLiteCpp.git
     GIT_TAG        master
 )
+set(SQLITECPP_RUN_CPPLINT OFF CACHE BOOL "" FORCE)
+set(SQLITECPP_RUN_CPPCHECK OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(ftxui cryptopp-cmake Sodium SQLiteCpp)
 
