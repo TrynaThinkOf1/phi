@@ -19,6 +19,7 @@
 #include "phi/database/Database.hpp"
 #include "phi/encryption/Encryptor.hpp"
 #include "tasks/TaskMaster.hpp"
+#include "phi/ui/Manager.hpp"
 #include "phi/do_setup.hpp"
 #include "utils/misc_utils.hpp"
 #include "utils/str_utils.hpp"
@@ -83,7 +84,7 @@ int main() {
 
   /**/
 
-  std::shared_ptr<phi::tasks::TaskMaster> TASKMASTER =
+  const std::shared_ptr<phi::tasks::TaskMaster> TASKMASTER =
     std::make_shared<phi::tasks::TaskMaster>(true, erc);
   if (erc == 1) {
     std::cout
@@ -94,6 +95,20 @@ int main() {
   }
 
   /**** ****/
+
+  auto size = phi::ui::getTerminalSize();
+  if (size.ws_col < phi::ui::COLS || size.ws_row < phi::ui::ROWS) {
+    std::cout << tmc::bright_red << "⛔️ Phi requires a terminal size of at least "
+              << phi::ui::COLS << "x" << phi::ui::ROWS << " to properly render the TUI ⛔️\n"
+              << tmc::reset;
+    return 1;
+  }
+
+  const std::shared_ptr<phi::ui::Manager> MANAGER = std::make_shared<phi::ui::Manager>(DATABASE, ENCRYPTOR, TASKMASTER);
+
+  if (!MANAGER->loginPage()) {
+    return 1;
+  }
 
   // TODO: make this with FTXUI instead
   /*
@@ -110,9 +125,7 @@ int main() {
   */
   DATABASE->createTables();
 
-  // phi::event_loop(DATABASE, ENCRYPTOR, TASKMASTER);
-
-  phi::sysmsg("Goodbye!\n");
+  // MANAGER->event_loop();
 
   return 0;
 }
