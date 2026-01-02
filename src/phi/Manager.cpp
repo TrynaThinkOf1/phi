@@ -16,11 +16,13 @@
 #include <memory>
 #include <vector>
 #include <thread>
+#include <array>
 
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-#include <ftxui/screen/screen.hpp>
+#include <ftxui/component/screen_interactive.hpp>
+#include <ftxui/dom/elements.hpp>
 
 #include "phi/database/Database.hpp"
 #include "phi/database/structs.hpp"
@@ -36,7 +38,6 @@ phi::ui::Manager::Manager(std::shared_ptr<phi::database::Database> database,
     : DATABASE(std::move(database)),
       ENCRYPTOR(std::move(encryptor)),
       TASKMASTER(std::move(taskmaster)) {
-  this->screen.Print();
 }
 
 /**/

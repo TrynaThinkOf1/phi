@@ -21,7 +21,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-#include <ftxui/screen/screen.hpp>
+#include <ftxui/component/screen_interactive.hpp>
 
 #include "phi/database/Database.hpp"
 #include "phi/database/structs.hpp"
@@ -49,7 +49,7 @@ class Manager {
     std::shared_ptr<phi::encryption::Encryptor> ENCRYPTOR;
     std::shared_ptr<phi::tasks::TaskMaster> TASKMASTER;
 
-    ftxui::Screen screen = ftxui::Screen::Create(ftxui::Dimension::Fixed(COLS), ftxui::Dimension::Fixed(ROWS));
+    ftxui::ScreenInteractive screen = ftxui::ScreenInteractive::FixedSize(COLS, ROWS);
 
   public:
     Manager(std::shared_ptr<phi::database::Database> database,
