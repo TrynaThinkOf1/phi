@@ -17,11 +17,18 @@
 #include <memory>
 #include <vector>
 #include <thread>
+#include <chrono>
 
 #include <sys/ioctl.h>
 #include <unistd.h>
 
 #include <ftxui/component/screen_interactive.hpp>
+#include <ftxui/component/component.hpp>
+#include <ftxui/component/component_base.hpp>
+#include <ftxui/component/component_options.hpp>
+#include <ftxui/component/event.hpp>
+#include <ftxui/dom/elements.hpp>
+#include <ftxui/screen/color.hpp>
 
 #include "phi/database/Database.hpp"
 #include "phi/database/structs.hpp"
@@ -30,6 +37,7 @@
 #include "phi/encryption/Encryptor.hpp"
 #include "phi/encryption/secrets.hpp"
 #include "phi/ui/color_defs.hpp"
+#include "phi/ui/utils.hpp"
 
 namespace phi::ui {
 
@@ -43,13 +51,34 @@ inline struct winsize getTerminalSize() {
   return size;
 }
 
+struct Components {
+    ftxui::Component login_input;
+    ftxui::Component contact_menu;
+
+    std::vector<ftxui::Component> toVev() const {
+      return {this->login_input, this->contact_menu};
+    }
+};
+
+enum class Page { Login, Home };
+
+struct State {
+    Page page;
+    bool show_noti;
+    int noti_ls_milli;
+};
+
 class Manager {
   private:
     std::shared_ptr<phi::database::Database> DATABASE;
     std::shared_ptr<phi::encryption::Encryptor> ENCRYPTOR;
     std::shared_ptr<phi::tasks::TaskMaster> TASKMASTER;
 
-    ftxui::ScreenInteractive screen = ftxui::ScreenInteractive::FixedSize(COLS, ROWS);
+    ftxui::ScreenInteractive screen =
+      ftxui::ScreenInteractive::TerminalOutput();  //::FixedSize(COLS, ROWS);
+
+    State state;
+    Components components;
 
   public:
     Manager(std::shared_ptr<phi::database::Database> database,
@@ -58,7 +87,13 @@ class Manager {
 
     /**/
 
-    bool loginPage();
+    void eventLoop();
+
+    /**/
+
+    // functions below are inside of `Manager_login_page.cpp`
+    ftxui::Element renderLoginUI();
+    ftxui::Element renderHomeUI();
 };
 
 }  // namespace phi::ui

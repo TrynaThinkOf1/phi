@@ -12,25 +12,11 @@
 
 #include "phi/ui/Manager.hpp"
 
-#include <string>
 #include <memory>
-#include <vector>
-#include <thread>
-#include <array>
-
-#include <sys/ioctl.h>
-#include <unistd.h>
-
-#include <ftxui/component/screen_interactive.hpp>
-#include <ftxui/dom/elements.hpp>
 
 #include "phi/database/Database.hpp"
-#include "phi/database/structs.hpp"
-#include "tasks/TaskMaster.hpp"
-#include "tasks/task_struct.hpp"
 #include "phi/encryption/Encryptor.hpp"
-#include "phi/encryption/secrets.hpp"
-#include "phi/ui/color_defs.hpp"
+#include "tasks/TaskMaster.hpp"
 
 phi::ui::Manager::Manager(std::shared_ptr<phi::database::Database> database,
                           std::shared_ptr<phi::encryption::Encryptor> encryptor,
@@ -40,8 +26,40 @@ phi::ui::Manager::Manager(std::shared_ptr<phi::database::Database> database,
       TASKMASTER(std::move(taskmaster)) {
 }
 
-/**/
+/***/
 
-bool phi::ui::Manager::loginPage() {
-  return true;
+void phi::ui::Manager::eventLoop() {
+  bool should_exit = false;
+
+  ftxui::InputOption popt;
+  popt.password = true;
+
+  std::string password;
+  this->components.login_input = ftxui::Input(&password, "", popt);
+  this->components.login_input |= ftxui::CatchEvent([&](const ftxui::Event& e) {
+    if (e == ftxui::Event::Return) {
+      if (DATABASE->login(password)) {
+        this->state.page = phi::ui::Page::Home;
+      } else {
+        should_exit = true;
+      }
+      return true;
+    }
+
+    return false;
+  });
+
+
+  auto total_layout = ftxui::Container::Vertical({this->components.toVev()});
+  auto renderer = ftxui::Renderer(total_layout, [&] {
+    if (should_exit) this->screen.Exit();
+
+    switch (this->state.page) {
+      case Page::Login:
+        return this->renderLoginUI();
+      case Page::Home:
+        return this->renderHomeUI();
+    }
+  });
+  this->screen.Loop(renderer);
 }
