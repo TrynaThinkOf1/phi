@@ -110,6 +110,8 @@ void phi::ui::Manager::eventLoop() {
         return this->renderLoginUI();
       case Page::Home:
         return this->renderHomeUI();
+      case Page::Screensaver:
+        return this->renderScreensaver();
     }
   });
   this->screen.Loop(renderer);

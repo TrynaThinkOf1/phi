@@ -113,6 +113,7 @@ class Manager {
     ftxui::Element renderLoginUI() const;
     ftxui::Element renderHomeUI() const;
     ftxui::Element renderContactMenuUI() const;
+    ftxui::Element renderScreensaver() const;  // not this one, `Manager_screensaver.cpp`
 };
 
 }  // namespace phi::ui
