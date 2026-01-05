@@ -5,7 +5,7 @@ UseColor: true
 
 CheckOptions:
   - key:             readability-identifier-length.IgnoredParameterNames
-    value:           "op"
+    value:           "(op|e)"
   - key:             readability-identifier-length.IgnoredVariableNames
     value:           "(j|in)"
   - key:             readability-identifier-naming.VariableCase

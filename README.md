@@ -30,6 +30,7 @@
 * SQLite3 database to hold user data - [SQLiteC++](https://github.com/SRombauts/SQLiteCpp)
 	* Password protected
 * Advanced and intuitive Terminal User Interface - [FTXUI](https://arthursonzogni.github.io/FTXUI/)
+	* Built in screensaver (Credit: Oakamoore) - [TERMINAL-RAIN](https://github.com/Oakamoore/terminal-rain/)
 
 <h5>🔒 SECURITY</h5>
 

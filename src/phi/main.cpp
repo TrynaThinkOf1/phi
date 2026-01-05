@@ -24,6 +24,8 @@
 #include "utils/misc_utils.hpp"
 #include "utils/str_utils.hpp"
 
+#define RESET_TERM "\x1b[2J\x1b[H"
+
 namespace tmc = termcolor;
 
 int main() {
@@ -98,34 +100,18 @@ int main() {
 
   auto size = phi::ui::getTerminalSize();
   if (size.ws_col < phi::ui::COLS || size.ws_row < phi::ui::ROWS) {
-    std::cout << tmc::bright_red << "⛔️ Phi requires a terminal size of at least "
-              << phi::ui::COLS << "x" << phi::ui::ROWS << " to properly render the TUI ⛔️\n"
+    std::cout << tmc::bright_red << "⛔️ Phi requires a terminal size of at least " << phi::ui::COLS
+              << "x" << phi::ui::ROWS << " to properly render the TUI ⛔️\n"
               << tmc::reset;
     return 1;
   }
 
-  const std::shared_ptr<phi::ui::Manager> MANAGER = std::make_shared<phi::ui::Manager>(DATABASE, ENCRYPTOR, TASKMASTER);
+  const std::shared_ptr<phi::ui::Manager> MANAGER =
+    std::make_shared<phi::ui::Manager>(DATABASE, ENCRYPTOR, TASKMASTER);
 
-  if (!MANAGER->loginPage()) {
-    return 1;
-  }
-
-  // TODO: make this with FTXUI instead
-  /*
-  phi::sysmsg("PLEASE LOG IN\n  password: ");
-  std::string password = getHiddenInput();
-  if (!DATABASE->login(password)) {
-    std::cout << tmc::bright_red
-              << "\n"
-                 "⛔️ Login failed, incorrect password ⛔️\n"  // "" necessary separator for emoji
-              << tmc::reset;
-    return erc;
-  }
-  std::cout << tmc::bold << tmc::bright_green << "\nLogin success!\n" << tmc::reset;
-  */
-  DATABASE->createTables();
-
-  // MANAGER->event_loop();
+  std::cout << RESET_TERM << std::flush;
+  MANAGER->eventLoop();
+  std::cout << RESET_TERM << std::flush;
 
   return 0;
 }

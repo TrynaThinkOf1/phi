@@ -34,6 +34,9 @@ const auto PURPLE_LIGHT = ftxui::Color::RGB(170, 115, 230);
 const auto MAGENTA = ftxui::Color::RGB(235, 30, 230);
 const auto PINK = ftxui::Color::RGB(250, 140, 200);
 
+const auto SHALLOW = ftxui::Color::RGB(215, 195, 250);
+const auto DEEP = ftxui::Color::RGB(20, 20, 30);
+
 }  // namespace phi::ui::colors
 
 #endif /* _COLOR_DEFS_HPP */
