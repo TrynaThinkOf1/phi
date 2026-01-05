@@ -95,6 +95,11 @@ target_link_libraries(phi
         ${CURL_LIBRARIES}
 )
 
+target_link_directories(phi
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/lib
+)
+
 target_compile_options(phi
     PRIVATE
         -Wall
