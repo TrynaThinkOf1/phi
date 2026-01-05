@@ -1,4 +1,4 @@
-Checks: 'bugprone-*, clang-analyzer-*, concurrency-*, cppcoreguidelines-*, performance-*, portability-*, readability-*, -cppcoreguidelines-pro-type-reinterpret-cast, -cppcoreguidelines-special-member-functions, -bugprone-easily-swappable-parameters, -readability-braces-around-statements, -readability-identifier-naming'
+Checks: 'bugprone-*, clang-analyzer-*, concurrency-*, cppcoreguidelines-*, performance-*, portability-*, readability-*, -cppcoreguidelines-pro-type-reinterpret-cast, -cppcoreguidelines-special-member-functions, -cppcoreguidelines-avoid-magic-numbers, -bugprone-easily-swappable-parameters, -readability-braces-around-statements, -readability-identifier-naming, -readability-magic-numbers'
 
 WarningsAsErrors: true
 UseColor: true
