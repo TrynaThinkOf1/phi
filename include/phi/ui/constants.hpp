@@ -1,3 +1,31 @@
+#ifndef _UI_CONSTANTS_HPP
+#define _UI_CONSTANTS_HPP
+
+#include <string>
+
+namespace phi::ui::constants {
+
+const std::string header_text = R"ascii(
+LLLLLLLLLLL               OOOOOOOOO             GGGGGGGGGGGGGIIIIIIIIIINNNNNNN        NNNNNNN
+L:::::::::L             OO:::::::::OO        GGG::::::::::::GI::::::::IN::::::N       N:::::N
+L:::::::::L           OO:::::::::::::OO    GG:::::::::::::::GI::::::::IN:::::::N      N:::::N
+LL:::::::LL          O:::::::OOO:::::::O  G:::::GGGGGGGG::::GII::::::IIN::::::::N     N:::::N
+  L:::::L            O::::::O   O::::::O G:::::G       GGGGGG  I::::I  N:::::::::N    N:::::N
+  L:::::L            O:::::O     O:::::OG:::::G                I::::I  N::::::::::N   N:::::N
+  L:::::L            O:::::O     O:::::OG:::::G                I::::I  N::::::N::::N  N:::::N
+  L:::::L            O:::::O     O:::::OG:::::G    GGGGGGGGGG  I::::I  N:::::N N::::N N:::::N
+  L:::::L            O:::::O     O:::::OG:::::G    G::::::::G  I::::I  N:::::N  N::::N::::::N
+  L:::::L            O:::::O     O:::::OG:::::G    GGGGG::::G  I::::I  N:::::N   N::::::::::N
+  L:::::L            O:::::O     O:::::OG:::::G        G::::G  I::::I  N:::::N    N:::::::::N
+  L:::::L      LLLLLLO::::::O   O::::::O G:::::G       G::::G  I::::I  N:::::N     N::::::::N
+LL:::::::LLLLLL:::::LO:::::::OOO:::::::O  G:::::GGGGGGGG::::GII::::::IIN:::::N      N:::::::N
+L:::::::::::::::::::L OO:::::::::::::OO    GG:::::::::::::::GI::::::::IN:::::N       N::::::N
+L:::::::::::::::::::L   OO:::::::::OO        GGG::::::GGG:::GI::::::::IN:::::N        N:::::N
+LLLLLLLLLLLLLLLLLLLLL     OOOOOOOOO             GGGGGG   GGGGIIIIIIIIIINNNNNNN         NNNNNN
+)ascii";
+
+
+const std::string logo_text = R"ascii(
                          %#%@@@@@@@@@@@@@%#%                         
                           @%*%@@@@@@@@@%*%@                          
                           @@@*#@@@@@@@##@@@                          
@@ -30,4 +58,9 @@
                            @@@*#@@@@@##@@@                           
                           @@@#%@@@@@@@#*@@@                          
                           @%*%@@@@@@@@@%*%@                          
-                         @%%@@@@@@@@@@@@@%%@                          
+                         @%%@@@@@@@@@@@@@%%@                         
+)ascii";
+
+}  // namespace phi::ui::constants
+
+#endif

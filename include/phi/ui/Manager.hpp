@@ -18,6 +18,7 @@
 #include <vector>
 #include <thread>
 #include <chrono>
+#include <tuple>
 
 #include <sys/ioctl.h>
 #include <unistd.h>
@@ -38,6 +39,7 @@
 #include "phi/encryption/secrets.hpp"
 #include "phi/ui/color_defs.hpp"
 #include "phi/ui/utils.hpp"
+#include "phi/ui/constants.hpp"
 
 namespace phi::ui {
 
@@ -53,14 +55,30 @@ inline struct winsize getTerminalSize() {
 
 struct Components {
     ftxui::Component login_input;
-    ftxui::Component contact_menu;
 
-    std::vector<ftxui::Component> toVev() const {
-      return {this->login_input, this->contact_menu};
+    ftxui::Component home_button_layout_left;
+
+    ftxui::Component contact_menu;
+    ftxui::Component contact_request_menu;
+    ftxui::Component error_menu;
+
+    std::vector<ftxui::Component> toVec() const {
+      return {login_input, home_button_layout_left, contact_menu, contact_request_menu, error_menu};
     }
 };
 
-enum class Page { Login, Home };
+enum class Page {
+  Login,
+  Home,
+  ContactsMenu,
+  ContactRequestsMenu,
+  ConversationsMenu,
+  ViewErrorsMenu,
+  EditSelf,
+  ChangeDatabasePassword,
+  Settings,
+  Screensaver
+};
 
 struct State {
     Page page;
@@ -92,8 +110,9 @@ class Manager {
     /**/
 
     // functions below are inside of `Manager_login_page.cpp`
-    ftxui::Element renderLoginUI();
-    ftxui::Element renderHomeUI();
+    ftxui::Element renderLoginUI() const;
+    ftxui::Element renderHomeUI() const;
+    ftxui::Element renderContactMenuUI() const;
 };
 
 }  // namespace phi::ui

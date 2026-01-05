@@ -24,6 +24,8 @@
 #include "utils/misc_utils.hpp"
 #include "utils/str_utils.hpp"
 
+#define RESET_TERM "\x1b[2J\x1b[H"
+
 namespace tmc = termcolor;
 
 int main() {
@@ -107,7 +109,9 @@ int main() {
   const std::shared_ptr<phi::ui::Manager> MANAGER =
     std::make_shared<phi::ui::Manager>(DATABASE, ENCRYPTOR, TASKMASTER);
 
+  std::cout << RESET_TERM << std::flush;
   MANAGER->eventLoop();
+  std::cout << RESET_TERM << std::flush;
 
   return 0;
 }
