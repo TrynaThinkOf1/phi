@@ -32,8 +32,6 @@
 phi::database::Database::Database(int& erc) {
   this->db =
     std::make_unique<SQLite::Database>(expand("~/.phi/main.db"), SQLite::OPEN_READWRITE);  // NOLINT
-  // this and the WAL thing below are for when we can figure out how to add sqlcipher
-  // this->db->exec("PRAGMA key = 'password';");
 
   /**/
 
@@ -52,9 +50,6 @@ phi::database::Database::Database(int& erc) {
     erc = 1;
     return;
   }
-
-  this->contact_check_query =
-    std::make_unique<SQLite::Statement>(*(this->db), "SELECT 1 FROM contacts WHERE id = :id");
 
   erc = 0;
 }
@@ -120,6 +115,9 @@ void phi::database::Database::createTables() {
         timestamp UNSIGNED BIG INT NOT NULL
       );
     )sql");
+
+  this->contact_check_query =
+    std::make_unique<SQLite::Statement>(*(this->db), "SELECT 1 FROM contacts WHERE id = :id");
 }
 
 /** **/

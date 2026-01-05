@@ -33,7 +33,8 @@ void phi::ui::Manager::eventLoop() {
   this->components.login_input = ftxui::Input(&password, "", popt);
   this->components.login_input |= ftxui::CatchEvent([&](const ftxui::Event& e) {
     if (e == ftxui::Event::Return) {
-      if (DATABASE->login(password)) {
+      if (this->DATABASE->login(password)) {
+        this->DATABASE->createTables();
         this->state.page = phi::ui::Page::Home;
       } else {
         should_exit = true;
@@ -112,6 +113,8 @@ void phi::ui::Manager::eventLoop() {
         return this->renderHomeUI();
       case Page::Screensaver:
         return this->renderScreensaver();
+      default:  // if I leave an unfinished/no default then it loops back around to login
+        return this->renderHomeUI();
     }
   });
   this->screen.Loop(renderer);
