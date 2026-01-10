@@ -56,21 +56,25 @@ inline struct winsize getTerminalSize() {
 struct Components {
     ftxui::Component login_input;
 
-    ftxui::Component home_button_layout_left;
+    ftxui::Component home_button_layout;
 
-    ftxui::Component contact_menu;
+    ftxui::Component contacts_menu;
+    ftxui::Component contact_page;
+
     ftxui::Component contact_request_menu;
     ftxui::Component error_menu;
 
     std::vector<ftxui::Component> toVec() const {
-      return {login_input, home_button_layout_left, contact_menu, contact_request_menu, error_menu};
+      return {login_input, home_button_layout, contacts_menu,
+              /*contact_page,*/ contact_request_menu, error_menu};
     }
 };
 
-enum class Page {
+enum class Page : short {
   Login,
   Home,
   ContactsMenu,
+  EditContact,
   ContactRequestsMenu,
   ConversationsMenu,
   ViewErrorsMenu,
@@ -82,6 +86,9 @@ enum class Page {
 
 struct State {
     Page page;
+
+    int contact_selected;
+
     bool show_noti;
     int noti_ls_milli;
 };
@@ -92,11 +99,12 @@ class Manager {
     std::shared_ptr<phi::encryption::Encryptor> ENCRYPTOR;
     std::shared_ptr<phi::tasks::TaskMaster> TASKMASTER;
 
-    ftxui::ScreenInteractive screen =
-      ftxui::ScreenInteractive::TerminalOutput();  //::FixedSize(COLS, ROWS);
+    ftxui::ScreenInteractive screen = ftxui::ScreenInteractive::TerminalOutput();
 
-    State state;
+    State state{Page::Login, 0, false, 0};
     Components components;
+
+    std::vector<std::string> getContacts();
 
   public:
     Manager(std::shared_ptr<phi::database::Database> database,
@@ -112,7 +120,8 @@ class Manager {
     // functions below are inside of `Manager_login_page.cpp`
     ftxui::Element renderLoginUI() const;
     ftxui::Element renderHomeUI() const;
-    ftxui::Element renderContactMenuUI() const;
+    ftxui::Element renderContactsMenuUI() const;
+    ftxui::Element renderContactPageUI() const;
     ftxui::Element renderScreensaver() const;  // not this one, `Manager_screensaver.cpp`
 };
 
