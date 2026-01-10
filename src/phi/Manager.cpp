@@ -22,6 +22,29 @@ phi::ui::Manager::Manager(std::shared_ptr<phi::database::Database> database,
 
 /***/
 
+std::vector<std::string> phi::ui::Manager::getContacts() {
+  std::unique_ptr<std::vector<std::tuple<int, std::string, std::string>>> actuals =
+    DATABASE->getAllContacts();
+
+  std::vector<std::string> contacts;
+
+  if (actuals != nullptr) {
+    contacts.resize(actuals->size());
+    for (size_t i = 0; i < actuals->size(); i++) {
+      auto tup = actuals->at(i);
+
+      contacts[i] =
+        std::get<2>(tup) + " " + std::get<1>(tup) + " (" + std::to_string(std::get<0>(tup)) + ")";
+    }
+
+    return contacts;
+  }
+
+  return {};
+}
+
+/***/
+
 void phi::ui::Manager::eventLoop() {
   bool should_exit = false;
 
@@ -47,7 +70,6 @@ void phi::ui::Manager::eventLoop() {
   //
 
   // these will be set during home page rendering
-  this->components.contact_menu = ftxui::Menu({});
   this->components.contact_request_menu = ftxui::Menu({});
   this->components.error_menu = ftxui::Menu({});
   //
@@ -96,23 +118,60 @@ void phi::ui::Manager::eventLoop() {
 
   auto exit_button = ftxui::Button("Exit", [&] { should_exit = true; }, bopt);
 
-  this->components.home_button_layout_left = ftxui::Container::Vertical(
+  this->components.home_button_layout = ftxui::Container::Vertical(
     {conversation_menu_button, contact_menu_button, contact_request_menu_button, edit_self,
      change_db_password, settings, error_menu_button, screensaver_button, exit_button});
   //
 
+  // Contacts menu
+  std::vector<std::string> contacts = this->getContacts();
+  this->components.contacts_menu =
+    ftxui::Menu(&contacts, &this->state.contact_selected) | ftxui::CatchEvent([&](ftxui::Event e) {
+      if (e == ftxui::Event::Return) {
+        this->state.page = phi::ui::Page::EditContact;
+        return true;
+      }
+      return false;
+    });
+  //
 
-  auto total_layout = ftxui::Container::Vertical({this->components.toVec()});
+  auto total_layout = ftxui::Container::Vertical(this->components.toVec());
+
+  total_layout |= ftxui::CatchEvent([&](ftxui::Event e) {
+    // no skipping login
+    if (e == ftxui::Event::Escape && this->state.page != phi::ui::Page::Login) {
+      this->state.page = phi::ui::Page::Home;
+      return true;
+    }
+    return false;
+  });
+
   auto renderer = ftxui::Renderer(total_layout, [&] {
     if (should_exit) this->screen.Exit();
 
     switch (this->state.page) {
-      case Page::Login:
+      case phi::ui::Page::Login:
         return this->renderLoginUI();
-      case Page::Home:
+
+      case phi::ui::Page::Home:
+        this->components.home_button_layout->TakeFocus();  // so the cursor starts at the top button
         return this->renderHomeUI();
-      case Page::Screensaver:
+
+      case phi::ui::Page::ContactsMenu:
+        this->components.contacts_menu->TakeFocus();  // so that the cursor starts here
+        contacts = this->getContacts();
+        return this->renderContactsMenuUI();
+
+      case phi::ui::Page::EditContact:
+        contacts = this->getContacts();
+        return this->renderContactPageUI();
+
+      case phi::ui::Page::EditSelf:
+        return this->renderHomeUI();
+
+      case phi::ui::Page::Screensaver:
         return this->renderScreensaver();
+
       default:  // if I leave an unfinished/no default then it loops back around to login
         return this->renderHomeUI();
     }
