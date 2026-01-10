@@ -74,5 +74,28 @@ ftxui::Element phi::ui::Manager::renderContactsMenuUI() const {
 }
 
 ftxui::Element phi::ui::Manager::renderContactPageUI() const {
-  return ftxui::vbox({}) | homebox;
+  return ftxui::vbox({
+           ftxui::text("esc to go back home") | ftxui::color(phi::ui::colors::BLUE_BABY) |
+             ftxui::center,
+           ftxui::separatorEmpty(),
+           ftxui::separatorEmpty(),
+         }) |
+         homebox;
+}
+
+ftxui::Element phi::ui::Manager::contactDoesNotExist() const {
+  auto content = ftxui::paragraphAlignCenter(phi::ui::constants::contact_does_not_exist);
+  content |= ftxui::bold;
+
+  auto content_box = ftxui::vbox(ftxui::filler(), content, ftxui::filler());
+  content_box = ftxui::hbox(ftxui::filler(), content_box, ftxui::filler()) |
+                ftxui::bgcolor(phi::ui::colors::PURPLE_HAZE) | ftxui::borderRounded |
+                ftxui::color(phi::ui::colors::RED) | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 131) |
+                ftxui::size(ftxui::HEIGHT, ftxui::EQUAL, 19);
+
+  return ftxui::vbox({ftxui::text("esc to go back home") |
+                        ftxui::color(phi::ui::colors::BLUE_BABY) | ftxui::center,
+                      ftxui::separatorEmpty(), ftxui::separatorEmpty(),
+                      content_box | ftxui::center}) |
+         homebox;
 }
