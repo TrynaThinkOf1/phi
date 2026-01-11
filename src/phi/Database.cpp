@@ -125,7 +125,7 @@ void phi::database::Database::createTables() {
 std::unique_lock<std::mutex> phi::database::Database::checkContact(
   std::unique_lock<std::mutex>&& lock, int contact_id, bool& exists) {
   this->contact_check_query->bind(":id", contact_id);
-  exists = !this->contact_check_query->executeStep();
+  exists = this->contact_check_query->executeStep();
   this->contact_check_query->reset();
 
   return std::move(lock);
@@ -244,13 +244,12 @@ phi::database::Database::getAllContacts() {
   return contacts;
 }
 
-bool phi::database::Database::getContact(int contact_id, phi::database::contact_t& op, int& erc) {
+bool phi::database::Database::getContact(int contact_id, phi::database::contact_t& op) {
   std::lock_guard<std::mutex> lock(this->mtx);
 
   SQLite::Statement query(*(this->db), "SELECT * FROM contacts WHERE id = :id");
   query.bind(":id", contact_id);
   if (!query.executeStep()) {
-    erc = 1;
     return false;
   }
 
@@ -261,28 +260,30 @@ bool phi::database::Database::getContact(int contact_id, phi::database::contact_
   op.shared_secret = query.getColumn("shared_secret").getString();
   op.rsa_key = query.getColumn("rsa_key").getString();
 
-  erc = 0;
   return true;
 }
 
-bool phi::database::Database::changeContactAttribute(int contact_id, const std::string& field,
-                                                     const std::string& value, int& erc) {
+bool phi::database::Database::updateContact(const phi::database::contact_t& current,
+                                            const phi::database::contact_t& to_set) {
   std::unique_lock<std::mutex> lock(this->mtx);
 
   bool exists = false;
-  lock = this->checkContact(std::move(lock), contact_id, exists);
+  lock = this->checkContact(std::move(lock), current.id, exists);
   if (!exists) {
-    erc = 1;
     return false;
   }
 
-  SQLite::Statement change(*(this->db),
-                           "UPDATE contacts SET " + field + " = :value WHERE id = :id");
-  change.bind(":value", value);
-  change.bind(":id", contact_id);
-  change.exec();
+  for (const auto& [name, ptr] : to_set.MAP) {
+    if (*ptr != *current.MAP.at(name)) {
+      // no fail because checked above
+      SQLite::Statement change(*(this->db),
+                               "UPDATE contacts SET " + name + " = :val WHERE id = :id");
+      change.bind(":val", *ptr);
+      change.bind(":id", current.id);
+      change.exec();
+    }
+  }
 
-  erc = 0;
   return true;
 }
 

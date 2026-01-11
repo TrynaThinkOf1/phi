@@ -91,16 +91,10 @@ class Database {
     */
     std::unique_ptr<std::vector<std::tuple<int, std::string, std::string>>> getAllContacts();
 
-    /*
-      erc: 0 if none, 1 if contact doesn't exist
-    */
-    bool getContact(int contact_id, contact_t& op, int& erc);
+    bool getContact(int contact_id, contact_t& op);
 
-    /*
-      erc: 0 if none, 1 if contact doesn't exist
-    */
-    bool changeContactAttribute(int contact_id, const std::string& field, const std::string& value,
-                                int& erc);
+    bool updateContact(const phi::database::contact_t& current,
+                       const phi::database::contact_t& to_set);
 
     /*
       this will NOT give any indication as to whether or
