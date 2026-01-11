@@ -146,9 +146,7 @@ void phi::ui::Manager::eventLoop() {
   this->components.contacts_menu =
     ftxui::Menu(&contacts, &selected_contact_id) | ftxui::CatchEvent([&](ftxui::Event e) {
       if (e == ftxui::Event::Return) {
-        int erc = 0;
-        if (!this->DATABASE->getContact(contact_ids.at(selected_contact_id), selected_contact_t,
-                                        erc)) {
+        if (!this->DATABASE->getContact(contact_ids.at(selected_contact_id), selected_contact_t)) {
           this->state.page = phi::ui::Page::ContactDoesNotExist;
         } else {
           this->state.page = phi::ui::Page::EditContact;
@@ -168,11 +166,25 @@ void phi::ui::Manager::eventLoop() {
   auto id_head = ftxui::text("ID: " + std::to_string(selected_contact_t.id));
   auto emoji_input = ftxui::Input(&selected_contact_t.emoji, "emoji") | ENTER_CATCHER;
   auto name_input = ftxui::Input(&selected_contact_t.name, "name") | ENTER_CATCHER;
-  auto rsa_input = ftxui::Input(&displayable_rsa, "rsa_key") |
-                   ftxui::CatchEvent([&](ftxui::Event e) { return true; });  // prevent any changes
+  auto rsa_input = ftxui::Input(&displayable_rsa, "");
   auto addr_input = ftxui::Input(&selected_contact_t.addr, "address") | ENTER_CATCHER;
 
-  auto save_changes = ftxui::Button("Save Changes", [&] {}, bopt);  // bopt is above for homepage
+  auto save_changes = ftxui::Button(
+    "Save Changes",
+    [&] {
+      phi::database::contact_t current;
+      if (!this->DATABASE->getContact(contact_ids.at(selected_contact_id), current)) {
+        should_exit = true;
+        return;
+      }
+
+      if (!this->DATABASE->updateContact(current, selected_contact_t)) {
+        this->state.page = phi::ui::Page::ContactDoesNotExist;
+        rebuildRoot(root);
+      }
+      //  TODO: show noti of success
+    },
+    bopt);  // bopt is above for homepage
 
   this->components.contact_page =
     ftxui::Container::Vertical({emoji_input, name_input, rsa_input, addr_input, save_changes});
@@ -193,7 +205,6 @@ void phi::ui::Manager::eventLoop() {
   });
 
 
-  int erc = 0;
   auto render_fn = [&] {
     if (should_exit) this->screen.Exit();
 
