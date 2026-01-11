@@ -63,18 +63,14 @@ struct Components {
 
     ftxui::Component contact_request_menu;
     ftxui::Component error_menu;
-
-    std::vector<ftxui::Component> toVec() const {
-      return {login_input, home_button_layout, contacts_menu,
-              /*contact_page,*/ contact_request_menu, error_menu};
-    }
 };
 
-enum class Page : short {
+enum class Page : unsigned char {
   Login,
   Home,
   ContactsMenu,
   EditContact,
+  ContactDoesNotExist,
   ContactRequestsMenu,
   ConversationsMenu,
   ViewErrorsMenu,
@@ -86,8 +82,6 @@ enum class Page : short {
 
 struct State {
     Page page;
-
-    int contact_selected;
 
     bool show_noti;
     int noti_ls_milli;
@@ -101,10 +95,12 @@ class Manager {
 
     ftxui::ScreenInteractive screen = ftxui::ScreenInteractive::TerminalOutput();
 
-    State state{Page::Login, 0, false, 0};
+    State state{Page::Login, false, 0};
     Components components;
 
-    std::vector<std::string> getContacts();
+    std::tuple<std::vector<std::string>, std::vector<int>> getContacts();
+
+    void rebuildRoot(ftxui::Component& root);
 
   public:
     Manager(std::shared_ptr<phi::database::Database> database,
@@ -122,6 +118,7 @@ class Manager {
     ftxui::Element renderHomeUI() const;
     ftxui::Element renderContactsMenuUI() const;
     ftxui::Element renderContactPageUI() const;
+    ftxui::Element contactDoesNotExist() const;
     ftxui::Element renderScreensaver() const;  // not this one, `Manager_screensaver.cpp`
 };
 

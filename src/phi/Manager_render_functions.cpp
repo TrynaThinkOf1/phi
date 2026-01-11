@@ -74,12 +74,10 @@ ftxui::Element phi::ui::Manager::renderContactsMenuUI() const {
 }
 
 ftxui::Element phi::ui::Manager::renderContactPageUI() const {
-  return ftxui::vbox({
-           ftxui::text("esc to go back home") | ftxui::color(phi::ui::colors::BLUE_BABY) |
-             ftxui::center,
-           ftxui::separatorEmpty(),
-           ftxui::separatorEmpty(),
-         }) |
+  return ftxui::vbox({ftxui::text("esc to go back home") |
+                        ftxui::color(phi::ui::colors::BLUE_BABY) | ftxui::center,
+                      ftxui::separatorEmpty(), ftxui::separatorEmpty(),
+                      this->components.contact_page->Render()}) |
          homebox;
 }
 
