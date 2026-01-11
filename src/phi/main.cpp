@@ -13,6 +13,7 @@
 #include <iostream>
 #include <string>
 #include <memory>
+#include <cstring>
 
 #include "termcolor/termcolor.hpp"
 
@@ -28,7 +29,22 @@
 
 namespace tmc = termcolor;
 
-int main() {
+int main(int argc, char** argv) {
+  // NOLINTBEGIN
+  if (argc > 1) {
+    if (strcmp("--version", argv[1]) == 0) {
+      std::cout << PHI_VERSION << std::endl;
+    } else if (strcmp("--help", argv[1]) == 0) {
+      std::cout << "For help, read the Phi manual using the command " << tmc::bold << tmc::italic
+                << "`man phi`" << tmc::reset << std::endl;
+    } else {
+      std::cout << tmc::red << "Unrecognized argument `" << argv[1] << '`' << tmc::reset
+                << std::endl;
+    }
+    return 0;
+  }
+  // NOLINTEND
+
   /**** GLOBAL CONFIG ****/
 
   int erc = 0;

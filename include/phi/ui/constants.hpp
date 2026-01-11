@@ -61,6 +61,24 @@ const std::string logo_text = R"ascii(
                          @%%@@@@@@@@@@@@@%%@                         
 )ascii";
 
+const std::string contact_does_not_exist = R"ascii(
+    mmmm     mmmm    mmm   mm  mmmmmmmm     mm        mmmm   mmmmmmmm            mmmmm       mmmm    mmmmmmmm    mmmm   
+  ##""""#   ##""##   ###   ##  """##"""    ####     ##""""#  """##"""            ##"""##    ##""##   ##""""""  m#""""#  
+ ##"       ##    ##  ##"#  ##     ##       ####    ##"          ##               ##    ##  ##    ##  ##        ##m      
+ ##        ##    ##  ## ## ##     ##      ##  ##   ##           ##               ##    ##  ##    ##  #######    "####m  
+ ##m       ##    ##  ##  #m##     ##      ######   ##m          ##               ##    ##  ##    ##  ##             "## 
+  ##mmmm#   ##mm##   ##   ###     ##     m##  ##m   ##mmmm#     ##               ##mmm##    ##mm##   ##mmmmmm  #mmmmm#" 
+    """"     """"    ""   """     ""     ""    ""     """"      ""               """""       """"    """"""""   """""   
+                                                                                                                        
+                mmm   mm    mmmm    mmmmmmmm            mmmmmmmm  mmm  mmm   mmmmmm     mmmm    mmmmmmmm                
+                ###   ##   ##""##   """##"""            ##""""""   ##mm##    ""##""   m#""""#   """##"""                
+                ##"#  ##  ##    ##     ##               ##          ####       ##     ##m          ##                   
+                ## ## ##  ##    ##     ##               #######      ##        ##      "####m      ##                   
+                ##  #m##  ##    ##     ##               ##          ####       ##          "##     ##                   
+                ##   ###   ##mm##      ##               ##mmmmmm   ##  ##    mm##mm   #mmmmm#"     ##                   
+                ""   """    """"       ""               """"""""  """  """   """"""    """""       ""                   
+)ascii";
+
 }  // namespace phi::ui::constants
 
 #endif

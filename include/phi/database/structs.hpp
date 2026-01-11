@@ -54,7 +54,7 @@ struct self_t {
 
       for (const auto& [field, ptr] : this->MAP) {
         if (field.substr(0, 3) == "rsa") {
-          j[field] = toHex(*ptr);
+          j[field] = toB64(*ptr);
           continue;
         }
         j[field] = *ptr;
@@ -70,7 +70,7 @@ struct self_t {
 
       for (const auto& [field, ptr] : this->MAP) {
         if (field.substr(0, 3) == "rsa") {
-          *ptr = fromHex(j[field].get<std::string>());
+          *ptr = fromB64(j[field].get<std::string>());
           continue;
         }
         *ptr = j[field].get<std::string>();
@@ -81,8 +81,8 @@ struct self_t {
 
     std::string toString() const {
       return "NAME: " + this->name + "\nEMOJI: " + this->emoji +
-             "\nRSA PUB KEY (mid 32): " + toHex(this->rsa_pub_key.substr(500, LINE_LIM)) +
-             "\nRSA PRIV KEY (mid 32): " + toHex(this->rsa_priv_key.substr(500, LINE_LIM)) +
+             "\nRSA PUB KEY (mid 32): " + toB64(this->rsa_pub_key.substr(500, LINE_LIM)) +
+             "\nRSA PRIV KEY (mid 32): " + toB64(this->rsa_priv_key.substr(500, LINE_LIM)) +
              "\nIP: " + this->last_known_ip + "\nHARDWARE PROFILE: " + this->hardware_profile +
              "\nPASSWORD HINT: " + this->password_hint + "\n";
     }
@@ -112,8 +112,8 @@ struct contact_t {
       json j;
 
       for (const auto& [field, ptr] : this->MAP) {
-        if (field == "rsa_key") {
-          j[field] = toHex(*ptr);
+        if (field == "rsa_key" || field == "shared_secret") {
+          j[field] = toB64(*ptr);
           continue;
         }
         j[field] = *ptr;
@@ -130,8 +130,8 @@ struct contact_t {
       json j = json::parse(json_str);
 
       for (const auto& [field, ptr] : this->MAP) {
-        if (field == "rsa_key") {
-          *ptr = fromHex(j[field].get<std::string>());
+        if (field == "rsa_key" || field == "shared_secret") {
+          *ptr = fromB64(j[field].get<std::string>());
           continue;
         }
         *ptr = j[field].get<std::string>();
@@ -144,9 +144,9 @@ struct contact_t {
 
     std::string toString() const {
       return "ID: " + std::to_string(this->id) + "\nNAME: " + this->name +
-             "\nEMOJI: " + this->emoji + "\nSHARED SECRET: " + toHex(this->shared_secret) +
+             "\nEMOJI: " + this->emoji + "\nSHARED SECRET: " + toB64(this->shared_secret) +
              "\nIP: " + this->addr +
-             "\nRSA KEY (mid 32): " + toHex(this->rsa_key.substr(500, LINE_LIM));
+             "\nRSA KEY (mid 32): " + toB64(this->rsa_key.substr(500, LINE_LIM));
     }
 };
 

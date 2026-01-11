@@ -1,7 +1,7 @@
 # CONFIGURATION
 cmake_minimum_required(VERSION 3.24...4.1.2)
 project(PHI
-    VERSION 0.2.2
+    VERSION 0.2.5
     LANGUAGES C CXX
 )
 
@@ -109,6 +109,10 @@ target_compile_options(phi
         -Wno-return-type
         -Wno-comment
         $<$<CONFIG:Release>:-O1>
+)
+
+add_compile_definitions(
+    PHI_VERSION="${CMAKE_PROJECT_VERSION}"
 )
 #
 
