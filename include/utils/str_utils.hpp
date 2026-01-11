@@ -35,14 +35,14 @@
 [[nodiscard]] static std::string toB64(const std::string& str) {
   std::string opt;
 
-  CryptoPP::Base64Encoder encoder;
+  CryptoPP::Base64Encoder encoder(nullptr, false);
   encoder.Put(reinterpret_cast<const unsigned char*>(str.data()), str.size());
   encoder.MessageEnd();
 
   CryptoPP::word64 size = encoder.MaxRetrievable();
   if (size > 0) {
     opt.resize(size);
-    encoder.Get(reinterpret_cast<unsigned char*>(opt.data()), size);
+    encoder.Get(reinterpret_cast<unsigned char*>(opt.data()), size - 1);
   }
 
   return opt;
@@ -51,7 +51,7 @@
 [[nodiscard]] static std::string fromB64(const std::string& str) {
   std::string opt;
 
-  CryptoPP::Base64Decoder decoder;
+  CryptoPP::Base64Decoder decoder(nullptr);
   decoder.Put(reinterpret_cast<const unsigned char*>(str.data()), str.size());
   decoder.MessageEnd();
 
