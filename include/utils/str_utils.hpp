@@ -11,6 +11,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include <cryptopp/base64.h>
+
 [[nodiscard]] static std::string getHiddenInput() {
   // CODE BELOW IS VIA STACK OVERFLOW {
   termios oldt{};
@@ -30,59 +32,36 @@
 
 /***/
 
-[[nodiscard]] static std::string toHex(const std::string& str) {
-  std::ostringstream oss;
-  oss << std::hex << std::setfill('0');
-  for (unsigned char character : str) {
-    oss << std::setw(2) << static_cast<int>(character);
+[[nodiscard]] static std::string toB64(const std::string& str) {
+  std::string opt;
+
+  CryptoPP::Base64Encoder encoder;
+  encoder.Put(reinterpret_cast<const unsigned char*>(str.data()), str.size());
+  encoder.MessageEnd();
+
+  CryptoPP::word64 size = encoder.MaxRetrievable();
+  if (size > 0) {
+    opt.resize(size);
+    encoder.Get(reinterpret_cast<unsigned char*>(opt.data()), size);
   }
-  return oss.str();
+
+  return opt;
 }
 
-[[nodiscard]] static std::string toHex(const unsigned char* str) {
-  std::string temp{reinterpret_cast<const char*>(str)};
-  return toHex(temp);
+[[nodiscard]] static std::string fromB64(const std::string& str) {
+  std::string opt;
+
+  CryptoPP::Base64Decoder decoder;
+  decoder.Put(reinterpret_cast<const unsigned char*>(str.data()), str.size());
+  decoder.MessageEnd();
+
+  CryptoPP::word64 size = decoder.MaxRetrievable();
+  if (size > 0) {
+    opt.resize(size);
+    decoder.Get(reinterpret_cast<unsigned char*>(opt.data()), size);
+  }
+
+  return opt;
 }
 
-static inline unsigned char hexValue(char character) {
-  constexpr int OFFSET = 10;
-
-  if (character >= '0' && character <= '9') {
-    return static_cast<unsigned char>(character - '0');
-  }
-  if (character >= 'a' && character <= 'f') {
-    return static_cast<unsigned char>(OFFSET + character - 'a');
-  }
-  if (character >= 'A' && character <= 'F') {
-    return static_cast<unsigned char>(OFFSET + character - 'A');
-  }
-
-  return '\0';
-}
-
-[[nodiscard]] static std::string fromHex(const std::string& hex) {
-  if (hex.size() % 2 != 0) {
-    return std::string{};
-  }
-
-  std::string out;
-  out.reserve(hex.size() / 2);
-
-  for (size_t i = 0; i < hex.size(); i += 2) {
-    unsigned char high = hexValue(hex[i]);
-    unsigned char low = hexValue(hex[i + 1]);
-    out.push_back(static_cast<char>((high << 4) | low));
-  }
-
-  return out;
-}
-
-[[nodiscard]] static std::string fromHex(const unsigned char* hex) {
-  std::string temp(reinterpret_cast<const char*>(hex));
-  if (temp.empty()) {
-    return std::string{};
-  }
-  return fromHex(temp);
-}
-
-#endif /*STR_UTILS_HPP */
+#endif /* STR_UTILS_HPP */
