@@ -80,8 +80,27 @@ ftxui::Element phi::ui::Manager::renderContactPageUI(int contact_id) const {
   return ftxui::vbox({ftxui::text("esc to go back home") |
                         ftxui::color(phi::ui::colors::BLUE_BABY) | ftxui::center,
                       ftxui::separatorEmpty(), ftxui::separatorEmpty(), id_head | ftxui::center,
-                      this->components.contact_page->Render() |
-                        ftxui::color(phi::ui::colors::PURPLE_HAZE) | ftxui::borderRounded |
+
+                      ftxui::hbox({ftxui::vbox({
+                                     ftxui::filler(),
+                                     ftxui::align_right(ftxui::text("EMOJI")),
+                                     ftxui::filler(),
+                                     ftxui::align_right(ftxui::text("NAME")),
+                                     ftxui::filler(),
+                                     ftxui::align_right(ftxui::text("RSA KEY (B64)")),
+                                     ftxui::filler(),
+                                     ftxui::align_right(ftxui::text("ADDRESS")),
+                                     ftxui::filler(),
+                                     ftxui::filler(),
+                                   }) |
+                                     ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 13) |
+                                     ftxui::color(phi::ui::colors::GOLD),
+                                   ftxui::separatorEmpty(),
+                                   this->components.contact_page->Render() |
+                                     ftxui::bgcolor(phi::ui::colors::PURPLE_HAZE) |
+                                     ftxui::color(phi::ui::colors::GOLD) |
+                                     ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 42) | ftxui::center}) |
+                        ftxui::bgcolor(phi::ui::colors::PURPLE_HAZE) | ftxui::borderRounded |
                         ftxui::color(phi::ui::colors::GOLD) | ftxui::center}) |
          homebox;
 }

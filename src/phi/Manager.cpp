@@ -165,23 +165,24 @@ void phi::ui::Manager::eventLoop() {
   // Contact edit page
 #define ENTER_CATCHER ftxui::CatchEvent([&](ftxui::Event e) { return e == ftxui::Event::Return; })
 
-  ftxui::InputOption dopt;
-  dopt.transform = [](ftxui::InputState s) {
-    return s.element | ftxui::color(ftxui::Color::GrayDark) | ftxui::dim | ftxui::borderRounded |
-           ftxui::color(phi::ui::colors::GOLD);
-  };
-
   ftxui::InputOption ropt;
   ropt.transform = [](ftxui::InputState s) {
     return s.element | ftxui::color(phi::ui::colors::BLUE_BABY) | ftxui::borderRounded |
            ftxui::color(phi::ui::colors::GOLD);
   };
-  std::string displayable_rsa = selected_contact_t.rsa_key.substr(0, 13) + "...";
 
-  auto emoji_input = ftxui::Input(&selected_contact_t.emoji, "emoji", ropt) | ENTER_CATCHER;
-  auto name_input = ftxui::Input(&selected_contact_t.name, "name", ropt) | ENTER_CATCHER;
-  auto rsa_input = ftxui::Input(&displayable_rsa, "", dopt);
-  auto addr_input = ftxui::Input(&selected_contact_t.addr, "address", ropt) | ENTER_CATCHER;
+  ftxui::InputOption dopt;
+  dopt.transform = [](ftxui::InputState s) {
+    return s.element | ftxui::color(phi::ui::colors::BLUE_BABY) | ftxui::borderRounded |
+           ftxui::color(phi::ui::colors::GOLD) | ftxui::dim;
+  };
+
+  std::string displayable_rsa_key;
+
+  auto emoji_input = ftxui::Input(&selected_contact_t.emoji, "...", ropt) | ENTER_CATCHER;
+  auto name_input = ftxui::Input(&selected_contact_t.name, "...", ropt) | ENTER_CATCHER;
+  auto rsa_input = ftxui::Input(&displayable_rsa_key, "...", dopt) | ENTER_CATCHER;
+  auto addr_input = ftxui::Input(&selected_contact_t.addr, "...", ropt) | ENTER_CATCHER;
 
   auto save_changes = ftxui::Button(
     "Save Changes",
@@ -233,7 +234,8 @@ void phi::ui::Manager::eventLoop() {
         return this->renderContactsMenuUI();
 
       case phi::ui::Page::EditContact:
-        return this->renderContactPageUI(selected_contact_id);
+        displayable_rsa_key = toB64(selected_contact_t.rsa_key.substr(0, 26)) + "...";
+        return this->renderContactPageUI(contact_ids.at(selected_contact_id));
 
       case phi::ui::Page::ContactDoesNotExist:
         return this->contactDoesNotExist();
