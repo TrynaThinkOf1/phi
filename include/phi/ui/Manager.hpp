@@ -117,7 +117,7 @@ class Manager {
     ftxui::Element renderLoginUI() const;
     ftxui::Element renderHomeUI() const;
     ftxui::Element renderContactsMenuUI() const;
-    ftxui::Element renderContactPageUI() const;
+    ftxui::Element renderContactPageUI(int contact_id) const;
     ftxui::Element contactDoesNotExist() const;
     ftxui::Element renderScreensaver() const;  // not this one, `Manager_screensaver.cpp`
 };

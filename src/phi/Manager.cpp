@@ -52,6 +52,15 @@ void phi::ui::Manager::eventLoop() {
   ftxui::Component root = ftxui::Container::Vertical({});
   bool should_exit = false;
 
+
+  phi::database::contact_t selected_contact_t{};
+  int selected_contact_id = 0;
+
+  auto actuals_tup = this->getContacts();
+  std::vector<std::string> contacts = std::get<0>(actuals_tup);
+  std::vector<int> contact_ids = std::get<1>(actuals_tup);
+
+
   // Password input box
   std::string password;
 
@@ -104,6 +113,9 @@ void phi::ui::Manager::eventLoop() {
     "Contacts",
     [&] {
       this->state.page = phi::ui::Page::ContactsMenu;
+      actuals_tup = this->getContacts();
+      contacts = std::get<0>(actuals_tup);
+      contact_ids = std::get<1>(actuals_tup);
       rebuildRoot(root);
     },
     bopt);
@@ -135,14 +147,6 @@ void phi::ui::Manager::eventLoop() {
   //
 
   // Contacts menu
-  phi::database::contact_t selected_contact_t{};
-
-  auto actuals_tup = this->getContacts();
-  std::vector<std::string> contacts = std::get<0>(actuals_tup);
-  std::vector<int> contact_ids = std::get<1>(actuals_tup);
-
-  int selected_contact_id;
-
   this->components.contacts_menu =
     ftxui::Menu(&contacts, &selected_contact_id) | ftxui::CatchEvent([&](ftxui::Event e) {
       if (e == ftxui::Event::Return) {
@@ -161,13 +165,23 @@ void phi::ui::Manager::eventLoop() {
   // Contact edit page
 #define ENTER_CATCHER ftxui::CatchEvent([&](ftxui::Event e) { return e == ftxui::Event::Return; })
 
-  std::string displayable_rsa = toHex(selected_contact_t.rsa_key.substr(0, 32));
+  ftxui::InputOption dopt;
+  dopt.transform = [](ftxui::InputState s) {
+    return s.element | ftxui::color(ftxui::Color::GrayDark) | ftxui::dim | ftxui::borderRounded |
+           ftxui::color(phi::ui::colors::GOLD);
+  };
 
-  auto id_head = ftxui::text("ID: " + std::to_string(selected_contact_t.id));
-  auto emoji_input = ftxui::Input(&selected_contact_t.emoji, "emoji") | ENTER_CATCHER;
-  auto name_input = ftxui::Input(&selected_contact_t.name, "name") | ENTER_CATCHER;
-  auto rsa_input = ftxui::Input(&displayable_rsa, "");
-  auto addr_input = ftxui::Input(&selected_contact_t.addr, "address") | ENTER_CATCHER;
+  ftxui::InputOption ropt;
+  ropt.transform = [](ftxui::InputState s) {
+    return s.element | ftxui::color(phi::ui::colors::BLUE_BABY) | ftxui::borderRounded |
+           ftxui::color(phi::ui::colors::GOLD);
+  };
+  std::string displayable_rsa = selected_contact_t.rsa_key.substr(0, 13) + "...";
+
+  auto emoji_input = ftxui::Input(&selected_contact_t.emoji, "emoji", ropt) | ENTER_CATCHER;
+  auto name_input = ftxui::Input(&selected_contact_t.name, "name", ropt) | ENTER_CATCHER;
+  auto rsa_input = ftxui::Input(&displayable_rsa, "", dopt);
+  auto addr_input = ftxui::Input(&selected_contact_t.addr, "address", ropt) | ENTER_CATCHER;
 
   auto save_changes = ftxui::Button(
     "Save Changes",
@@ -219,7 +233,7 @@ void phi::ui::Manager::eventLoop() {
         return this->renderContactsMenuUI();
 
       case phi::ui::Page::EditContact:
-        return this->renderContactPageUI();
+        return this->renderContactPageUI(selected_contact_id);
 
       case phi::ui::Page::ContactDoesNotExist:
         return this->contactDoesNotExist();
@@ -243,11 +257,7 @@ void phi::ui::Manager::rebuildRoot(ftxui::Component& root) {
       root->Add(this->components.home_button_layout);
       this->components.home_button_layout->TakeFocus();
       break;
-    case phi::ui::Page::ContactsMenu: {
-      auto actuals_tup = this->getContacts();
-      std::vector<std::string> contacts = std::get<0>(actuals_tup);
-      std::vector<int> contact_ids = std::get<1>(actuals_tup);
-    }
+    case phi::ui::Page::ContactsMenu:
       root->Add(this->components.contacts_menu);
       this->components.contacts_menu->TakeFocus();
       break;

@@ -30,6 +30,7 @@
 namespace tmc = termcolor;
 
 int main(int argc, char** argv) {
+  // NOLINTBEGIN
   if (argc > 1) {
     if (strcmp("--version", argv[1]) == 0) {
       std::cout << PHI_VERSION << std::endl;
@@ -42,6 +43,7 @@ int main(int argc, char** argv) {
     }
     return 0;
   }
+  // NOLINTEND
 
   /**** GLOBAL CONFIG ****/
 

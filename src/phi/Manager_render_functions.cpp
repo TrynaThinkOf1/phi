@@ -63,21 +63,26 @@ ftxui::Element phi::ui::Manager::renderContactsMenuUI() const {
            {ftxui::text("esc to go back home") | ftxui::color(phi::ui::colors::BLUE_BABY) |
               ftxui::center,
             ftxui::separatorEmpty(), ftxui::separatorEmpty(),
-            ftxui::hbox({ftxui::filler(),
-                         this->components.contacts_menu->Render() |
-                           ftxui::color(phi::ui::colors::BLUE_BABY) |
-                           ftxui::size(ftxui::WIDTH, ftxui::GREATER_THAN, phi::ui::COLS / 3) |
-                           ftxui::size(ftxui::HEIGHT, ftxui::GREATER_THAN, phi::ui::ROWS / 2) |
-                           ftxui::borderRounded | ftxui::center,
-                         ftxui::filler()})}) |
+            ftxui::hbox(
+              {ftxui::filler(),
+               this->components.contacts_menu->Render() | ftxui::color(phi::ui::colors::BLUE_BABY) |
+                 ftxui::size(ftxui::WIDTH, ftxui::GREATER_THAN, phi::ui::COLS / 3) |
+                 ftxui::size(ftxui::HEIGHT, ftxui::GREATER_THAN, phi::ui::ROWS / 2) |
+                 ftxui::borderRounded | ftxui::color(phi::ui::colors::GOLD) | ftxui::center,
+               ftxui::filler()})}) |
          homebox;
 }
 
-ftxui::Element phi::ui::Manager::renderContactPageUI() const {
+ftxui::Element phi::ui::Manager::renderContactPageUI(int contact_id) const {
+  auto id_head = ftxui::text("ID: " + std::to_string(contact_id)) | ftxui::bold |
+                 ftxui::color(phi::ui::colors::GOLD);
+
   return ftxui::vbox({ftxui::text("esc to go back home") |
                         ftxui::color(phi::ui::colors::BLUE_BABY) | ftxui::center,
-                      ftxui::separatorEmpty(), ftxui::separatorEmpty(),
-                      this->components.contact_page->Render()}) |
+                      ftxui::separatorEmpty(), ftxui::separatorEmpty(), id_head | ftxui::center,
+                      this->components.contact_page->Render() |
+                        ftxui::color(phi::ui::colors::PURPLE_HAZE) | ftxui::borderRounded |
+                        ftxui::color(phi::ui::colors::GOLD) | ftxui::center}) |
          homebox;
 }
 
