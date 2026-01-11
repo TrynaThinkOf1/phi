@@ -181,7 +181,15 @@ void phi::ui::Manager::eventLoop() {
 
   auto emoji_input = ftxui::Input(&selected_contact_t.emoji, "...", ropt) | ENTER_CATCHER;
   auto name_input = ftxui::Input(&selected_contact_t.name, "...", ropt) | ENTER_CATCHER;
-  auto rsa_input = ftxui::Input(&displayable_rsa_key, "...", dopt) | ENTER_CATCHER;
+  auto rsa_input =
+    ftxui::Input(&displayable_rsa_key, "...", dopt) | ftxui::CatchEvent([](ftxui::Event e) {
+      if (e.is_character()) return true;              // block typing / paste
+      if (e == ftxui::Event::Backspace) return true;  // block backspace
+      if (e == ftxui::Event::Delete) return true;     // block delete
+      if (e == ftxui::Event::CtrlV) return true;      // block paste (ctrl-v)
+      if (e == ftxui::Event::CtrlU) return true;      // other edit shortcuts
+      return false;                                   // allow navigation, Return, Tab, etc.
+    });
   auto addr_input = ftxui::Input(&selected_contact_t.addr, "...", ropt) | ENTER_CATCHER;
 
   auto save_changes = ftxui::Button(
@@ -247,7 +255,7 @@ void phi::ui::Manager::eventLoop() {
   this->screen.Loop(ftxui::Renderer(root, render_fn));
 }
 
-void phi::ui::Manager::rebuildRoot(ftxui::Component& root) {
+void phi::ui::Manager::rebuildRoot(ftxui::Component& root) const {
   root->DetachAllChildren();
 
   switch (this->state.page) {

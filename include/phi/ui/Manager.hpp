@@ -100,7 +100,7 @@ class Manager {
 
     std::tuple<std::vector<std::string>, std::vector<int>> getContacts();
 
-    void rebuildRoot(ftxui::Component& root);
+    void rebuildRoot(ftxui::Component& root) const;
 
   public:
     Manager(std::shared_ptr<phi::database::Database> database,
