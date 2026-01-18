@@ -80,11 +80,26 @@ enum class Page : unsigned char {
   Screensaver
 };
 
+struct Notification {
+    bool show;
+
+    std::string title;
+    std::string description;
+
+    std::chrono::time_point<std::chrono::steady_clock> expires;
+
+    void reset() {
+      this->show = false;
+      this->title = "";
+      this->description = "";
+      this->expires = std::chrono::steady_clock::now();
+    }
+};
+
 struct State {
     Page page;
 
-    bool show_noti;
-    int noti_ls_milli;
+    Notification noti;
 };
 
 class Manager {
@@ -95,7 +110,7 @@ class Manager {
 
     ftxui::ScreenInteractive screen = ftxui::ScreenInteractive::TerminalOutput();
 
-    State state{Page::Login, false, 0};
+    State state{Page::Login, {false, "", "", {}}};
     Components components;
 
     std::tuple<std::vector<std::string>, std::vector<int>> getContacts();
@@ -120,6 +135,7 @@ class Manager {
     ftxui::Element renderContactPageUI(int contact_id) const;
     ftxui::Element contactDoesNotExist() const;
     ftxui::Element renderScreensaver() const;  // not this one, `Manager_screensaver.cpp`
+    ftxui::Element renderNotification() const;
 };
 
 }  // namespace phi::ui

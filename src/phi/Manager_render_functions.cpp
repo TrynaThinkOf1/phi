@@ -121,3 +121,10 @@ ftxui::Element phi::ui::Manager::contactDoesNotExist() const {
                       content_box | ftxui::center}) |
          homebox;
 }
+
+ftxui::Element phi::ui::Manager::renderNotification() const {
+  return ftxui::vbox({ftxui::text(this->state.noti.title) | ftxui::bold, ftxui::separator(),
+                      ftxui::paragraph(this->state.noti.description)}) |
+         ftxui::borderRounded | ftxui::bgcolor(ftxui::Color::Black) |
+         ftxui::color(ftxui::Color::Green) | ftxui::size(ftxui::WIDTH, ftxui::LESS_THAN, 40);
+}
