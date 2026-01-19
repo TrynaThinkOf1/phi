@@ -205,7 +205,21 @@ void phi::ui::Manager::eventLoop() {
         this->state.page = phi::ui::Page::ContactDoesNotExist;
         rebuildRoot(root);
       }
-      //  TODO: show noti of success
+
+      this->state.noti.show = true;
+      this->state.noti.title = "Changes Saved";
+      this->state.noti.description = "The profile changes made to the contact with ID " +
+                                     std::to_string(current.id) +
+                                     " were saved to the database successfully.";
+      auto now = std::chrono::steady_clock::now();
+      this->state.noti.expires =
+        now + std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+                std::chrono::duration<double>(3.0));
+      std::thread([this] {
+        std::this_thread::sleep_until(this->state.noti.expires);
+        this->state.noti.reset();
+        this->screen.PostEvent(ftxui::Event::Custom);
+      }).detach();
     },
     bopt);  // bopt is above for homepage
 
@@ -231,26 +245,46 @@ void phi::ui::Manager::eventLoop() {
   auto render_fn = [&] {
     if (should_exit) this->screen.Exit();
 
+    ftxui::Element base;
+
     switch (this->state.page) {
       case phi::ui::Page::Login:
-        return this->renderLoginUI();
+        base = this->renderLoginUI();
+        break;
 
       case phi::ui::Page::Home:
-        return this->renderHomeUI();
+        base = this->renderHomeUI();
+        break;
 
       case phi::ui::Page::ContactsMenu:
-        return this->renderContactsMenuUI();
+        base = this->renderContactsMenuUI();
+        break;
 
       case phi::ui::Page::EditContact:
         displayable_rsa_key = toB64(selected_contact_t.rsa_key.substr(0, 26)) + "...";
-        return this->renderContactPageUI(contact_ids.at(selected_contact_id));
+        base = this->renderContactPageUI(contact_ids.at(selected_contact_id));
+        break;
 
       case phi::ui::Page::ContactDoesNotExist:
-        return this->contactDoesNotExist();
+        base = this->contactDoesNotExist();
+        break;
 
       default:  // if I leave an unfinished/no default then it loops back around to login
-        return this->renderHomeUI();
+        base = this->renderHomeUI();
+        break;
     }
+
+    //
+
+    if (!this->state.noti.show) return base;
+
+    ftxui::Element overlay = ftxui::vbox({
+      ftxui::hbox({ftxui::filler(), renderNotification()}),
+      ftxui::filler(),
+    });
+
+    return ftxui::dbox({base, overlay}) | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, phi::ui::COLS) |
+           ftxui::size(ftxui::HEIGHT, ftxui::EQUAL, phi::ui::ROWS) | ftxui::center;
   };
   this->screen.Loop(ftxui::Renderer(root, render_fn));
 }

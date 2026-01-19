@@ -116,14 +116,14 @@ def main():
             print("\nSUCCESSFULLY CREATED AND BOILERPLATED FILES")
 
         case 2:
-            system("cmake -S . -B _build -DCMAKE_BUILD_TYPE=Release -j4")
+            system("cmake -S . -B _build -DCMAKE_BUILD_TYPE=Release")
             if input("Continue? ") != "y": exit(1)
             system("cmake --build _build -j4")
             
             system("mv _build/phi ./ && mv _build/phid ./")
 
         case 3:
-            system("cmake -S . -B _build -DCMAKE_BUILD_TYPE=Debug -j4")
+            system("cmake -S . -B _build -DCMAKE_BUILD_TYPE=Debug")
             if input("Continue? ") != "y": exit(1)
             system("cmake --build _build -j4")
             
