@@ -208,12 +208,18 @@ void phi::ui::Manager::eventLoop() {
 
       this->state.noti.show = true;
       this->state.noti.title = "Changes Saved";
-      this->state.noti.description = "The profile changes made to contact `" + current.name +
-                                     "` were saved to the database successfully.";
+      this->state.noti.description = "The profile changes made to the contact with ID " +
+                                     std::to_string(current.id) +
+                                     " were saved to the database successfully.";
       auto now = std::chrono::steady_clock::now();
       this->state.noti.expires =
         now + std::chrono::duration_cast<std::chrono::steady_clock::duration>(
-                std::chrono::duration<double>(2.6));
+                std::chrono::duration<double>(3.0));
+      std::thread([this] {
+        std::this_thread::sleep_until(this->state.noti.expires);
+        this->state.noti.reset();
+        this->screen.PostEvent(ftxui::Event::Custom);
+      }).detach();
     },
     bopt);  // bopt is above for homepage
 
@@ -271,10 +277,14 @@ void phi::ui::Manager::eventLoop() {
     //
 
     if (!this->state.noti.show) return base;
-    if (std::chrono::steady_clock::now() >= this->state.noti.expires) this->state.noti.reset();
 
-    return ftxui::dbox(
-      {base, ftxui::vbox({ftxui::filler(), ftxui::hbox({ftxui::filler(), renderNotification()})})});
+    ftxui::Element overlay = ftxui::vbox({
+      ftxui::hbox({ftxui::filler(), renderNotification()}),
+      ftxui::filler(),
+    });
+
+    return ftxui::dbox({base, overlay}) | ftxui::size(ftxui::WIDTH, ftxui::EQUAL, phi::ui::COLS) |
+           ftxui::size(ftxui::HEIGHT, ftxui::EQUAL, phi::ui::ROWS) | ftxui::center;
   };
   this->screen.Loop(ftxui::Renderer(root, render_fn));
 }
