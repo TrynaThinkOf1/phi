@@ -6,8 +6,6 @@
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/component_options.hpp>
 
-namespace phi::ui {
-
-};  // namespace phi::ui
+namespace phi::ui {};  // namespace phi::ui
 
 #endif /* _UI_UTILS_HPP */

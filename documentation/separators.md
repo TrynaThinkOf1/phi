@@ -1,16 +1,16 @@
-//=====[ Declaration Separator ]=====\\
+//=====[ Declaration Separator ]=====\\ 
 
 
-//------------[ Func. Implementation Separator ]------------\\
+//------------[ Func. Implementation Separator ]------------\\ 
 
 
-//================={ Header Item Separator }=================\\
+//================={ Header Item Separator }=================\\ 
 
 
-//~~~~~~~< Typed Definition Separator >~~~~~~~\\
+//~~~~~~~< Misc. Separator >~~~~~~~\\ 
 
 
-//---------> [ Config. Separator ] <---------\\
+//---------> [ Config. Separator ] <---------\\ 
 
 
 /*::::::::::::::::::::::::::::::::::::::*\
@@ -18,5 +18,5 @@
 \*::::::::::::::::::::::::::::::::::::::*/
 
 
-/*########## LONG FUNC ###########*\
-\*########## SEPARATOR ###########*/
+/*########## LONG FUNC ###########*\ 
+\*######## IN-SEPARATOR ##########*/

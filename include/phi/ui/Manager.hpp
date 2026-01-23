@@ -41,6 +41,8 @@
 #include "phi/ui/utils.hpp"
 #include "phi/ui/constants.hpp"
 
+//---------> [ Config. Separator ] <---------\\ 
+
 namespace phi::ui {
 
 constexpr int COLS = 150;
@@ -53,6 +55,8 @@ inline struct winsize getTerminalSize() {
   return size;
 }
 
+//================={ Header Item Separator }=================\\ 
+
 struct Components {
     ftxui::Component login_input;
 
@@ -64,6 +68,8 @@ struct Components {
     ftxui::Component contact_request_menu;
     ftxui::Component error_menu;
 };
+
+//================={ Header Item Separator }=================\\ 
 
 enum class Page : unsigned char {
   Login,
@@ -80,6 +86,8 @@ enum class Page : unsigned char {
   Screensaver
 };
 
+//================={ Header Item Separator }=================\\ 
+
 struct Notification {
     bool show;
 
@@ -87,6 +95,8 @@ struct Notification {
     std::string description;
 
     std::chrono::time_point<std::chrono::steady_clock> expires;
+
+    //=====[ Declaration Separator ]=====\\ 
 
     void reset() {
       this->show = false;
@@ -96,11 +106,15 @@ struct Notification {
     }
 };
 
+//================={ Header Item Separator }=================\\ 
+
 struct State {
     Page page;
 
     Notification noti;
 };
+
+//================={ Header Item Separator }=================\\ 
 
 class Manager {
   private:
@@ -113,22 +127,31 @@ class Manager {
     State state{Page::Login, {false, "", "", {}}};
     Components components;
 
+    //=====[ Declaration Separator ]=====\\ 
+
     std::tuple<std::vector<std::string>, std::vector<int>> getContacts();
 
     void rebuildRoot(ftxui::Component& root) const;
+
+    void loadComponents();
+
+    //=====[ Declaration Separator ]=====\\ 
+
+    bool should_exit = false;
+    ftxui::Component root = ftxui::Container::Vertical({});
+
+    std::string password;
 
   public:
     Manager(std::shared_ptr<phi::database::Database> database,
             std::shared_ptr<phi::encryption::Encryptor> encryptor,
             std::shared_ptr<phi::tasks::TaskMaster> taskmaster);
 
-    /**/
+    //=====[ Declaration Separator ]=====\\ 
 
     void eventLoop();
 
-    /**/
-
-    // functions below are inside of `Manager_login_page.cpp`
+    // functions below are inside of `Manager_render_functions.cpp`
     ftxui::Element renderLoginUI() const;
     ftxui::Element renderHomeUI() const;
     ftxui::Element renderContactsMenuUI() const;
@@ -136,6 +159,9 @@ class Manager {
     ftxui::Element contactDoesNotExist() const;
     ftxui::Element renderScreensaver() const;  // not this one, `Manager_screensaver.cpp`
     ftxui::Element renderNotification() const;
+
+    // functions below are inside of `Manager_components.cpp`
+    void createLoginInput();
 };
 
 }  // namespace phi::ui

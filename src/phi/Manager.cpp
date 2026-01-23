@@ -12,15 +12,7 @@
 
 #include "phi/ui/Manager.hpp"
 
-phi::ui::Manager::Manager(std::shared_ptr<phi::database::Database> database,
-                          std::shared_ptr<phi::encryption::Encryptor> encryptor,
-                          std::shared_ptr<phi::tasks::TaskMaster> taskmaster)
-    : DATABASE(std::move(database)),
-      ENCRYPTOR(std::move(encryptor)),
-      TASKMASTER(std::move(taskmaster)) {
-}
-
-/***/
+//---------> [ Config. Separator ] <---------\\ 
 
 std::tuple<std::vector<std::string>, std::vector<int>> phi::ui::Manager::getContacts() {
   std::unique_ptr<std::vector<std::tuple<int, std::string, std::string>>> actuals =
@@ -46,13 +38,52 @@ std::tuple<std::vector<std::string>, std::vector<int>> phi::ui::Manager::getCont
   return {};
 }
 
-/***/
+//------------[ Func. Implementation Separator ]------------\\ 
+
+void phi::ui::Manager::rebuildRoot(ftxui::Component& root) const {
+  root->DetachAllChildren();
+
+  switch (this->state.page) {
+    case phi::ui::Page::Login:
+      root->Add(this->components.login_input);
+      this->components.login_input->TakeFocus();
+      break;
+    case phi::ui::Page::Home:
+      root->Add(this->components.home_button_layout);
+      this->components.home_button_layout->TakeFocus();
+      break;
+    case phi::ui::Page::ContactsMenu:
+      root->Add(this->components.contacts_menu);
+      this->components.contacts_menu->TakeFocus();
+      break;
+    case phi::ui::Page::EditContact:
+      root->Add(this->components.contact_page);
+      this->components.contact_page->TakeFocus();
+      break;
+  }
+}
+
+//------------[ Func. Implementation Separator ]------------\\ 
+
+void phi::ui::Manager::loadComponents() {
+}
+
+/*::::::::::::::::::::::::::::::::::::::*\
+|*:::::::::[ Access Separator ]:::::::::*|
+\*::::::::::::::::::::::::::::::::::::::*/
+
+phi::ui::Manager::Manager(std::shared_ptr<phi::database::Database> database,
+                          std::shared_ptr<phi::encryption::Encryptor> encryptor,
+                          std::shared_ptr<phi::tasks::TaskMaster> taskmaster)
+    : DATABASE(std::move(database)),
+      ENCRYPTOR(std::move(encryptor)),
+      TASKMASTER(std::move(taskmaster)) {
+  this->loadComponents();
+}
+
+//------------[ Func. Implementation Separator ]------------\\ 
 
 void phi::ui::Manager::eventLoop() {
-  ftxui::Component root = ftxui::Container::Vertical({});
-  bool should_exit = false;
-
-
   phi::database::contact_t selected_contact_t{};
   int selected_contact_id = 0;
 
@@ -62,26 +93,7 @@ void phi::ui::Manager::eventLoop() {
 
 
   // Password input box
-  std::string password;
-
-  ftxui::InputOption popt;
-  popt.password = true;
-
-  this->components.login_input = ftxui::Input(&password, "", popt);
-  this->components.login_input |= ftxui::CatchEvent([&](const ftxui::Event& e) {
-    if (e == ftxui::Event::Return) {
-      if (this->DATABASE->login(password)) {
-        this->DATABASE->createTables();
-        this->state.page = phi::ui::Page::Home;
-        rebuildRoot(root);
-      } else {
-        should_exit = true;
-      }
-      return true;
-    }
-
-    return false;
-  });
+  this->createLoginInput();
   //
 
   // these will be set during home page rendering
@@ -287,27 +299,4 @@ void phi::ui::Manager::eventLoop() {
            ftxui::size(ftxui::HEIGHT, ftxui::EQUAL, phi::ui::ROWS) | ftxui::center;
   };
   this->screen.Loop(ftxui::Renderer(root, render_fn));
-}
-
-void phi::ui::Manager::rebuildRoot(ftxui::Component& root) const {
-  root->DetachAllChildren();
-
-  switch (this->state.page) {
-    case phi::ui::Page::Login:
-      root->Add(this->components.login_input);
-      this->components.login_input->TakeFocus();
-      break;
-    case phi::ui::Page::Home:
-      root->Add(this->components.home_button_layout);
-      this->components.home_button_layout->TakeFocus();
-      break;
-    case phi::ui::Page::ContactsMenu:
-      root->Add(this->components.contacts_menu);
-      this->components.contacts_menu->TakeFocus();
-      break;
-    case phi::ui::Page::EditContact:
-      root->Add(this->components.contact_page);
-      this->components.contact_page->TakeFocus();
-      break;
-  }
 }

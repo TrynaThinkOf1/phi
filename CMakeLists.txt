@@ -1,7 +1,7 @@
 # CONFIGURATION
 cmake_minimum_required(VERSION 3.24...4.1.2)
 project(PHI
-    VERSION 0.2.6
+    VERSION 0.2.62
     LANGUAGES C CXX
 )
 
@@ -108,6 +108,7 @@ target_compile_options(phi
         -Wno-unused-parameter
         -Wno-return-type
         -Wno-comment
+        -Wno-backslash-newline-escape
         $<$<CONFIG:Release>:-O1>
 )
 
