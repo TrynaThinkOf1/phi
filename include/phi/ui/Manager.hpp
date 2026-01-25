@@ -51,7 +51,7 @@ constexpr int ROWS = 35;
 // winsize.ws_row and winsize.ws_col
 inline struct winsize getTerminalSize() {
   struct winsize size{};
-  ioctl(STDOUT_FILENO, TIOCGSIZE, &size);
+  ioctl(STDOUT_FILENO, TIOCGSIZE, &size);  // NOLINT Don't call C vararg funcs: cppcoreguidelines
   return size;
 }
 
@@ -95,15 +95,6 @@ struct Notification {
     std::string description;
 
     std::chrono::time_point<std::chrono::steady_clock> expires;
-
-    //=====[ Declaration Separator ]=====\\ 
-
-    void reset() {
-      this->show = false;
-      this->title = "";
-      this->description = "";
-      this->expires = std::chrono::steady_clock::now();
-    }
 };
 
 //================={ Header Item Separator }=================\\ 
@@ -129,13 +120,23 @@ class Manager {
 
     //=====[ Declaration Separator ]=====\\ 
 
-    std::tuple<std::vector<std::string>, std::vector<int>> getContacts();
+    void getContacts();
+    //
+    std::vector<std::string> contacts;
+    std::vector<int> contact_ids;
+    //
 
     void rebuildRoot(ftxui::Component& root) const;
 
     void loadComponents();
 
+    void addNoti(const std::string& title, const std::string& description, double lifespan);
+
     //=====[ Declaration Separator ]=====\\ 
+
+    phi::database::contact_t selected_contact_t{};
+    int selected_contact_id = 0;
+    std::string displayable_rsa_key;
 
     bool should_exit = false;
     ftxui::Component root = ftxui::Container::Vertical({});
@@ -162,6 +163,9 @@ class Manager {
 
     // functions below are inside of `Manager_components.cpp`
     void createLoginInput();
+    void createHomePageButtons(const ftxui::ButtonOption& bopt);
+    void createContactsMenu();
+    void createContactEditPage(const ftxui::ButtonOption& bopt);
 };
 
 }  // namespace phi::ui
