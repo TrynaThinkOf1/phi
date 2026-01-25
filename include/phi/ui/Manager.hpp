@@ -41,6 +41,8 @@
 #include "phi/ui/utils.hpp"
 #include "phi/ui/constants.hpp"
 
+//---------> [ Config. Separator ] <---------\\ 
+
 namespace phi::ui {
 
 constexpr int COLS = 150;
@@ -49,9 +51,11 @@ constexpr int ROWS = 35;
 // winsize.ws_row and winsize.ws_col
 inline struct winsize getTerminalSize() {
   struct winsize size{};
-  ioctl(STDOUT_FILENO, TIOCGSIZE, &size);
+  ioctl(STDOUT_FILENO, TIOCGSIZE, &size);  // NOLINT Don't call C vararg funcs: cppcoreguidelines
   return size;
 }
+
+//================={ Header Item Separator }=================\\ 
 
 struct Components {
     ftxui::Component login_input;
@@ -64,6 +68,8 @@ struct Components {
     ftxui::Component contact_request_menu;
     ftxui::Component error_menu;
 };
+
+//================={ Header Item Separator }=================\\ 
 
 enum class Page : unsigned char {
   Login,
@@ -80,6 +86,8 @@ enum class Page : unsigned char {
   Screensaver
 };
 
+//================={ Header Item Separator }=================\\ 
+
 struct Notification {
     bool show;
 
@@ -87,20 +95,17 @@ struct Notification {
     std::string description;
 
     std::chrono::time_point<std::chrono::steady_clock> expires;
-
-    void reset() {
-      this->show = false;
-      this->title = "";
-      this->description = "";
-      this->expires = std::chrono::steady_clock::now();
-    }
 };
+
+//================={ Header Item Separator }=================\\ 
 
 struct State {
     Page page;
 
     Notification noti;
 };
+
+//================={ Header Item Separator }=================\\ 
 
 class Manager {
   private:
@@ -113,22 +118,41 @@ class Manager {
     State state{Page::Login, {false, "", "", {}}};
     Components components;
 
-    std::tuple<std::vector<std::string>, std::vector<int>> getContacts();
+    //=====[ Declaration Separator ]=====\\ 
+
+    void getContacts();
+    //
+    std::vector<std::string> contacts;
+    std::vector<int> contact_ids;
+    //
 
     void rebuildRoot(ftxui::Component& root) const;
+
+    void loadComponents();
+
+    void addNoti(const std::string& title, const std::string& description, double lifespan);
+
+    //=====[ Declaration Separator ]=====\\ 
+
+    phi::database::contact_t selected_contact_t{};
+    int selected_contact_id = 0;
+    std::string displayable_rsa_key;
+
+    bool should_exit = false;
+    ftxui::Component root = ftxui::Container::Vertical({});
+
+    std::string password;
 
   public:
     Manager(std::shared_ptr<phi::database::Database> database,
             std::shared_ptr<phi::encryption::Encryptor> encryptor,
             std::shared_ptr<phi::tasks::TaskMaster> taskmaster);
 
-    /**/
+    //=====[ Declaration Separator ]=====\\ 
 
     void eventLoop();
 
-    /**/
-
-    // functions below are inside of `Manager_login_page.cpp`
+    // functions below are inside of `Manager_render_functions.cpp`
     ftxui::Element renderLoginUI() const;
     ftxui::Element renderHomeUI() const;
     ftxui::Element renderContactsMenuUI() const;
@@ -136,6 +160,12 @@ class Manager {
     ftxui::Element contactDoesNotExist() const;
     ftxui::Element renderScreensaver() const;  // not this one, `Manager_screensaver.cpp`
     ftxui::Element renderNotification() const;
+
+    // functions below are inside of `Manager_components.cpp`
+    void createLoginInput();
+    void createHomePageButtons(const ftxui::ButtonOption& bopt);
+    void createContactsMenu();
+    void createContactEditPage(const ftxui::ButtonOption& bopt);
 };
 
 }  // namespace phi::ui
