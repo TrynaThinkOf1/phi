@@ -59,6 +59,10 @@ void phi::ui::Manager::rebuildRoot(ftxui::Component& root) const {
       root->Add(this->components.contact_page);
       this->components.contact_page->TakeFocus();
       break;
+    case phi::ui::Page::EditSelf:
+      root->Add(this->components.self_edit);
+      this->components.self_edit->TakeFocus();
+      break;
   }
 }
 
@@ -94,7 +98,8 @@ phi::ui::Manager::Manager(std::shared_ptr<phi::database::Database> database,
                           std::shared_ptr<phi::tasks::TaskMaster> taskmaster)
     : DATABASE(std::move(database)),
       ENCRYPTOR(std::move(encryptor)),
-      TASKMASTER(std::move(taskmaster)) {
+      TASKMASTER(std::move(taskmaster)),
+      editable_self(this->DATABASE->self) {
   this->getContacts();
   this->loadComponents();
 }
@@ -135,6 +140,10 @@ void phi::ui::Manager::eventLoop() {
   this->createContactEditPage(bopt);
   //
 
+  // Self edit page
+  this->createSelfEditPage(bopt);
+  //
+
   this->rebuildRoot(root);
 
   root |= ftxui::CatchEvent([&](ftxui::Event e) {
@@ -173,6 +182,12 @@ void phi::ui::Manager::eventLoop() {
 
       case phi::ui::Page::ContactDoesNotExist:
         base = this->contactDoesNotExist();
+        break;
+
+      case phi::ui::Page::EditSelf:
+        this->displayable_self_rsa_priv_key = toB64(this->DATABASE->self.rsa_priv_key);
+        this->displayable_self_rsa_pub_key = toB64(this->DATABASE->self.rsa_pub_key);
+        base = this->renderSelfEditPageUI();
         break;
 
       default:  // if I leave an unfinished/no default then it loops back around to login

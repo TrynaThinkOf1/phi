@@ -66,6 +66,8 @@ struct Components {
     ftxui::Component contacts_menu;
     ftxui::Component contact_page;
 
+    ftxui::Component self_edit;
+
     ftxui::Component contact_request_menu;
     ftxui::Component error_menu;
 };
@@ -142,15 +144,25 @@ class Manager {
     int selected_contact_id = 0;
     std::string displayable_rsa_key;
 
+    //
+
     bool should_exit = false;
     ftxui::Component root = ftxui::Container::Vertical({});
 
+    //
+
     std::string password;
 
-  public:
-    Manager(std::shared_ptr<phi::database::Database> database,
-            std::shared_ptr<phi::encryption::Encryptor> encryptor,
-            std::shared_ptr<phi::tasks::TaskMaster> taskmaster);
+    //
+
+    phi::database::self_t editable_self;
+
+    std::string displayable_self_rsa_priv_key;
+    std::string displayable_self_rsa_pub_key;
+
+    public : Manager(std::shared_ptr<phi::database::Database> database,
+                     std::shared_ptr<phi::encryption::Encryptor> encryptor,
+                     std::shared_ptr<phi::tasks::TaskMaster> taskmaster);
 
     //=====[ Declaration Separator ]=====\\ 
 
@@ -162,6 +174,7 @@ class Manager {
     ftxui::Element renderContactsMenuUI() const;
     ftxui::Element renderContactPageUI(int contact_id) const;
     ftxui::Element contactDoesNotExist() const;
+    ftxui::Element renderSelfEditPageUI() const;
     ftxui::Element renderScreensaver() const;  // not this one, `Manager_screensaver.cpp`
     ftxui::Element renderNotification() const;
 
@@ -170,6 +183,7 @@ class Manager {
     void createHomePageButtons(const ftxui::ButtonOption& bopt);
     void createContactsMenu();
     void createContactEditPage(const ftxui::ButtonOption& bopt);
+    void createSelfEditPage(const ftxui::ButtonOption& bopt);
 };
 
 }  // namespace phi::ui

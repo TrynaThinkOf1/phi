@@ -46,15 +46,20 @@ void phi::ui::Manager::createHomePageButtons(const ftxui::ButtonOption& bopt) {
     [&] {
       this->state.page = phi::ui::Page::ContactsMenu;
       this->getContacts();
-      this->rebuildRoot(root);
+      this->rebuildRoot(this->root);
     },
     bopt);
 
   auto contact_request_menu_button = ftxui::Button(
     "Add/Accept New Contact", [&] { this->state.page = phi::ui::Page::ContactRequestsMenu; }, bopt);
 
-  auto edit_self =
-    ftxui::Button("Edit Self Profile", [&] { this->state.page = phi::ui::Page::EditSelf; }, bopt);
+  auto edit_self = ftxui::Button(
+    "Edit Self Profile",
+    [&] {
+      this->state.page = phi::ui::Page::EditSelf;
+      this->rebuildRoot(this->root);
+    },
+    bopt);
 
   auto change_db_password = ftxui::Button(
     "Change Database Password", [&] { this->state.page = phi::ui::Page::ChangeDatabasePassword; },
@@ -147,7 +152,7 @@ void phi::ui::Manager::createContactEditPage(const ftxui::ButtonOption& bopt) {
         return;
       }
       if (!validIPv6(this->selected_contact_t.addr)) {
-        this->addNoti("Invalud Changes", "Contact's IPv6 address is not valid.",
+        this->addNoti("Invalid Changes", "Contact's new IPv6 address is not valid.",
                       phi::ui::colors::RED, 2.5);
         return;
       }
@@ -171,4 +176,88 @@ void phi::ui::Manager::createContactEditPage(const ftxui::ButtonOption& bopt) {
 
   this->components.contact_page =
     ftxui::Container::Vertical({emoji_input, name_input, rsa_input, addr_input, save_changes});
+}
+
+//------------[ Func. Implementation Separator ]------------\\ 
+
+void phi::ui::Manager::createSelfEditPage(const ftxui::ButtonOption& bopt) {
+  ftxui::InputOption ropt;
+  ropt.transform = [](ftxui::InputState s) {
+    return s.element | ftxui::color(phi::ui::colors::BLUE_BABY) | ftxui::borderRounded |
+           ftxui::color(phi::ui::colors::GOLD);
+  };
+
+  ftxui::InputOption dopt;
+  dopt.transform = [](ftxui::InputState s) {
+    return s.element | ftxui::color(phi::ui::colors::BLUE_BABY) | ftxui::borderRounded |
+           ftxui::color(phi::ui::colors::GOLD) | ftxui::dim;
+  };
+
+
+  auto catcher = ftxui::CatchEvent([](const ftxui::Event& e) {
+    if (e.is_character()) return true;              // block typing / paste
+    if (e == ftxui::Event::Backspace) return true;  // block backspace
+    if (e == ftxui::Event::Delete) return true;     // block delete
+    if (e == ftxui::Event::CtrlV) return true;      // block paste (ctrl-v)
+    if (e == ftxui::Event::CtrlU) return true;      // other edit shortcuts
+    return false;                                   // allow navigation, Return, Tab, etc.
+  });
+
+#define ENTER_CATCHER \
+  ftxui::CatchEvent([&](const ftxui::Event& e) { return e == ftxui::Event::Return; })
+
+  auto emoji_input = ftxui::Input(&this->editable_self.emoji, "...", ropt) | ENTER_CATCHER;
+  auto name_input = ftxui::Input(&this->editable_self.name, "...", ropt) | ENTER_CATCHER;
+  auto rsa_priv_input = ftxui::Input(&this->displayable_self_rsa_priv_key, "...", dopt) | catcher;
+  auto rsa_pub_input = ftxui::Input(&this->displayable_self_rsa_pub_key, "...", dopt) | catcher;
+  auto addr_input = ftxui::Input(&this->editable_self.last_known_ip, "...", ropt) | ENTER_CATCHER;
+  auto hardware_profile_input =
+    ftxui::Input(&this->editable_self.hardware_profile, "...", dopt) | catcher;
+
+#undef ENTER_CATCHER
+
+  auto save_changes = ftxui::Button(
+    "Save Changes",
+    [&] {
+      if (countEmojis(this->editable_self.emoji) != 1) {
+        this->addNoti("Invalid Changes", "Your profile must have exactly 1 emoji.",
+                      phi::ui::colors::RED, 2.6);
+        return;
+      }
+      if (this->editable_self.name.empty() || this->editable_self.name.length() > 24) {
+        this->addNoti("Invalid Changes", "Your name must be between 1 and 24 characters long.",
+                      phi::ui::colors::RED, 2.8);
+        return;
+      }
+      if (countEmojis(this->editable_self.name) != 0) {
+        this->addNoti("Invalid Changes", "Your name cannot contain emojis.", phi::ui::colors::RED,
+                      2.4);
+        return;
+      }
+      if (!validIPv6(this->editable_self.last_known_ip)) {
+        this->addNoti("Invalid Changes", "Your new IPv6 address is not valid.",
+                      phi::ui::colors::RED, 2.5);
+        return;
+      }
+
+      //
+
+      if (!this->DATABASE->updateSelf(this->editable_self)) {
+        this->addNoti("Something went Wrong",
+                      "An unknown error is preventing Phi from opening `~/.phi/self.json` to "
+                      "update your profile.",
+                      phi::ui::colors::RED, 3.5);
+        return;
+      }
+
+      this->addNoti("Changes Saved",
+                    "The changes made to your profile were saved to the database successfully.",
+                    phi::ui::colors::GREEN_MINT, 2.9);
+    },
+    bopt);
+
+
+  this->components.self_edit =
+    ftxui::Container::Vertical({emoji_input, name_input, rsa_priv_input, rsa_pub_input, addr_input,
+                                hardware_profile_input, save_changes});
 }

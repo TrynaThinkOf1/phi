@@ -76,8 +76,9 @@ bool phi::database::Database::changePassword(const std::string& oldpass, const s
 
   if (password != this->password) return false;
 
-  int erc = 0;
-  if (!this->changeSelfAttribute("password_hint", newhint, erc)) {
+  phi::database::self_t updated(this->self);
+  updated.password_hint = newhint;
+  if (!this->updateSelf(updated)) {
     return false;
   }
 
@@ -159,25 +160,19 @@ bool phi::database::Database::createSelf(const std::string& name, const std::str
   return true;
 }
 
-bool phi::database::Database::changeSelfAttribute(const std::string& field,
-                                                  const std::string& value, int& erc) {
+bool phi::database::Database::updateSelf(const phi::database::self_t& new_self) {
   std::lock_guard<std::mutex> lock(this->mtx);
 
-  // dereference the self structure's map entry of the
-  // field, which holds a pointer to the string. Set that
-  // string to the value
-  *this->self.MAP[field] = value;
+  this->self = new_self;
 
   std::fstream file(this->self_path, std::fstream::out);
   if (!file.is_open()) {
-    erc = 1;
     return false;
   }
 
   file << this->self.to_json_str();
   file.close();
 
-  erc = 0;
   return true;
 }
 

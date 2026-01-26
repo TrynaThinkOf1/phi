@@ -71,7 +71,7 @@ class Database {
     /*
       erc: 0 if none, 1 if self can't be opened
     */
-    bool changeSelfAttribute(const std::string& field, const std::string& value, int& erc);
+    bool updateSelf(const self_t& new_self);
 
     /** **/
 
@@ -93,8 +93,7 @@ class Database {
 
     bool getContact(int contact_id, contact_t& op);
 
-    bool updateContact(const phi::database::contact_t& current,
-                       const phi::database::contact_t& to_set);
+    bool updateContact(const contact_t& current, const contact_t& to_set);
 
     /*
       this will NOT give any indication as to whether or
