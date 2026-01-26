@@ -7,11 +7,14 @@
 #include <cstdio>
 #include <sstream>
 #include <iomanip>
+#include <regex>
 
 #include <termios.h>
 #include <unistd.h>
 
 #include <cryptopp/base64.h>
+
+//---------> [ Config. Separator ] <---------\\ 
 
 [[nodiscard]] static std::string getHiddenInput() {
   // CODE BELOW IS VIA STACK OVERFLOW {
@@ -30,7 +33,7 @@
   return input;
 }
 
-/***/
+//------------[ Func. Implementation Separator ]------------\\ 
 
 [[nodiscard]] static std::string toB64(const std::string& str) {
   std::string opt;
@@ -48,6 +51,8 @@
   return opt;
 }
 
+//------------[ Func. Implementation Separator ]------------\\ 
+
 [[nodiscard]] static std::string fromB64(const std::string& str) {
   std::string opt;
 
@@ -63,5 +68,24 @@
 
   return opt;
 }
+
+//------------[ Func. Implementation Separator ]------------\\ 
+
+static const std::regex ipv6_pattern(
+  "(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-"
+  "9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-"
+  "fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-"
+  "9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|"
+  "fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,"
+  "1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:(("
+  "25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))");
+
+[[nodiscard]] static bool validIPv6(const std::string& str) {
+  return std::regex_match(str, ipv6_pattern);
+}
+
+//
+
+#include "utils/count_emojis.hpp"
 
 #endif /* STR_UTILS_HPP */

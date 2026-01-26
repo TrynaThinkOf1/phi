@@ -59,6 +59,10 @@ void phi::ui::Manager::rebuildRoot(ftxui::Component& root) const {
       root->Add(this->components.contact_page);
       this->components.contact_page->TakeFocus();
       break;
+    case phi::ui::Page::EditSelf:
+      root->Add(this->components.self_edit);
+      this->components.self_edit->TakeFocus();
+      break;
   }
 }
 
@@ -70,10 +74,11 @@ void phi::ui::Manager::loadComponents() {
 //------------[ Func. Implementation Separator ]------------\\ 
 
 void phi::ui::Manager::addNoti(const std::string& title, const std::string& description,
-                               double lifespan) {
+                               const ftxui::Color& color, double lifespan) {
   this->state.noti.show = true;
   this->state.noti.title = title;
   this->state.noti.description = description;
+  this->state.noti.color = color;
   auto now = std::chrono::steady_clock::now();
   this->state.noti.expires = now + std::chrono::duration_cast<std::chrono::steady_clock::duration>(
                                      std::chrono::duration<double>(lifespan));
@@ -93,7 +98,8 @@ phi::ui::Manager::Manager(std::shared_ptr<phi::database::Database> database,
                           std::shared_ptr<phi::tasks::TaskMaster> taskmaster)
     : DATABASE(std::move(database)),
       ENCRYPTOR(std::move(encryptor)),
-      TASKMASTER(std::move(taskmaster)) {
+      TASKMASTER(std::move(taskmaster)),
+      editable_self(this->DATABASE->self) {
   this->getContacts();
   this->loadComponents();
 }
@@ -134,6 +140,10 @@ void phi::ui::Manager::eventLoop() {
   this->createContactEditPage(bopt);
   //
 
+  // Self edit page
+  this->createSelfEditPage(bopt);
+  //
+
   this->rebuildRoot(root);
 
   root |= ftxui::CatchEvent([&](ftxui::Event e) {
@@ -172,6 +182,12 @@ void phi::ui::Manager::eventLoop() {
 
       case phi::ui::Page::ContactDoesNotExist:
         base = this->contactDoesNotExist();
+        break;
+
+      case phi::ui::Page::EditSelf:
+        this->displayable_self_rsa_priv_key = toB64(this->DATABASE->self.rsa_priv_key);
+        this->displayable_self_rsa_pub_key = toB64(this->DATABASE->self.rsa_pub_key);
+        base = this->renderSelfEditPageUI();
         break;
 
       default:  // if I leave an unfinished/no default then it loops back around to login

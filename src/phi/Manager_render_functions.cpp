@@ -18,6 +18,8 @@
     ftxui::color(phi::ui::colors::PURPLE_HAZE) | ftxui::bgcolor(phi::ui::colors::DEEP) | \
     ftxui::borderRounded | ftxui::color(phi::ui::colors::SHALLOW) | ftxui::center
 
+//---------> [ Config. Separator ] <---------\\ 
+
 ftxui::Element phi::ui::Manager::renderLoginUI() const {
   auto header = ftxui::paragraphAlignCenter(phi::ui::constants::header_text);
   header |= ftxui::bold;
@@ -35,7 +37,7 @@ ftxui::Element phi::ui::Manager::renderLoginUI() const {
          homebox;
 }
 
-/**/
+//------------[ Func. Implementation Separator ]------------\\ 
 
 ftxui::Element phi::ui::Manager::renderHomeUI() const {
   auto logo = ftxui::paragraphAlignCenter(phi::ui::constants::logo_text);
@@ -56,7 +58,7 @@ ftxui::Element phi::ui::Manager::renderHomeUI() const {
          homebox;
 }
 
-/**/
+//------------[ Func. Implementation Separator ]------------\\ 
 
 ftxui::Element phi::ui::Manager::renderContactsMenuUI() const {
   return ftxui::vbox(
@@ -72,6 +74,8 @@ ftxui::Element phi::ui::Manager::renderContactsMenuUI() const {
                ftxui::filler()})}) |
          homebox;
 }
+
+//------------[ Func. Implementation Separator ]------------\\ 
 
 ftxui::Element phi::ui::Manager::renderContactPageUI(int contact_id) const {
   auto id_head = ftxui::text("ID: " + std::to_string(contact_id)) | ftxui::bold |
@@ -105,6 +109,8 @@ ftxui::Element phi::ui::Manager::renderContactPageUI(int contact_id) const {
          homebox;
 }
 
+//------------[ Func. Implementation Separator ]------------\\ 
+
 ftxui::Element phi::ui::Manager::contactDoesNotExist() const {
   auto content = ftxui::paragraphAlignCenter(phi::ui::constants::contact_does_not_exist);
   content |= ftxui::bold;
@@ -122,10 +128,47 @@ ftxui::Element phi::ui::Manager::contactDoesNotExist() const {
          homebox;
 }
 
+//------------[ Func. Implementation Separator ]------------\\ 
+
 ftxui::Element phi::ui::Manager::renderNotification() const {
   return ftxui::vbox({ftxui::text(this->state.noti.title) | ftxui::bold, ftxui::separator(),
                       ftxui::paragraph(this->state.noti.description), ftxui::filler()}) |
          ftxui::borderRounded |  // ftxui::bgcolor(phi::ui::colors::DEEP) |
-         ftxui::color(phi::ui::colors::GREEN_MINT) |
-         ftxui::size(ftxui::WIDTH, ftxui::LESS_THAN, 40) | ftxui::align_right;
+         ftxui::color(this->state.noti.color) | ftxui::size(ftxui::WIDTH, ftxui::LESS_THAN, 40) |
+         ftxui::align_right;
+}
+
+//------------[ Func. Implementation Separator ]------------\\ 
+
+ftxui::Element phi::ui::Manager::renderSelfEditPageUI() const {
+  return ftxui::vbox({ftxui::text("esc to go back home") |
+                        ftxui::color(phi::ui::colors::BLUE_BABY) | ftxui::center,
+                      ftxui::separatorEmpty(), ftxui::separatorEmpty(), ftxui::separatorEmpty(),
+
+                      ftxui::hbox({ftxui::vbox({
+                                     ftxui::filler(),
+                                     ftxui::align_right(ftxui::text("EMOJI")),
+                                     ftxui::filler(),
+                                     ftxui::align_right(ftxui::text("NAME")),
+                                     ftxui::filler(),
+                                     ftxui::align_right(ftxui::text("RSA PUB KEY (B64)")),
+                                     ftxui::filler(),
+                                     ftxui::align_right(ftxui::text("RSA PRIV KEY (B64)")),
+                                     ftxui::filler(),
+                                     ftxui::align_right(ftxui::text("ADDRESS")),
+                                     ftxui::filler(),
+                                     ftxui::align_right(ftxui::text("HARDWARE PROFILE")),
+                                     ftxui::filler(),
+                                     ftxui::filler(),
+                                   }) |
+                                     ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 19) |
+                                     ftxui::color(phi::ui::colors::GOLD),
+                                   ftxui::separatorEmpty(),
+                                   this->components.self_edit->Render() |
+                                     ftxui::bgcolor(phi::ui::colors::PURPLE_HAZE) |
+                                     ftxui::color(phi::ui::colors::GOLD) |
+                                     ftxui::size(ftxui::WIDTH, ftxui::EQUAL, 42) | ftxui::center}) |
+                        ftxui::bgcolor(phi::ui::colors::PURPLE_HAZE) | ftxui::borderRounded |
+                        ftxui::color(phi::ui::colors::GOLD) | ftxui::center}) |
+         homebox;
 }
