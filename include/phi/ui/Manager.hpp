@@ -40,6 +40,7 @@
 #include "phi/ui/color_defs.hpp"
 #include "phi/ui/utils.hpp"
 #include "phi/ui/constants.hpp"
+#include "utils/str_utils.hpp"
 
 //---------> [ Config. Separator ] <---------\\ 
 
@@ -94,6 +95,8 @@ struct Notification {
     std::string title;
     std::string description;
 
+    ftxui::Color color;
+
     std::chrono::time_point<std::chrono::steady_clock> expires;
 };
 
@@ -130,7 +133,8 @@ class Manager {
 
     void loadComponents();
 
-    void addNoti(const std::string& title, const std::string& description, double lifespan);
+    void addNoti(const std::string& title, const std::string& description,
+                 const ftxui::Color& color, double lifespan);
 
     //=====[ Declaration Separator ]=====\\ 
 

@@ -70,10 +70,11 @@ void phi::ui::Manager::loadComponents() {
 //------------[ Func. Implementation Separator ]------------\\ 
 
 void phi::ui::Manager::addNoti(const std::string& title, const std::string& description,
-                               double lifespan) {
+                               const ftxui::Color& color, double lifespan) {
   this->state.noti.show = true;
   this->state.noti.title = title;
   this->state.noti.description = description;
+  this->state.noti.color = color;
   auto now = std::chrono::steady_clock::now();
   this->state.noti.expires = now + std::chrono::duration_cast<std::chrono::steady_clock::duration>(
                                      std::chrono::duration<double>(lifespan));

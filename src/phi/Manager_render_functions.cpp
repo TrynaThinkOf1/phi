@@ -126,6 +126,6 @@ ftxui::Element phi::ui::Manager::renderNotification() const {
   return ftxui::vbox({ftxui::text(this->state.noti.title) | ftxui::bold, ftxui::separator(),
                       ftxui::paragraph(this->state.noti.description), ftxui::filler()}) |
          ftxui::borderRounded |  // ftxui::bgcolor(phi::ui::colors::DEEP) |
-         ftxui::color(phi::ui::colors::GREEN_MINT) |
+         ftxui::color(this->state.noti.color) |
          ftxui::size(ftxui::WIDTH, ftxui::LESS_THAN, 40) | ftxui::align_right;
 }
