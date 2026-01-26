@@ -118,7 +118,7 @@ class Manager {
 
     ftxui::ScreenInteractive screen = ftxui::ScreenInteractive::TerminalOutput();
 
-    State state{Page::Login, {false, "", "", {}}};
+    State state{Page::Login, {false, "", "", phi::ui::colors::PURPLE_HAZE, {}}};
     Components components;
 
     //=====[ Declaration Separator ]=====\\ 
